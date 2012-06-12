@@ -20,7 +20,7 @@ CC = /usr/bin/g++
 
 # Default compiler flags
 
-CFLAGS = -DUNIX -O2 -DNDEBUG $(MAINFLAGS) 
+CFLAGS = -DUNIX -g -O0 -DDEBUG $(MAINFLAGS) 
 LDFLAGS = -s
 
 # Special modes
