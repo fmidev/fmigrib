@@ -1,7 +1,7 @@
 /*
  * class NFmiGrib
  *
- * C++ overcout for reading grib data and metadata.
+ * C++ overcoat for reading grib data and metadata.
  */
 
 #ifndef __NFMIGRIB_H__
@@ -34,8 +34,8 @@ class NFmiGrib {
     int MessageCount();
     int CurrentMessageIndex();
 
-    double *Data();
-    int DataLength();
+    double *Values();
+    int ValuesLength();
 
     long DataDate();
     long DataTime();
@@ -59,7 +59,7 @@ class NFmiGrib {
     grib_handle *h;
     FILE *f;
 
-    double *values;
+    double *itsValues;
 
     long itsEdition;
     long itsProcess;
@@ -96,7 +96,7 @@ class NFmiGrib {
     long itsGridType;
     long itsGridDefinitionTemplate;
 
-    size_t itsDataLength;
+    size_t itsValuesLength;
 
     long itsParameterDiscipline;
     long itsParameterCategory;
