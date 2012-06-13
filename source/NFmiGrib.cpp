@@ -1,9 +1,7 @@
 #include "NFmiGrib.h"
 #include <stdexcept>
 
-#ifdef DEBUG
-#include <iostream>
-#endif
+// Should use const int ???
 
 #define INVALID_VALUE -999
 
@@ -16,7 +14,7 @@ NFmiGrib::NFmiGrib() :
 NFmiGrib::NFmiGrib(const std::string &theFileName) :
   h(0),
   f(0),
-  itsCurrentMessage(0),
+  itsCurrentMessage(-1),
   itsDataLength(-1) {
 
   Open(theFileName);
@@ -49,10 +47,6 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   grib_multi_support_on(0);
 
   if (grib_count_in_file(0, f, &itsMessageCount) != GRIB_SUCCESS) {
-
-#ifdef DEBUG
-    std::cerr << "Error code: " << err << std::endl;
-#endif
     return false;
   }
 
@@ -156,23 +150,33 @@ int NFmiGrib::CurrentMessageIndex() {
   return itsCurrentMessage;
 }
 
-double *NFmiGrib::Data() {
+/*
+ * Values()
+ *
+ * Returns a pointer to grib data values, caller is responsible
+ * for freeing memory.
+ *
+ * TODO: Should this function return the data in a vector
+ * (like NFmiNetCDF library does)
+ */
 
-  GRIB_CHECK(grib_get_size(h,"values",&itsDataLength),0);
+double *NFmiGrib::Values() {
 
-  values = (double*) malloc(itsDataLength*sizeof(double));
+  GRIB_CHECK(grib_get_size(h,"itsValues",&itsValuesLength),0);
 
-  GRIB_CHECK(grib_get_double_array(h,"values",values,&itsDataLength),0);
+  itsValues = (double*) malloc(itsValuesLength*sizeof(double));
 
-  return values;
+  GRIB_CHECK(grib_get_double_array(h,"values",itsValues,&itsValuesLength),0);
+
+  return itsValues;
 }
 
-int NFmiGrib::DataLength() {
+int NFmiGrib::ValuesLength() {
 
-  if ((int) itsDataLength < 0)
-    GRIB_CHECK(grib_get_size(h,"values",&itsDataLength),0);
+  if ((int) itsValuesLength < 0)
+    GRIB_CHECK(grib_get_size(h,"values",&itsValuesLength),0);
 
-  return (int) itsDataLength;
+  return (int) itsValuesLength;
 }
 
 long NFmiGrib::DataDate() {
@@ -232,12 +236,16 @@ long NFmiGrib::NormalizedGridType() {
       case 1: // rll
       case 2: // stretched ll
       case 3: // stretched rll
-      case 4: // stretched rll
         type = 10 * itsGridDefinitionTemplate;
         break;
 
       case 20: // polar stereographic
         type = 5;
+        break;
+
+      case 30: // lambert conformal
+      case 40: // gaussian ll
+      	type = itsGridDefinitionTemplate / 10;
         break;
 
       default:
@@ -300,7 +308,7 @@ void NFmiGrib::Clear() {
   itsGridType = INVALID_VALUE;
   itsGridDefinitionTemplate = INVALID_VALUE;
 
-  itsDataLength = INVALID_VALUE;
+  itsValuesLength = INVALID_VALUE;
 
   itsParameterDiscipline = INVALID_VALUE;
   itsParameterCategory = INVALID_VALUE;
