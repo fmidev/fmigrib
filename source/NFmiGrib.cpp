@@ -14,8 +14,8 @@ NFmiGrib::NFmiGrib() :
 NFmiGrib::NFmiGrib(const std::string &theFileName) :
   h(0),
   f(0),
-  itsCurrentMessage(-1),
-  itsDataLength(-1) {
+  itsMessageCount(-1),
+  itsCurrentMessage(-1) {
 
   Open(theFileName);
 }
@@ -31,9 +31,7 @@ NFmiGrib::~NFmiGrib() {
 
 bool NFmiGrib::Open(const std::string &theFileName) {
 
-  int err = 0;
-
-  // Open with 'rb', although in linux it equals to 'r'
+   // Open with 'rb', although in linux it equals to 'r'
 
   if (f)
     fclose(f);
@@ -87,19 +85,29 @@ bool NFmiGrib::Read() {
   GRIB_CHECK(grib_get_double(h,"latitudeOfFirstGridPointInDegrees",&itsLatitudeOfFirstGridPoint),0);
   GRIB_CHECK(grib_get_double(h,"longitudeOfFirstGridPointInDegrees",&itsLongitudeOfFirstGridPoint),0);
 
-  GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
-  GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
-
-  GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
-  GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
-
   GRIB_CHECK(grib_get_long(h,"stepUnits",&itsStepUnits),0);
   GRIB_CHECK(grib_get_long(h,"stepRange",&itsStepRange),0);
 
   GRIB_CHECK(grib_get_long(h,"level",&itsLevel),0);
 
-  GRIB_CHECK(grib_get_double(h,"iDirectionIncrementInDegrees",&itsXResolution),0);
-  GRIB_CHECK(grib_get_double(h,"jDirectionIncrementInDegrees",&itsYResolution),0);
+  switch (NormalizedGridType()) {
+    case 0: // Latlon or rot latlon
+    case 10:
+   	  GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
+      GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
+
+      GRIB_CHECK(grib_get_double(h,"iDirectionIncrementInDegrees",&itsXResolution),0);
+      GRIB_CHECK(grib_get_double(h,"jDirectionIncrementInDegrees",&itsYResolution),0);
+      break;
+
+    case 5: // Stereographic
+  	  GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
+   	  GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
+      break;
+
+    default:
+      break;
+  }
 
   if (itsEdition == 1) {
 
@@ -162,7 +170,7 @@ int NFmiGrib::CurrentMessageIndex() {
 
 double *NFmiGrib::Values() {
 
-  GRIB_CHECK(grib_get_size(h,"itsValues",&itsValuesLength),0);
+  GRIB_CHECK(grib_get_size(h,"values",&itsValuesLength),0);
 
   itsValues = (double*) malloc(itsValuesLength*sizeof(double));
 
