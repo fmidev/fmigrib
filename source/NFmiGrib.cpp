@@ -86,34 +86,17 @@ bool NFmiGrib::Read() {
   GRIB_CHECK(grib_get_double(h,"latitudeOfFirstGridPointInDegrees",&itsLatitudeOfFirstGridPoint),0);
   GRIB_CHECK(grib_get_double(h,"longitudeOfFirstGridPointInDegrees",&itsLongitudeOfFirstGridPoint),0);
 
+  // TODO: Copied from decode_grib_api, is this needed ?
+
+  if (itsLongitudeOfFirstGridPoint == 180)
+    itsLongitudeOfFirstGridPoint = -180;
+
   GRIB_CHECK(grib_get_long(h,"stepUnits",&itsStepUnits),0);
   GRIB_CHECK(grib_get_long(h,"stepRange",&itsStepRange),0);
 
   GRIB_CHECK(grib_get_long(h,"level",&itsLevel),0);
 
   GRIB_CHECK(grib_get_long(h,"bitmapPresent",&itsBitmapPresent),0);
-
-  // Projection-specific keys
-
-  int gridType = NormalizedGridType();
-
-  if (gridType == 0 || gridType == 10) { // latlon or rot latlon
-    GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
-    GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
-
-    GRIB_CHECK(grib_get_double(h,"iDirectionIncrementInDegrees",&itsXResolution),0);
-    GRIB_CHECK(grib_get_double(h,"jDirectionIncrementInDegrees",&itsYResolution),0);
-
-    if (gridType == 10) {
-      GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
-      GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
-    }
-  }
-  else if (gridType == 5) { // Stereographic
-    GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
-    GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
-    GRIB_CHECK(grib_get_double(h,"orientationOfTheGrid",&itsOrientationOfTheGrid),0);
-  }
 
   // Edition-specific keys
 
@@ -140,6 +123,32 @@ bool NFmiGrib::Read() {
   }
   else 
     throw std::runtime_error("Unknown grib edition");
+
+  // Projection-specific keys
+
+  int gridType = NormalizedGridType();
+
+  if (gridType == 0 || gridType == 10) { // latlon or rot latlon
+    GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
+    GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
+
+    GRIB_CHECK(grib_get_double(h,"iDirectionIncrementInDegrees",&itsXResolution),0);
+    GRIB_CHECK(grib_get_double(h,"jDirectionIncrementInDegrees",&itsYResolution),0);
+
+    if (gridType == 10) {
+      GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
+      GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
+    }
+  }
+  else if (gridType == 5) { // (polar) Stereographic
+    GRIB_CHECK(grib_get_double(h,"orientationOfTheGrid",&itsOrientationOfTheGrid),0);
+
+    GRIB_CHECK(grib_get_double(h,"yDirectionGridLengthInMetres",&itsYResolution),0);
+    GRIB_CHECK(grib_get_double(h,"xDirectionGridLengthInMetres",&itsXResolution),0);
+
+  }
+  else
+    throw std::runtime_error("Unsupported projection");
 
   return true;
 }
