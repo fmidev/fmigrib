@@ -90,24 +90,29 @@ bool NFmiGrib::Read() {
 
   GRIB_CHECK(grib_get_long(h,"level",&itsLevel),0);
 
-  switch (NormalizedGridType()) {
-    case 0: // Latlon or rot latlon
-    case 10:
-   	  GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
-      GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
+  // Projection-specific keys
 
-      GRIB_CHECK(grib_get_double(h,"iDirectionIncrementInDegrees",&itsXResolution),0);
-      GRIB_CHECK(grib_get_double(h,"jDirectionIncrementInDegrees",&itsYResolution),0);
-      break;
+  int gridType = NormalizedGridType();
 
-    case 5: // Stereographic
-  	  GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
-   	  GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
-      break;
+  if (gridType == 0 || gridType == 10) { // latlon or rot latlon
+    GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
+    GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
 
-    default:
-      break;
+    GRIB_CHECK(grib_get_double(h,"iDirectionIncrementInDegrees",&itsXResolution),0);
+    GRIB_CHECK(grib_get_double(h,"jDirectionIncrementInDegrees",&itsYResolution),0);
+
+    if (gridType == 10) {
+      GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
+      GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
+    }
   }
+  else if (gridType == 5) { // Stereographic
+    GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
+    GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
+    GRIB_CHECK(grib_get_double(h,"orientationOfTheGrid",&itsOrientationOfTheGrid),0);
+  }
+
+  // Edition-specific keys
 
   if (itsEdition == 1) {
 
@@ -224,6 +229,10 @@ long NFmiGrib::GridType() {
     return itsGridDefinitionTemplate;
 }
 
+double NFmiGrib::GridOrientation() {
+  return itsOrientationOfTheGrid;
+}
+
 /*
  * NormalizedGridType()
  *
@@ -325,6 +334,8 @@ void NFmiGrib::Clear() {
 
   itsXResolution = INVALID_VALUE;
   itsYResolution = INVALID_VALUE;
+
+  itsOrientationOfTheGrid = INVALID_VALUE;
 
 }
 

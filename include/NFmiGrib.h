@@ -52,6 +52,8 @@ class NFmiGrib {
 
     long Edition();
 
+    double GridOrientation();
+
   private:
 
     void Clear();
@@ -105,6 +107,8 @@ class NFmiGrib {
 
     double itsXResolution;
     double itsYResolution;
+
+    double itsOrientationOfTheGrid;
 
 }; 
 
