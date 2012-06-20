@@ -110,6 +110,7 @@ class NFmiGrib {
 
     double itsOrientationOfTheGrid;
 
+    long itsBitmapPresent;
 }; 
 
 #endif

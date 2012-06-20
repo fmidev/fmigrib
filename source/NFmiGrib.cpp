@@ -4,6 +4,7 @@
 // Should use const int ???
 
 #define INVALID_VALUE -999
+#define kFloatMissing 32700.f
 
 NFmiGrib::NFmiGrib() :
   h(0),
@@ -90,6 +91,8 @@ bool NFmiGrib::Read() {
 
   GRIB_CHECK(grib_get_long(h,"level",&itsLevel),0);
 
+  GRIB_CHECK(grib_get_long(h,"bitmapPresent",&itsBitmapPresent),0);
+
   // Projection-specific keys
 
   int gridType = NormalizedGridType();
@@ -174,6 +177,11 @@ int NFmiGrib::CurrentMessageIndex() {
  */
 
 double *NFmiGrib::Values() {
+
+  // Set missing value to kFloatMissing
+
+  if (itsBitmapPresent == 1)
+    GRIB_CHECK(grib_set_double(h,"missingValue",kFloatMissing),0);
 
   GRIB_CHECK(grib_get_size(h,"values",&itsValuesLength),0);
 
@@ -336,6 +344,7 @@ void NFmiGrib::Clear() {
   itsYResolution = INVALID_VALUE;
 
   itsOrientationOfTheGrid = INVALID_VALUE;
+  itsBitmapPresent = INVALID_VALUE;
 
 }
 
