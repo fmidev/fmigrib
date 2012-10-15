@@ -1,22 +1,21 @@
 #include "NFmiGrib.h"
 #include <stdexcept>
+#include <iostream>
 
-// Should use const int ???
-
-#define INVALID_VALUE -999
-#define kFloatMissing 32700.f
+const int INVALID_INT_VALUE = -999;
+const float kFloatMissing = 32700;
 
 NFmiGrib::NFmiGrib() :
   h(0),
   f(0),
-  itsMessageCount(-1),
-  itsCurrentMessage(-1) {}
+  itsMessageCount(0),
+  itsCurrentMessage(0) {}
 
 NFmiGrib::NFmiGrib(const std::string &theFileName) :
   h(0),
   f(0),
-  itsMessageCount(-1),
-  itsCurrentMessage(-1) {
+  itsMessageCount(0),
+  itsCurrentMessage(0) {
 
   Open(theFileName);
 }
@@ -40,14 +39,13 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   if (!(f = fopen(theFileName.c_str(), "rb")))
     return false;
 
+  if (grib_count_in_file(0, f, &itsMessageCount) != GRIB_SUCCESS)
+    return false;
+
   if (h)
     grib_handle_delete(h);
 
-  grib_multi_support_on(0);
-
-  if (grib_count_in_file(0, f, &itsMessageCount) != GRIB_SUCCESS) {
-    return false;
-  }
+  grib_multi_support_on(0); // Multigrib support on
 
   return true;
 }
@@ -119,10 +117,17 @@ bool NFmiGrib::Read() {
     GRIB_CHECK(grib_get_long(h,"parameterNumber",&itsParameterNumber),0);
 
     GRIB_CHECK(grib_get_long(h,"gridDefinitionTemplateNumber",&itsGridDefinitionTemplate),0);
-
+    GRIB_CHECK(grib_get_long(h,"forecastTime",&itsForecastTime),0);
   }
   else 
     throw std::runtime_error("Unknown grib edition");
+
+  size_t len = 255;
+  char name[1024];
+
+  GRIB_CHECK(grib_get_string(h, "parameterName", name, &len), 0);
+
+  itsParameterName = name;
 
   // Projection-specific keys
 
@@ -217,6 +222,10 @@ long NFmiGrib::DataTime() {
   return itsTime;
 }
 
+long NFmiGrib::ForecastTime() {
+  return itsForecastTime;
+}
+
 long NFmiGrib::ParameterNumber() {
 
   if (itsEdition == 1)
@@ -229,14 +238,18 @@ long NFmiGrib::ParameterCategory() {
   if (itsEdition == 2)
     return itsParameterCategory;
   else
-    return INVALID_VALUE;
+    return INVALID_INT_VALUE;
 }
 
 long NFmiGrib::ParameterDiscipline() {
   if (itsEdition == 2)
     return itsParameterDiscipline;
   else
-    return INVALID_VALUE;
+    return INVALID_INT_VALUE;
+}
+
+std::string NFmiGrib::ParameterName() {
+  return itsParameterName;
 }
 
 long NFmiGrib::GridType() {
@@ -309,52 +322,54 @@ double NFmiGrib::YResolution() {
 
 void NFmiGrib::Clear() {
 
-  itsEdition = INVALID_VALUE;
-  itsProcess = INVALID_VALUE;
-  itsCentre = INVALID_VALUE;
+  itsEdition = INVALID_INT_VALUE;
+  itsProcess = INVALID_INT_VALUE;
+  itsCentre = INVALID_INT_VALUE;
 
-  itsXSize = INVALID_VALUE;
-  itsYSize = INVALID_VALUE;
+  itsXSize = INVALID_INT_VALUE;
+  itsYSize = INVALID_INT_VALUE;
 
-  itsLatitudeOfFirstGridPoint = INVALID_VALUE;
-  itsLongitudeOfFirstGridPoint = INVALID_VALUE;
-  itsLatitudeOfLastGridPoint = INVALID_VALUE;
-  itsLongitudeOfLastGridPoint = INVALID_VALUE;
+  itsLatitudeOfFirstGridPoint = INVALID_INT_VALUE;
+  itsLongitudeOfFirstGridPoint = INVALID_INT_VALUE;
+  itsLatitudeOfLastGridPoint = INVALID_INT_VALUE;
+  itsLongitudeOfLastGridPoint = INVALID_INT_VALUE;
 
-  itsIScansNegatively = INVALID_VALUE;
-  itsJScansPositively = INVALID_VALUE;
+  itsIScansNegatively = INVALID_INT_VALUE;
+  itsJScansPositively = INVALID_INT_VALUE;
 
-  itsLatitudeOfSouthernPole = INVALID_VALUE;
-  itsLongitudeOfSouthernPole = INVALID_VALUE;
+  itsLatitudeOfSouthernPole = INVALID_INT_VALUE;
+  itsLongitudeOfSouthernPole = INVALID_INT_VALUE;
 
-  itsIndicatorOfParameter = INVALID_VALUE;
-  itsIndicatorOfTypeOfLevel = INVALID_VALUE;
+  itsIndicatorOfParameter = INVALID_INT_VALUE;
+  itsIndicatorOfTypeOfLevel = INVALID_INT_VALUE;
 
-  itsLevel = INVALID_VALUE;
-  itsDate = INVALID_VALUE;
-  itsTime = INVALID_VALUE;
+  itsLevel = INVALID_INT_VALUE;
+  itsDate = INVALID_INT_VALUE;
+  itsTime = INVALID_INT_VALUE;
 
-  itsStepUnits = INVALID_VALUE;
-  itsStepRange = INVALID_VALUE;
-  itsStartStep = INVALID_VALUE;
-  itsEndStep = INVALID_VALUE;
+  itsStepUnits = INVALID_INT_VALUE;
+  itsStepRange = INVALID_INT_VALUE;
+  itsStartStep = INVALID_INT_VALUE;
+  itsEndStep = INVALID_INT_VALUE;
 
-  itsGridType = INVALID_VALUE;
-  itsGridDefinitionTemplate = INVALID_VALUE;
+  itsGridType = INVALID_INT_VALUE;
+  itsGridDefinitionTemplate = INVALID_INT_VALUE;
 
-  itsValuesLength = INVALID_VALUE;
+  itsValuesLength = INVALID_INT_VALUE;
 
-  itsParameterDiscipline = INVALID_VALUE;
-  itsParameterCategory = INVALID_VALUE;
-  itsParameterNumber = INVALID_VALUE;
-  itsTypeOfFirstFixedSurface = INVALID_VALUE;
+  itsParameterDiscipline = INVALID_INT_VALUE;
+  itsParameterCategory = INVALID_INT_VALUE;
+  itsParameterNumber = INVALID_INT_VALUE;
+  itsTypeOfFirstFixedSurface = INVALID_INT_VALUE;
 
-  itsXResolution = INVALID_VALUE;
-  itsYResolution = INVALID_VALUE;
+  itsXResolution = INVALID_INT_VALUE;
+  itsYResolution = INVALID_INT_VALUE;
 
-  itsOrientationOfTheGrid = INVALID_VALUE;
-  itsBitmapPresent = INVALID_VALUE;
+  itsOrientationOfTheGrid = INVALID_INT_VALUE;
+  itsBitmapPresent = INVALID_INT_VALUE;
 
+  itsParameterName = "";
+  itsForecastTime = INVALID_INT_VALUE;
 }
 
 double NFmiGrib::X0() {
@@ -375,4 +390,11 @@ double NFmiGrib::SouthPoleY() {
 
 long NFmiGrib::Edition() {
   return itsEdition;
+}
+
+void NFmiGrib::MultiGribSupport(bool theMultiGribSupport) {
+  if (theMultiGribSupport)
+    grib_multi_support_on(0); // Multigrib support on
+  else
+    grib_multi_support_off(0); // Multigrib support on
 }

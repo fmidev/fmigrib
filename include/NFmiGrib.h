@@ -39,10 +39,13 @@ class NFmiGrib {
 
     long DataDate();
     long DataTime();
+    long ForecastTime();
 
     long ParameterNumber();
     long ParameterDiscipline();
     long ParameterCategory();
+
+    std::string ParameterName();
 
     long GridType();
     long NormalizedGridType();
@@ -53,6 +56,8 @@ class NFmiGrib {
     long Edition();
 
     double GridOrientation();
+
+    void MultiGribSupport(bool theMultiGribSupport);
 
   private:
 
@@ -89,6 +94,7 @@ class NFmiGrib {
     long itsLevel;
     long itsDate;
     long itsTime;
+    long itsForecastTime;
 
     long itsStepUnits;
     long itsStepRange;
@@ -103,6 +109,8 @@ class NFmiGrib {
     long itsParameterDiscipline;
     long itsParameterCategory;
     long itsParameterNumber;
+
+    std::string itsParameterName;
     long itsTypeOfFirstFixedSurface;
 
     double itsXResolution;
