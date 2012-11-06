@@ -11,6 +11,13 @@
 const long INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
 
+NFmiGribMessage::~NFmiGribMessage() {
+
+  if (itsHandle)
+    grib_handle_delete(itsHandle);
+
+}
+
 bool NFmiGribMessage::Read(grib_handle *h) {
 
   long t = 0;
@@ -193,6 +200,8 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   if (itsBitmapPresent == 1)
     GRIB_CHECK(grib_set_double(h,"missingValue",kFloatMissing),0);
 
+  itsHandle = grib_handle_clone(h);
+
   return true;
 }
 
@@ -207,10 +216,11 @@ bool NFmiGribMessage::Read(grib_handle *h) {
  */
 
 double *NFmiGribMessage::Values() {
+
   if (!itsValues) {
     itsValues = static_cast<double*> (malloc(itsValuesLength*sizeof(double)));
 
-    GRIB_CHECK(grib_get_double_array(h,"values",itsValues,&itsValuesLength),0);
+    GRIB_CHECK(grib_get_double_array(itsHandle,"values",itsValues,&itsValuesLength),0);
   }
 
   return itsValues;

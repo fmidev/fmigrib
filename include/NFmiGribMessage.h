@@ -16,7 +16,7 @@ class NFmiGribMessage {
   public:
 
 	NFmiGribMessage() { Clear(); }
-	~NFmiGribMessage() {}
+	~NFmiGribMessage();
 
 	bool Read(grib_handle *h);
 
@@ -168,6 +168,7 @@ class NFmiGribMessage {
     long itsNumberOfTimeRange;
     long itsTypeOfTimeIncrement;
 
+    grib_handle *itsHandle;
 };
 
 
