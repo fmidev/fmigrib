@@ -15,7 +15,7 @@ class NFmiGribMessage {
 
   public:
 
-	NFmiGribMessage() { Clear(); }
+	NFmiGribMessage();
 	~NFmiGribMessage();
 
 	bool Read(grib_handle *h);

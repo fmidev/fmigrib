@@ -18,6 +18,10 @@ NFmiGribMessage::~NFmiGribMessage() {
 
 }
 
+NFmiGribMessage::NFmiGribMessage() : itsHandle(0) {
+  Clear();
+}
+
 bool NFmiGribMessage::Read(grib_handle *h) {
 
   long t = 0;
@@ -200,7 +204,10 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   if (itsBitmapPresent == 1)
     GRIB_CHECK(grib_set_double(h,"missingValue",kFloatMissing),0);
 
-  itsHandle = grib_handle_clone(h);
+  if (itsHandle)
+    grib_handle_delete(itsHandle);
+
+  itsHandle = grib_handle_clone(h); // have to clone handle since data values are not returned until called
 
   return true;
 }
