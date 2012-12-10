@@ -199,11 +199,6 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 
   GRIB_CHECK(grib_get_size(h,"values",&itsValuesLength),0);
 
-  // Set missing value to kFloatMissing
-
-  if (itsBitmapPresent == 1)
-    GRIB_CHECK(grib_set_double(h,"missingValue",kFloatMissing),0);
-
   if (itsHandle)
     grib_handle_delete(itsHandle);
 
@@ -225,6 +220,11 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 double *NFmiGribMessage::Values() {
 
   if (!itsValues) {
+    // Set missing value to kFloatMissing
+
+    if (itsBitmapPresent == 1)
+      GRIB_CHECK(grib_set_double(itsHandle,"missingValue",kFloatMissing),0);
+
     itsValues = static_cast<double*> (malloc(itsValuesLength*sizeof(double)));
 
     GRIB_CHECK(grib_get_double_array(itsHandle,"values",itsValues,&itsValuesLength),0);
