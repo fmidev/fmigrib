@@ -7,9 +7,20 @@
 
 #include "NFmiGribMessage.h"
 #include <stdexcept>
+#include <boost/lexical_cast.hpp>
 
 const long INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
+
+NFmiGribMessage::NFmiGribMessage() {
+
+  itsHandle = grib_handle_new_from_template(NULL,"GRIB2");
+
+  if (!itsHandle)
+    throw std::runtime_error("Unable to create grib handle");
+
+  Clear();
+}
 
 NFmiGribMessage::~NFmiGribMessage() {
 
@@ -18,11 +29,13 @@ NFmiGribMessage::~NFmiGribMessage() {
 
 }
 
-NFmiGribMessage::NFmiGribMessage() : itsHandle(0) {
-  Clear();
-}
-
 bool NFmiGribMessage::Read(grib_handle *h) {
+
+  if (itsHandle) {
+	  grib_handle_delete(itsHandle);
+  }
+
+  itsHandle = grib_handle_clone(h); // have to clone handle since data values are not returned until called
 
   long t = 0;
 
@@ -30,33 +43,14 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 
   GRIB_CHECK(grib_get_long(h, "totalLength", &itsTotalLength), 0);
 
-  GRIB_CHECK(grib_get_long(h,"editionNumber",&itsEdition),0);
-  GRIB_CHECK(grib_get_long(h,"centre",&itsCentre),0);
-  GRIB_CHECK(grib_get_long(h,"generatingProcessIdentifier",&itsProcess),0);
-
   GRIB_CHECK(grib_get_long(h,"dataDate",&itsDate),0);
   GRIB_CHECK(grib_get_long(h,"dataTime",&itsTime),0);
-
-  GRIB_CHECK(grib_get_long(h,"Ni",&itsXSize),0);
-  GRIB_CHECK(grib_get_long(h,"Nj",&itsYSize),0);
 
   GRIB_CHECK(grib_get_long(h,"iScansNegatively",&itsIScansNegatively),0);
   GRIB_CHECK(grib_get_long(h,"jScansPositively",&itsJScansPositively),0);
 
-  GRIB_CHECK(grib_get_double(h,"latitudeOfFirstGridPointInDegrees",&itsLatitudeOfFirstGridPoint),0);
-  GRIB_CHECK(grib_get_double(h,"longitudeOfFirstGridPointInDegrees",&itsLongitudeOfFirstGridPoint),0);
-
-  // TODO: Copied from decode_grib_api, is this needed ?
-
-  if (itsLongitudeOfFirstGridPoint == 180)
-    itsLongitudeOfFirstGridPoint = -180;
-
   GRIB_CHECK(grib_get_long(h,"stepUnits",&itsStepUnits),0);
   GRIB_CHECK(grib_get_long(h,"stepRange",&itsStepRange),0);
-
-  GRIB_CHECK(grib_get_long(h,"level",&itsLevel),0);
-
-  GRIB_CHECK(grib_get_long(h,"bitmapPresent",&itsBitmapPresent),0);
 
   GRIB_CHECK(grib_get_long(h, "year", &itsYear), 0);
   GRIB_CHECK(grib_get_long(h, "month", &itsMonth), 0);
@@ -68,15 +62,12 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 
   // Edition-specific keys
 
-  if (itsEdition == 1) {
+  if (Edition() == 1) {
 
-    GRIB_CHECK(grib_get_long(h,"indicatorOfParameter",&itsIndicatorOfParameter),0);
     GRIB_CHECK(grib_get_long(h,"indicatorOfTypeOfLevel",&itsIndicatorOfTypeOfLevel),0);
 
     GRIB_CHECK(grib_get_long(h,"startStep",&itsStartStep),0);
     GRIB_CHECK(grib_get_long(h,"endStep",&itsEndStep),0);
-
-    GRIB_CHECK(grib_get_long(h,"dataRepresentationType",&itsGridType),0);
 
     GRIB_CHECK(grib_get_long(h,"table2Version", &itsTable2Version), 0);
 
@@ -91,14 +82,10 @@ bool NFmiGribMessage::Read(grib_handle *h) {
       itsDataType = t;
 
   }
-  else if (itsEdition == 2) {
+  else if (Edition() == 2) {
 
     GRIB_CHECK(grib_get_long(h,"typeOfFirstFixedSurface",&itsTypeOfFirstFixedSurface),0);
-    GRIB_CHECK(grib_get_long(h,"discipline",&itsParameterDiscipline),0);
-    GRIB_CHECK(grib_get_long(h,"parameterCategory",&itsParameterCategory),0);
-    GRIB_CHECK(grib_get_long(h,"parameterNumber",&itsParameterNumber),0);
 
-    GRIB_CHECK(grib_get_long(h,"gridDefinitionTemplateNumber",&itsGridDefinitionTemplate),0);
     GRIB_CHECK(grib_get_long(h,"forecastTime",&itsForecastTime),0);
 
     GRIB_CHECK(grib_get_long(h,"productDefinitionTemplateNumber", &itsLocalDefinitionNumber), 0);
@@ -160,36 +147,28 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   if (grib_get_long(h, "typeOfTimeIncrement", &t) == GRIB_SUCCESS)
     itsTypeOfTimeIncrement = t;
 
-
-  size_t len = 255;
-  char name[1024];
-
-  GRIB_CHECK(grib_get_string(h, "parameterName", name, &len), 0);
-
-  itsParameterName = name;
-
   // Projection-specific keys
 
   int gridType = NormalizedGridType();
 
   if (gridType == 0 || gridType == 10) { // latlon or rot latlon
-    GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
-    GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
+    //GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
+    //GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
 
     GRIB_CHECK(grib_get_double(h,"iDirectionIncrementInDegrees",&itsXResolution),0);
     GRIB_CHECK(grib_get_double(h,"jDirectionIncrementInDegrees",&itsYResolution),0);
 
     if (gridType == 10) {
-      GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
-      GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
+      //GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
+      //GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
     }
   }
   else if (gridType == 5) { // (polar) Stereographic
-    GRIB_CHECK(grib_get_double(h,"orientationOfTheGrid",&itsOrientationOfTheGrid),0);
-
+    //GRIB_CHECK(grib_get_double(h,"orientationOfTheGrid",&itsOrientationOfTheGrid),0);
+/*
     GRIB_CHECK(grib_get_double(h,"yDirectionGridLengthInMetres",&itsYResolution),0);
     GRIB_CHECK(grib_get_double(h,"xDirectionGridLengthInMetres",&itsXResolution),0);
-
+*/
   }
   else
     throw std::runtime_error("Unsupported projection");
@@ -222,7 +201,7 @@ double *NFmiGribMessage::Values() {
   if (!itsValues) {
     // Set missing value to kFloatMissing
 
-    if (itsBitmapPresent == 1)
+    if (Bitmap())
       GRIB_CHECK(grib_set_double(itsHandle,"missingValue",kFloatMissing),0);
 
     itsValues = static_cast<double*> (malloc(itsValuesLength*sizeof(double)));
@@ -231,6 +210,15 @@ double *NFmiGribMessage::Values() {
   }
 
   return itsValues;
+}
+
+void NFmiGribMessage::Values(const double* theValues, long theValuesLength) {
+
+  if (Bitmap())
+    GRIB_CHECK(grib_set_double(itsHandle,"missingValue",static_cast<double> (kFloatMissing)),0);
+
+  GRIB_CHECK(grib_set_long(itsHandle,"numberOfValues",theValuesLength),0);
+  GRIB_CHECK(grib_set_double_array(itsHandle,"values",theValues,theValuesLength),0);
 }
 
 int NFmiGribMessage::ValuesLength() {
@@ -250,47 +238,106 @@ long NFmiGribMessage::ForecastTime() {
 }
 
 long NFmiGribMessage::ParameterNumber() {
+  long l;
 
-  if (itsEdition == 1)
-    return itsIndicatorOfParameter;
-  else
-    return itsParameterNumber;
+  if (Edition() == 1) {
+    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfParameter",&l),0);
+  }
+  else {
+    GRIB_CHECK(grib_get_long(itsHandle,"parameterNumber",&l),0);
+  }
+
+  return l;
 }
 
 long NFmiGribMessage::ParameterCategory() {
-  if (itsEdition == 2)
-    return itsParameterCategory;
+  if (Edition() == 2) {
+	  long l;
+      GRIB_CHECK(grib_get_long(itsHandle,"parameterCategory",&l),0);
+      return l;
+  }
   else
     return INVALID_INT_VALUE;
 }
 
 long NFmiGribMessage::ParameterDiscipline() {
-  if (itsEdition == 2)
-    return itsParameterDiscipline;
+  if (Edition() == 2) {
+    long l;
+    GRIB_CHECK(grib_get_long(itsHandle,"discipline",&l),0);
+    return l;
+  }
   else
     return INVALID_INT_VALUE;
 }
 
+void NFmiGribMessage::ParameterNumber(long theNumber) {
+
+  if (Edition() == 1) {
+    GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfParameter",theNumber),0);
+  }
+  else {
+    GRIB_CHECK(grib_set_long(itsHandle,"parameterNumber",theNumber),0);
+  }
+}
+
+void NFmiGribMessage::ParameterCategory(long theCategory) {
+  GRIB_CHECK(grib_set_long(itsHandle,"parameterCategory",theCategory),0);
+}
+
+void NFmiGribMessage::ParameterDiscipline(long theDiscipline) {
+  GRIB_CHECK(grib_set_long(itsHandle,"discipline",theDiscipline),0);
+}
+
 std::string NFmiGribMessage::ParameterName() {
-  return itsParameterName;
+  size_t len = 255;
+  char name[1024];
+
+  GRIB_CHECK(grib_get_string(itsHandle, "parameterName", name, &len), 0);
+
+  return std::string(name);
 }
 
 long NFmiGribMessage::GridType() {
-  if (itsEdition == 1)
-    return itsGridType;
+  long l;
+
+  if (Edition() == 1)
+    GRIB_CHECK(grib_get_long(itsHandle,"dataRepresentationType",&l),0);
   else
-    return itsGridDefinitionTemplate;
+    GRIB_CHECK(grib_get_long(itsHandle,"gridDefinitionTemplateNumber",&l),0);
+
+  return l;
+}
+
+void NFmiGribMessage::GridType(long theGridType) {
+  if (Edition() == 1)
+    GRIB_CHECK(grib_set_long(itsHandle,"dataRepresentationType",theGridType),0);
+  else
+    GRIB_CHECK(grib_set_long(itsHandle,"gridDefinitionTemplateNumber",theGridType),0);
 }
 
 double NFmiGribMessage::GridOrientation() {
-  return itsOrientationOfTheGrid;
+  double d;
+  GRIB_CHECK(grib_get_double(itsHandle,"orientationOfTheGridInDegrees",&d),0);
+  return d;
+}
+
+void NFmiGribMessage::GridOrientation(double theOrientation) {
+  GRIB_CHECK(grib_set_double(itsHandle,"orientationOfTheGridInDegrees",theOrientation),0);
 }
 
 long NFmiGribMessage::LevelType() {
-  if (itsEdition == 2)
+  if (Edition() == 2)
     return itsTypeOfFirstFixedSurface;
   else
     return itsIndicatorOfTypeOfLevel;
+}
+
+long NFmiGribMessage::LevelValue() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"level",&l),0);
+
+  return l;
 }
 
 double NFmiGribMessage::XResolution() {
@@ -313,53 +360,27 @@ void NFmiGribMessage::Clear() {
   itsValues = 0;
   itsValuesLength = 0;
 
-  itsEdition = INVALID_INT_VALUE;
-  itsProcess = INVALID_INT_VALUE;
-  itsCentre = INVALID_INT_VALUE;
-
-  itsXSize = INVALID_INT_VALUE;
-  itsYSize = INVALID_INT_VALUE;
-
-  itsLatitudeOfFirstGridPoint = INVALID_INT_VALUE;
-  itsLongitudeOfFirstGridPoint = INVALID_INT_VALUE;
-  itsLatitudeOfLastGridPoint = INVALID_INT_VALUE;
-  itsLongitudeOfLastGridPoint = INVALID_INT_VALUE;
-
   itsIScansNegatively = INVALID_INT_VALUE;
   itsJScansPositively = INVALID_INT_VALUE;
 
-  itsLatitudeOfSouthernPole = INVALID_INT_VALUE;
-  itsLongitudeOfSouthernPole = INVALID_INT_VALUE;
-
-  itsIndicatorOfParameter = INVALID_INT_VALUE;
   itsIndicatorOfTypeOfLevel = INVALID_INT_VALUE;
 
-  itsLevel = INVALID_INT_VALUE;
   itsDate = INVALID_INT_VALUE;
   itsTime = INVALID_INT_VALUE;
 
+  /*
   itsStepUnits = INVALID_INT_VALUE;
   itsStepRange = INVALID_INT_VALUE;
   itsStartStep = INVALID_INT_VALUE;
   itsEndStep = INVALID_INT_VALUE;
-
-  itsGridType = INVALID_INT_VALUE;
-  itsGridDefinitionTemplate = INVALID_INT_VALUE;
-
+*/
   itsValuesLength = INVALID_INT_VALUE;
 
-  itsParameterDiscipline = INVALID_INT_VALUE;
-  itsParameterCategory = INVALID_INT_VALUE;
-  itsParameterNumber = INVALID_INT_VALUE;
   itsTypeOfFirstFixedSurface = INVALID_INT_VALUE;
 
   itsXResolution = INVALID_INT_VALUE;
   itsYResolution = INVALID_INT_VALUE;
 
-  itsOrientationOfTheGrid = INVALID_INT_VALUE;
-  itsBitmapPresent = INVALID_INT_VALUE;
-
-  itsParameterName = "";
   itsForecastTime = INVALID_INT_VALUE;
 
   itsTotalLength = INVALID_INT_VALUE;
@@ -388,31 +409,120 @@ void NFmiGribMessage::Clear() {
 }
 
 double NFmiGribMessage::X0() {
-  return itsLongitudeOfFirstGridPoint;
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"longitudeOfFirstGridPointInDegrees",&l),0);
+
+  return l;
 }
 
 double NFmiGribMessage::Y0() {
-  return itsLatitudeOfFirstGridPoint;
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"latitudeOfFirstGridPointInDegrees",&l),0);
+
+  return l;
+}
+
+void NFmiGribMessage::X0(double theX0) {
+  GRIB_CHECK(grib_set_double(itsHandle,"longitudeOfFirstGridPointInDegrees",theX0),0);
+}
+
+void NFmiGribMessage::Y0(double theY0) {
+  GRIB_CHECK(grib_set_double(itsHandle,"latitudeOfFirstGridPointInDegrees",theY0),0);
+}
+
+double NFmiGribMessage::X1() {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"longitudeOfLastGridPointInDegrees",&l),0);
+
+  return l;
+}
+
+double NFmiGribMessage::Y1() {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"latitudeOfLastGridPointInDegrees",&l),0);
+
+  return l;
+}
+
+void NFmiGribMessage::X1(double theX1) {
+  GRIB_CHECK(grib_set_double(itsHandle,"longitudeOfLastGridPointInDegrees",theX1),0);
+}
+
+void NFmiGribMessage::Y1(double theY1) {
+  GRIB_CHECK(grib_set_double(itsHandle,"latitudeOfLastGridPointInDegrees",theY1),0);
 }
 
 double NFmiGribMessage::SouthPoleX() {
-  return itsLongitudeOfSouthernPole;
+  double d;
+
+  GRIB_CHECK(grib_get_double(itsHandle,"longitudeOfSouthernPoleInDegrees",&d),0);
+  return d;
 }
 
 double NFmiGribMessage::SouthPoleY() {
-  return itsLatitudeOfSouthernPole;
+  double d;
+
+  GRIB_CHECK(grib_get_double(itsHandle,"latitudeOfSouthernPoleInDegrees",&d),0);
+  return d;
 }
 
 long NFmiGribMessage::Edition() {
-  return itsEdition;
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"editionNumber",&l),0);
+
+  return l;
+}
+
+void NFmiGribMessage::Edition(long theEdition) {
+  GRIB_CHECK(grib_set_long(itsHandle,"editionNumber",theEdition),0);
+}
+
+long NFmiGribMessage::Process() {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"generatingProcessIdentifier",&l),0);
+
+  return l;
+}
+
+long NFmiGribMessage::Centre() {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"centre",&l),0);
+
+  return l;
+}
+
+void NFmiGribMessage::Centre(long theCentre) {
+	GRIB_CHECK(grib_set_long(itsHandle,"centre",theCentre),0);
 }
 
 long NFmiGribMessage::SizeX() {
-  return itsXSize;
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"Ni",&l),0);
+
+  return l;
 }
 
 long NFmiGribMessage::SizeY() {
-  return itsYSize;
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"Nj",&l),0);
+  return l;
+}
+
+void NFmiGribMessage::SizeX(long theXSize) {
+  GRIB_CHECK(grib_set_long(itsHandle, "Ni", theXSize), 0);
+}
+
+void NFmiGribMessage::SizeY(long theYSize) {
+  GRIB_CHECK(grib_set_long(itsHandle, "Nj", theYSize), 0);
 }
 
 /*
@@ -426,7 +536,7 @@ long NFmiGribMessage::NormalizedLevelType() {
 
   long type;
 
-  if (itsEdition == 1)
+  if (Edition() == 1)
     type = itsIndicatorOfTypeOfLevel;
 
   else {
@@ -477,7 +587,7 @@ long NFmiGribMessage::NormalizedGridType() {
 
   long type;
 
-  if (itsEdition == 1)
+  if (Edition() == 1)
     type = GridType();
 
   else {
@@ -506,4 +616,88 @@ long NFmiGribMessage::NormalizedGridType() {
   }
 
   return type;
+}
+
+void NFmiGribMessage::StartStep(long theStartStep) {
+  GRIB_CHECK(grib_set_long(itsHandle,"startStep",theStartStep),0);
+}
+
+void NFmiGribMessage::EndStep(long theEndStep) {
+  GRIB_CHECK(grib_set_long(itsHandle,"endStep",theEndStep),0);
+}
+
+void NFmiGribMessage::Year(const std::string& theYear) {
+  GRIB_CHECK(grib_set_long(itsHandle,"year",boost::lexical_cast<long> (theYear)),0);
+}
+
+void NFmiGribMessage::Month(const std::string& theMonth) {
+  GRIB_CHECK(grib_set_long(itsHandle,"month",boost::lexical_cast<long> (theMonth)),0);
+}
+
+void NFmiGribMessage::Day(const std::string& theDay) {
+  GRIB_CHECK(grib_set_long(itsHandle,"day",boost::lexical_cast<long> (theDay)),0);
+}
+
+void NFmiGribMessage::Hour(const std::string& theHour) {
+  GRIB_CHECK(grib_set_long(itsHandle,"hour",boost::lexical_cast<long> (theHour)),0);
+}
+
+void NFmiGribMessage::Minute(const std::string& theMinute) {
+  GRIB_CHECK(grib_set_long(itsHandle,"minute",boost::lexical_cast<long> (theMinute)),0);
+}
+
+void NFmiGribMessage::Second(const std::string& theSecond) {
+  GRIB_CHECK(grib_set_long(itsHandle,"second",boost::lexical_cast<long> (theSecond)),0);
+}
+
+bool NFmiGribMessage::Bitmap() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"bitmapPresent",&l), 0);
+
+  return static_cast<bool> (l);
+}
+
+void NFmiGribMessage::Bitmap(bool theBitmap) {
+  //GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent",static_cast<int> (theBitmap)), 0);
+  if (theBitmap)
+    GRIB_CHECK(grib_set_long(itsHandle,"bitMapIndicator", 0), 0);
+  else
+    GRIB_CHECK(grib_set_long(itsHandle,"bitMapIndicator", 255), 0);
+}
+
+void NFmiGribMessage::PackingType(const std::string& thePackingType)
+{
+  // Should probably check edition -- v2 has more packing types
+
+  size_t len = thePackingType.length();
+  GRIB_CHECK(grib_set_string(itsHandle, "packingType", thePackingType.c_str(), &len), 0);
+
+}
+
+std::string NFmiGribMessage::PackingType() const
+{
+  size_t len = 255;
+  char type[1024];
+
+  GRIB_CHECK(grib_get_string(itsHandle, "packingType", type, &len), 0);
+
+  return std::string(type);
+
+}
+
+void NFmiGribMessage::XLengthInMeters(double theLength) {
+  GRIB_CHECK(grib_set_double(itsHandle,"xDirectionGridLengthInMetres",theLength),0);
+}
+
+void NFmiGribMessage::YLengthInMeters(double theLength) {
+  GRIB_CHECK(grib_set_double(itsHandle,"yDirectionGridLengthInMetres",theLength),0);
+}
+
+bool NFmiGribMessage::Write(const std::string &theFileName) {
+  // Assume we have required directory structure in place
+
+  GRIB_CHECK(grib_write_message(itsHandle, theFileName.c_str(), "w"), 0);
+
+  return true;
 }

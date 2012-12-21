@@ -10,6 +10,7 @@
 #include <string>
 #include <grib_api.h>
 #include "NFmiGribMessage.h"
+#include <memory>
 
 class NFmiGrib {
 
@@ -28,7 +29,7 @@ class NFmiGrib {
     void MultiGribSupport(bool theMultiGribSupport);
     bool WriteMessage(const std::string &theFileName);
 
-    NFmiGribMessage* Message() { return m; }
+    std::shared_ptr<NFmiGribMessage> Message() { return m; }
 
   private:
 
@@ -38,7 +39,7 @@ class NFmiGrib {
     int itsMessageCount;
     int itsCurrentMessage;
 
-    NFmiGribMessage *m;
+    std::shared_ptr<NFmiGribMessage> m;
 
 }; 
 

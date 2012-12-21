@@ -9,21 +9,19 @@ NFmiGrib::NFmiGrib() :
   h(0),
   f(0),
   itsMessageCount(0),
-  itsCurrentMessage(0),
-  m(0)
+  itsCurrentMessage(0)
 {
-  m = new NFmiGribMessage;
+  m = std::shared_ptr<NFmiGribMessage> (new NFmiGribMessage());
 }
 
 NFmiGrib::NFmiGrib(const std::string &theFileName) :
   h(0),
   f(0),
   itsMessageCount(0),
-  itsCurrentMessage(0),
-  m(0)
-  {
+  itsCurrentMessage(0)
+{
 
-  m = new NFmiGribMessage;
+  m = std::shared_ptr<NFmiGribMessage> (new NFmiGribMessage());
   Open(theFileName);
 }
 
@@ -34,9 +32,6 @@ NFmiGrib::~NFmiGrib() {
 
   if (f)
     fclose(f);
-
-  if (m)
-    delete m;
 
 }
 
