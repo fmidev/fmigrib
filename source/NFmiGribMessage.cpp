@@ -490,6 +490,10 @@ long NFmiGribMessage::Process() {
   return l;
 }
 
+void NFmiGribMessage::Process(long theProcess) {
+  GRIB_CHECK(grib_set_long(itsHandle,"generatingProcessIdentifier",theProcess),0);
+}
+
 long NFmiGribMessage::Centre() {
   long l;
 
