@@ -25,61 +25,61 @@ class NFmiGribMessage {
 
 	bool Read(grib_handle *h);
 
-    long SizeX();
-    long SizeY();
+    long SizeX() const;
+    long SizeY() const;
     //long SizeZ();
 
     void SizeX(long theXSize);
     void SizeY(long theYSize);
     //void SizeZ();
 
-    double X0();
-    double Y0();
+    double X0() const;
+    double Y0() const;
 
     void X0(double theX0);
     void Y0(double theY0);
 
-    double X1();
-    double Y1();
+    double X1() const;
+    double Y1() const;
 
     void X1(double theX1);
     void Y1(double theY1);
 
-    double SouthPoleX();
-    double SouthPoleY();
+    double SouthPoleX() const;
+    double SouthPoleY() const;
 
-    double *Values();
+    double *Values() ;
     void Values(const double* theValues, long theValuesLength);
 
-    int ValuesLength();
+    int ValuesLength() const;
 
-    long DataDate();
-    long DataTime();
-    long ForecastTime();
+    long DataDate() const;
+    long DataTime() const;
+    long ForecastTime() const;
 
-    long ParameterNumber();
-    long ParameterDiscipline();
-    long ParameterCategory();
+    long ParameterNumber() const;
+    long ParameterDiscipline() const;
+    long ParameterCategory() const;
 
     void ParameterNumber(long theNumber);
     void ParameterDiscipline(long theDiscipline);
     void ParameterCategory(long theCategory);
 
-    std::string ParameterName();
+    std::string ParameterName() const;
 
-    long GridType();
+    long GridType() const;
     void GridType(long theGridType);
 
-    double XResolution();
-    double YResolution();
+    double XResolution() const;
+    double YResolution() const;
 
-    long Edition();
+    long Edition() const;
     void Edition(long theEdition);
 
-    double GridOrientation();
+    double GridOrientation() const;
     void GridOrientation(double theGridOrientation);
 
-    long Centre();
+    long Centre() const;
     void Centre(long theCentre);
 
     long Year() { return itsYear; }
@@ -88,18 +88,16 @@ class NFmiGribMessage {
     long Hour() { return itsHour; }
     long Minute() { return itsMinute; }
 
-    long Process();
+    long Process() const;
     void Process(long theProcess);
 
     long Table2Version() { return itsTable2Version; }
-    long LevelType();
-    //long Level() { return itsLevel; }
 
     long DataType() { return itsDataType; }
     long PerturbationNumber() { return itsPerturbationNumber; }
 
-    long NormalizedGridType();
-    long NormalizedLevelType();
+    long NormalizedGridType() const;
+    long NormalizedLevelType() const;
 
     long LocalDefinitionNumber() { return itsLocalDefinitionNumber; }
     long DerivedForecast() { return itsDerivedForecast; }
@@ -113,16 +111,16 @@ class NFmiGribMessage {
     long NumberOfTimeRange() { return itsNumberOfTimeRange; }
     long TypeOfTimeIncrement() { return itsTypeOfTimeIncrement; }
 
-    long StartStep() { return itsStartStep; }
+    long StartStep() const { return itsStartStep; }
     void StartStep(long theStartStep);
 
-    long EndStep() { return itsEndStep; }
+    long EndStep() const { return itsEndStep; }
     void EndStep(long theEndStep);
 
-    long StepUnits() { return itsStepUnits; }
-    long StepRange() { return itsStepRange; }
+    long StepUnits() const { return itsStepUnits; }
+    long StepRange() const { return itsStepRange; }
 
-    long TimeRangeIndicator() { return itsTimeRangeIndicator; }
+    long TimeRangeIndicator() const { return itsTimeRangeIndicator; }
 
     bool Write(const std::string& theOutputFile);
 
@@ -140,6 +138,10 @@ class NFmiGribMessage {
     std::string PackingType() const;
 
     long LevelValue() const;
+    void LevelValue(long theLevelValue);
+
+    long LevelType() const;
+    void LevelType(long theLevelType);
 
     // Are these valid ?
     void XLengthInMeters(double theLength);
@@ -148,12 +150,8 @@ class NFmiGribMessage {
   private:
     void Clear();
 
-    double *itsValues;
-
     long itsIScansNegatively;
     long itsJScansPositively;
-
-    long itsIndicatorOfTypeOfLevel;
 
     long itsDate;
     long itsTime;
@@ -165,8 +163,6 @@ class NFmiGribMessage {
     long itsEndStep;
 
     size_t itsValuesLength;
-
-    long itsTypeOfFirstFixedSurface;
 
     double itsXResolution;
     double itsYResolution;
