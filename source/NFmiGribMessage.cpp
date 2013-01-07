@@ -46,8 +46,6 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   GRIB_CHECK(grib_get_long(h,"dataDate",&itsDate),0);
   GRIB_CHECK(grib_get_long(h,"dataTime",&itsTime),0);
 
-  GRIB_CHECK(grib_get_long(h,"iScansNegatively",&itsIScansNegatively),0);
-  GRIB_CHECK(grib_get_long(h,"jScansPositively",&itsJScansPositively),0);
 
   GRIB_CHECK(grib_get_long(h,"stepUnits",&itsStepUnits),0);
   GRIB_CHECK(grib_get_long(h,"stepRange",&itsStepRange),0);
@@ -375,9 +373,6 @@ void NFmiGribMessage::Clear() {
 
   itsValuesLength = 0;
 
-  itsIScansNegatively = INVALID_INT_VALUE;
-  itsJScansPositively = INVALID_INT_VALUE;
-
   itsDate = INVALID_INT_VALUE;
   itsTime = INVALID_INT_VALUE;
 
@@ -509,6 +504,23 @@ long NFmiGribMessage::Centre() const {
 
 void NFmiGribMessage::Centre(long theCentre) {
 	GRIB_CHECK(grib_set_long(itsHandle,"centre",theCentre),0);
+}
+
+
+bool NFmiGribMessage::IScansNegatively() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"iScansNegatively",&l),0);
+
+  return (l == 1);
+}
+
+bool NFmiGribMessage::JScansPositively() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"jScansPositively",&l),0);
+
+  return (l == 1);
 }
 
 long NFmiGribMessage::SizeX() const {

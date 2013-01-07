@@ -143,15 +143,15 @@ class NFmiGribMessage {
     long LevelType() const;
     void LevelType(long theLevelType);
 
+    bool IScansNegatively() const;
+    bool JScansPositively() const;
+
     // Are these valid ?
     void XLengthInMeters(double theLength);
     void YLengthInMeters(double theLength);
 
   private:
     void Clear();
-
-    long itsIScansNegatively;
-    long itsJScansPositively;
 
     long itsDate;
     long itsTime;
