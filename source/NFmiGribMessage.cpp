@@ -20,6 +20,29 @@ NFmiGribMessage::NFmiGribMessage() {
     throw std::runtime_error("Unable to create grib handle");
 
   Clear();
+
+  typedef boost::bimap<long,long>::value_type element;
+
+  // GRIB1 <--> GRIB2
+
+  itsGridTypeMap.insert(element(0,0)); // ll
+  itsGridTypeMap.insert(element(10,1)); // rll
+  itsGridTypeMap.insert(element(20,2)); // stretched ll
+  itsGridTypeMap.insert(element(30,3)); // stretched rll
+  itsGridTypeMap.insert(element(5,20)); // polar stereographic
+  itsGridTypeMap.insert(element(3,30)); // lambert conformal
+  itsGridTypeMap.insert(element(4,40)); // gaussian ll
+
+  // GRIB1 <--> GRIB2
+
+  itsLevelTypeMap.insert(element(100,100)); // isobaric
+  itsLevelTypeMap.insert(element(160,160)); // depth below sea
+  itsLevelTypeMap.insert(element(102,101)); // mean sea
+  itsLevelTypeMap.insert(element(103,102)); // specific altitude above mean-sea level
+  itsLevelTypeMap.insert(element(105,103)); // specified height above ground
+  itsLevelTypeMap.insert(element(109,105)); // hybrid
+  itsLevelTypeMap.insert(element(111,106)); // depth below land surface
+
 }
 
 NFmiGribMessage::~NFmiGribMessage() {
@@ -66,8 +89,6 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 
     GRIB_CHECK(grib_get_long(h,"startStep",&itsStartStep),0);
     GRIB_CHECK(grib_get_long(h,"endStep",&itsEndStep),0);
-
-    GRIB_CHECK(grib_get_long(h,"table2Version", &itsTable2Version), 0);
 
     t = 0;
 
@@ -546,6 +567,17 @@ void NFmiGribMessage::SizeY(long theYSize) {
   GRIB_CHECK(grib_set_long(itsHandle, "Nj", theYSize), 0);
 }
 
+long NFmiGribMessage::Table2Version() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"table2Version",&l),0);
+  return l;
+}
+
+void NFmiGribMessage::Table2Version(long theVersion) {
+  GRIB_CHECK(grib_set_long(itsHandle, "table2Version", theVersion), 0);
+}
+
 /*
  * NormalizedLevelType()
  *
@@ -553,50 +585,70 @@ void NFmiGribMessage::SizeY(long theYSize) {
  * when that's possible.
  */
 
-long NFmiGribMessage::NormalizedLevelType() const {
+long NFmiGribMessage::NormalizedLevelType(unsigned int targetEdition) const {
 
-  long type;
   long rawtype = LevelType();
 
-  if (Edition() == 1)
-    type = rawtype;
-
+  if (Edition() == targetEdition) {
+    return rawtype;
+  }
   else {
-    switch (rawtype) {
-      case 100: // isobaric
-      case 160: // depth below sea level
-        type = rawtype;
-        break;
+    return LevelTypeToAnotherEdition(rawtype, targetEdition);
+  }
 
-      case 101: // mean sea
-    	type = 102;
-    	break;
+}
 
-      case 102: // specific altitude above mean-sea level
-    	type = 103;
-    	break;
+long NFmiGribMessage::LevelTypeToAnotherEdition(long levelType, long targetEdition) const {
 
-      case 103: // specified height above ground
-    	type = 105;
-    	break;
+  size_t i = 0;
 
-      case 105: // hybrid
-        type = 109;
-        break;
-
-      case 106: // depth below land surface
-    	 type = 111;
-    	 break;
-
-      default:
-         type = rawtype;
-         break;
-
+  if (targetEdition == 1)  {
+    while (i < itsLevelTypeMap.size()) {
+      if (levelType == itsLevelTypeMap.left.at(i)) {
+			  return itsLevelTypeMap.right.at(i);
+      }
+      i++;
+    }
+  }
+  else if (targetEdition == 2) {
+    while (i < itsLevelTypeMap.size()) {
+      if (levelType == itsLevelTypeMap.right.at(i)) {
+        return itsLevelTypeMap.left.at(i);
+      }
+      i++;
     }
   }
 
-  return type;
+  return INVALID_INT_VALUE;
+
 }
+
+long NFmiGribMessage::GridTypeToAnotherEdition(long gridType, long targetEdition) const {
+
+  size_t i = 0;
+
+  if (targetEdition == 1)  {
+    while (i < itsGridTypeMap.size()) {
+      if (gridType == itsGridTypeMap.left.at(i)) {
+			  return itsGridTypeMap.right.at(i);
+      }
+      i++;
+    }
+  }
+  else if (targetEdition == 2) {
+    while (i < itsGridTypeMap.size()) {
+      if (gridType == itsGridTypeMap.right.at(i)) {
+        return itsGridTypeMap.left.at(i);
+      }
+      i++;
+    }
+  }
+
+  return INVALID_INT_VALUE;
+
+}
+
+
 
 /*
  * NormalizedGridType()
@@ -605,39 +657,17 @@ long NFmiGribMessage::NormalizedLevelType() const {
  * when that's possible.
  */
 
-long NFmiGribMessage::NormalizedGridType() const {
+long NFmiGribMessage::NormalizedGridType(unsigned int targetEdition) const {
 
-  long type;
+  long rawtype = GridType();
 
-  if (Edition() == 1)
-    type = GridType();
-
+  if (Edition() == targetEdition) {
+    return rawtype;
+  }
   else {
-    switch (GridType()) {
-      case 0: // ll
-      case 1: // rll
-      case 2: // stretched ll
-      case 3: // stretched rll
-        type = 10 * GridType();
-        break;
-
-      case 20: // polar stereographic
-        type = 5;
-        break;
-
-      case 30: // lambert conformal
-      case 40: // gaussian ll
-      	type = GridType() / 10;
-        break;
-
-      default:
-         type = GridType();
-         break;
-
-    }
+    return GridTypeToAnotherEdition(rawtype, targetEdition);
   }
 
-  return type;
 }
 
 void NFmiGribMessage::StartStep(long theStartStep) {

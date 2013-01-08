@@ -15,6 +15,7 @@
 
 #include <grib_api.h>
 #include <string>
+#include <boost/bimap.hpp>
 
 class NFmiGribMessage {
 
@@ -91,13 +92,14 @@ class NFmiGribMessage {
     long Process() const;
     void Process(long theProcess);
 
-    long Table2Version() { return itsTable2Version; }
+    long Table2Version() const;
+    void Table2Version(long theVersion);
 
     long DataType() { return itsDataType; }
     long PerturbationNumber() { return itsPerturbationNumber; }
 
-    long NormalizedGridType() const;
-    long NormalizedLevelType() const;
+    long NormalizedGridType(unsigned int targetEdition = 1) const;
+    long NormalizedLevelType(unsigned int targetEdition = 1) const;
 
     long LocalDefinitionNumber() { return itsLocalDefinitionNumber; }
     long DerivedForecast() { return itsDerivedForecast; }
@@ -150,6 +152,9 @@ class NFmiGribMessage {
     void XLengthInMeters(double theLength);
     void YLengthInMeters(double theLength);
 
+    long GridTypeToAnotherEdition(long gridType, long edition) const;
+    long LevelTypeToAnotherEdition(long levelType, long edition) const;
+
   private:
     void Clear();
 
@@ -192,6 +197,9 @@ class NFmiGribMessage {
     long itsTypeOfTimeIncrement;
 
     grib_handle *itsHandle;
+
+    boost::bimap<long,long> itsGridTypeMap;
+    boost::bimap<long,long> itsLevelTypeMap;
 };
 
 #endif /* NFMIGRIBMESSAGE_H_ */
