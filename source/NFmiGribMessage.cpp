@@ -430,19 +430,19 @@ void NFmiGribMessage::Clear() {
 }
 
 double NFmiGribMessage::X0() const {
-  long l;
+  double d;
 
-  GRIB_CHECK(grib_get_long(itsHandle,"longitudeOfFirstGridPointInDegrees",&l),0);
+  GRIB_CHECK(grib_get_double(itsHandle,"longitudeOfFirstGridPointInDegrees",&d),0);
 
-  return l;
+  return d;
 }
 
 double NFmiGribMessage::Y0() const {
-  long l;
+  double d;
 
-  GRIB_CHECK(grib_get_long(itsHandle,"latitudeOfFirstGridPointInDegrees",&l),0);
+  GRIB_CHECK(grib_get_double(itsHandle,"latitudeOfFirstGridPointInDegrees",&d),0);
 
-  return l;
+  return d;
 }
 
 void NFmiGribMessage::X0(double theX0) {
@@ -454,19 +454,19 @@ void NFmiGribMessage::Y0(double theY0) {
 }
 
 double NFmiGribMessage::X1() const {
-  long l;
+  double d;
 
-  GRIB_CHECK(grib_get_long(itsHandle,"longitudeOfLastGridPointInDegrees",&l),0);
+  GRIB_CHECK(grib_get_double(itsHandle,"longitudeOfLastGridPointInDegrees",&d),0);
 
-  return l;
+  return d;
 }
 
 double NFmiGribMessage::Y1() const {
-  long l;
+  double d;
 
-  GRIB_CHECK(grib_get_long(itsHandle,"latitudeOfLastGridPointInDegrees",&l),0);
+  GRIB_CHECK(grib_get_double(itsHandle,"latitudeOfLastGridPointInDegrees",&d),0);
 
-  return l;
+  return d;
 }
 
 void NFmiGribMessage::X1(double theX1) {
@@ -600,23 +600,20 @@ long NFmiGribMessage::NormalizedLevelType(unsigned int targetEdition) const {
 
 long NFmiGribMessage::LevelTypeToAnotherEdition(long levelType, long targetEdition) const {
 
-  size_t i = 0;
+  for (boost::bimap<long,long>::const_iterator iter = itsLevelTypeMap.begin(), iend = itsLevelTypeMap.end();
+      iter != iend; ++iter )
+  {
+      // iter->left  : grib1
+      // iter->right : grib2
 
-  if (targetEdition == 1)  {
-    while (i < itsLevelTypeMap.size()) {
-      if (levelType == itsLevelTypeMap.left.at(i)) {
-			  return itsLevelTypeMap.right.at(i);
-      }
-      i++;
-    }
-  }
-  else if (targetEdition == 2) {
-    while (i < itsLevelTypeMap.size()) {
-      if (levelType == itsLevelTypeMap.right.at(i)) {
-        return itsLevelTypeMap.left.at(i);
-      }
-      i++;
-    }
+	  if (targetEdition == 1 && iter->right == levelType)
+	  {
+		  return iter->left;
+	  }
+	  else if (targetEdition == 2 && iter->left == levelType)
+	  {
+		  return iter->right;
+	  }
   }
 
   return INVALID_INT_VALUE;
@@ -625,23 +622,20 @@ long NFmiGribMessage::LevelTypeToAnotherEdition(long levelType, long targetEditi
 
 long NFmiGribMessage::GridTypeToAnotherEdition(long gridType, long targetEdition) const {
 
-  size_t i = 0;
+  for (boost::bimap<long,long>::const_iterator iter = itsGridTypeMap.begin(), iend = itsGridTypeMap.end();
+	  iter != iend; ++iter )
+  {
+	  // iter->left  : grib1
+	  // iter->right : grib2
 
-  if (targetEdition == 1)  {
-    while (i < itsGridTypeMap.size()) {
-      if (gridType == itsGridTypeMap.left.at(i)) {
-			  return itsGridTypeMap.right.at(i);
-      }
-      i++;
-    }
-  }
-  else if (targetEdition == 2) {
-    while (i < itsGridTypeMap.size()) {
-      if (gridType == itsGridTypeMap.right.at(i)) {
-        return itsGridTypeMap.left.at(i);
-      }
-      i++;
-    }
+	  if (targetEdition == 1 && iter->right == gridType)
+	  {
+		  return iter->left;
+	  }
+	  else if (targetEdition == 2 && iter->left == gridType)
+	  {
+		  return iter->right;
+	  }
   }
 
   return INVALID_INT_VALUE;
