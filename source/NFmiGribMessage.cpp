@@ -254,6 +254,23 @@ long NFmiGribMessage::ForecastTime() const {
   return itsForecastTime;
 }
 
+std::string NFmiGribMessage::ParameterUnit() const {
+
+  size_t len = 255;
+  char unit[256];
+
+  std::string keyName = "units";
+
+  if (Edition() == 2)
+  {
+	  keyName = "parameterUnits";
+  }
+
+  GRIB_CHECK(grib_get_string(itsHandle,keyName.c_str(), unit, &len), 0);
+
+  return std::string(unit);
+}
+
 long NFmiGribMessage::ParameterNumber() const {
   long l;
 
@@ -307,7 +324,7 @@ void NFmiGribMessage::ParameterDiscipline(long theDiscipline) {
 
 std::string NFmiGribMessage::ParameterName() const {
   size_t len = 255;
-  char name[1024];
+  char name[256];
 
   GRIB_CHECK(grib_get_string(itsHandle, "parameterName", name, &len), 0);
 

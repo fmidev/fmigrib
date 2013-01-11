@@ -58,6 +58,7 @@ class NFmiGribMessage {
     long DataTime() const;
     long ForecastTime() const;
 
+    std::string ParameterUnit() const;
     long ParameterNumber() const;
     long ParameterDiscipline() const;
     long ParameterCategory() const;
