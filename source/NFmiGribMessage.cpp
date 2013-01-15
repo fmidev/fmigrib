@@ -166,33 +166,6 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   if (grib_get_long(h, "typeOfTimeIncrement", &t) == GRIB_SUCCESS)
     itsTypeOfTimeIncrement = t;
 
-  // Projection-specific keys
-
-  int gridType = NormalizedGridType();
-
-  if (gridType == 0 || gridType == 10) { // latlon or rot latlon
-    //GRIB_CHECK(grib_get_double(h,"latitudeOfLastGridPointInDegrees",&itsLatitudeOfLastGridPoint),0);
-    //GRIB_CHECK(grib_get_double(h,"longitudeOfLastGridPointInDegrees",&itsLongitudeOfLastGridPoint),0);
-
-    GRIB_CHECK(grib_get_double(h,"iDirectionIncrementInDegrees",&itsXResolution),0);
-    GRIB_CHECK(grib_get_double(h,"jDirectionIncrementInDegrees",&itsYResolution),0);
-
-    if (gridType == 10) {
-      //GRIB_CHECK(grib_get_double(h,"latitudeOfSouthernPoleInDegrees",&itsLatitudeOfSouthernPole),0);
-      //GRIB_CHECK(grib_get_double(h,"longitudeOfSouthernPoleInDegrees",&itsLongitudeOfSouthernPole),0);
-    }
-  }
-  else if (gridType == 5) { // (polar) Stereographic
-    //GRIB_CHECK(grib_get_double(h,"orientationOfTheGrid",&itsOrientationOfTheGrid),0);
-/*
-    GRIB_CHECK(grib_get_double(h,"yDirectionGridLengthInMetres",&itsYResolution),0);
-    GRIB_CHECK(grib_get_double(h,"xDirectionGridLengthInMetres",&itsXResolution),0);
-*/
-  }
-  else
-    throw std::runtime_error("Unsupported projection");
-
-
   // Grib values
 
   GRIB_CHECK(grib_get_size(h,"values",&itsValuesLength),0);
@@ -357,6 +330,34 @@ double NFmiGribMessage::GridOrientation() const {
 
 void NFmiGribMessage::GridOrientation(double theOrientation) {
   GRIB_CHECK(grib_set_double(itsHandle,"orientationOfTheGridInDegrees",theOrientation),0);
+}
+
+double NFmiGribMessage::iDirectionIncrement() const
+{
+  double d;
+
+  GRIB_CHECK(grib_get_double(itsHandle,"iDirectionIncrementInDegrees",&d),0);
+
+  return d;
+}
+
+void NFmiGribMessage::iDirectionIncrement(double theIncrement)
+{
+  GRIB_CHECK(grib_set_double(itsHandle,"iDirectionIncrementInDegrees",theIncrement),0);
+}
+
+double NFmiGribMessage::jDirectionIncrement() const
+{
+  double d;
+
+  GRIB_CHECK(grib_get_double(itsHandle,"jDirectionIncrementInDegrees",&d),0);
+
+  return d;
+}
+
+void NFmiGribMessage::jDirectionIncrement(double theIncrement)
+{
+  GRIB_CHECK(grib_set_double(itsHandle,"jDirectionIncrementInDegrees",theIncrement),0);
 }
 
 long NFmiGribMessage::LevelType() const {
@@ -748,6 +749,22 @@ std::string NFmiGribMessage::PackingType() const
   return std::string(type);
 
 }
+
+long NFmiGribMessage::TypeOfGeneratingProcess() const
+{
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"typeOfGeneratingProcess",&l), 0);
+
+  return l;
+
+}
+
+void NFmiGribMessage::TypeOfGeneratingProcess(long theProcess)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"typeOfGeneratingProcess",theProcess),0);
+}
+
 
 void NFmiGribMessage::XLengthInMeters(double theLength) {
   GRIB_CHECK(grib_set_double(itsHandle,"xDirectionGridLengthInMetres",theLength),0);

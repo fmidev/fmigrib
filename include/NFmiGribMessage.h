@@ -149,6 +149,15 @@ class NFmiGribMessage {
     bool IScansNegatively() const;
     bool JScansPositively() const;
 
+    double iDirectionIncrement() const;
+    void iDirectionIncrement(double theIncrement);
+
+    double jDirectionIncrement() const;
+    void jDirectionIncrement(double theIncrement);
+
+    long TypeOfGeneratingProcess() const;
+    void TypeOfGeneratingProcess(long theProcess);
+
     // Are these valid ?
     void XLengthInMeters(double theLength);
     void YLengthInMeters(double theLength);
