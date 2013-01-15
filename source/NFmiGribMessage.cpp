@@ -54,24 +54,11 @@ NFmiGribMessage::~NFmiGribMessage() {
 
 bool NFmiGribMessage::Read(grib_handle *h) {
 
-  if (itsHandle) {
-	  grib_handle_delete(itsHandle);
-  }
-
-  itsHandle = grib_handle_clone(h); // have to clone handle since data values are not returned until called
-
   long t = 0;
 
   Clear();
 
   GRIB_CHECK(grib_get_long(h, "totalLength", &itsTotalLength), 0);
-
-  GRIB_CHECK(grib_get_long(h,"dataDate",&itsDate),0);
-  GRIB_CHECK(grib_get_long(h,"dataTime",&itsTime),0);
-
-
-  GRIB_CHECK(grib_get_long(h,"stepUnits",&itsStepUnits),0);
-  GRIB_CHECK(grib_get_long(h,"stepRange",&itsStepRange),0);
 
   GRIB_CHECK(grib_get_long(h, "year", &itsYear), 0);
   GRIB_CHECK(grib_get_long(h, "month", &itsMonth), 0);
@@ -84,11 +71,6 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   // Edition-specific keys
 
   if (Edition() == 1) {
-
-    //GRIB_CHECK(grib_get_long(h,"indicatorOfTypeOfLevel",&itsIndicatorOfTypeOfLevel),0);
-
-    GRIB_CHECK(grib_get_long(h,"startStep",&itsStartStep),0);
-    GRIB_CHECK(grib_get_long(h,"endStep",&itsEndStep),0);
 
     t = 0;
 
@@ -103,14 +85,8 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   }
   else if (Edition() == 2) {
 
-    //GRIB_CHECK(grib_get_long(h,"typeOfFirstFixedSurface",&itsTypeOfFirstFixedSurface),0);
-
-    GRIB_CHECK(grib_get_long(h,"forecastTime",&itsForecastTime),0);
-
     GRIB_CHECK(grib_get_long(h,"productDefinitionTemplateNumber", &itsLocalDefinitionNumber), 0);
 
-    GRIB_CHECK(grib_get_long(h,"startStep", &itsStartStep), 0);
-    GRIB_CHECK(grib_get_long(h,"endStep", &itsEndStep), 0);
 
   }
   else
@@ -216,15 +192,36 @@ int NFmiGribMessage::ValuesLength() const {
 }
 
 long NFmiGribMessage::DataDate() const {
-  return itsDate;
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"dataDate",&l),0);
+  return l;
+}
+
+void NFmiGribMessage::DataDate(long theDate) {
+  GRIB_CHECK(grib_set_long(itsHandle,"dataDate",theDate),0);
 }
 
 long NFmiGribMessage::DataTime() const {
-  return itsTime;
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"dataTime",&l),0);
+  return l;
+}
+
+void NFmiGribMessage::DataTime(long theTime) {
+  GRIB_CHECK(grib_set_long(itsHandle,"dataTime",theTime),0);
 }
 
 long NFmiGribMessage::ForecastTime() const {
-  return itsForecastTime;
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"forecastTime",&l),0);
+
+  return l;
+}
+
+void NFmiGribMessage::ForecastTime(long theTime)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"forecastTime",theTime),0);
 }
 
 std::string NFmiGribMessage::ParameterUnit() const {
@@ -393,14 +390,6 @@ void NFmiGribMessage::LevelValue(long theLevelValue) {
   GRIB_CHECK(grib_set_long(itsHandle,"level",theLevelValue),0);
 }
 
-double NFmiGribMessage::XResolution() const {
-  return itsXResolution;
-}
-
-double NFmiGribMessage::YResolution() const {
-  return itsYResolution;
-}
-
 /*
  * Clear()
  *
@@ -412,18 +401,9 @@ void NFmiGribMessage::Clear() {
 
   itsValuesLength = 0;
 
-  itsDate = INVALID_INT_VALUE;
-  itsTime = INVALID_INT_VALUE;
-
   itsValuesLength = INVALID_INT_VALUE;
 
-  itsXResolution = INVALID_INT_VALUE;
-  itsYResolution = INVALID_INT_VALUE;
-
-  itsForecastTime = INVALID_INT_VALUE;
-
   itsTotalLength = INVALID_INT_VALUE;
-  itsTable2Version = INVALID_INT_VALUE;
   itsYear = INVALID_INT_VALUE;
   itsMonth = INVALID_INT_VALUE;
   itsDay = INVALID_INT_VALUE;
@@ -596,6 +576,13 @@ void NFmiGribMessage::Table2Version(long theVersion) {
   GRIB_CHECK(grib_set_long(itsHandle, "table2Version", theVersion), 0);
 }
 
+long NFmiGribMessage::NumberOfMissing() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"numberOfMissing",&l),0);
+
+  return l;
+}
 /*
  * NormalizedLevelType()
  *
@@ -682,12 +669,44 @@ long NFmiGribMessage::NormalizedGridType(unsigned int targetEdition) const {
 
 }
 
+long NFmiGribMessage::StartStep() const {
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"startStep",&l),0);
+  return l;
+}
+
 void NFmiGribMessage::StartStep(long theStartStep) {
   GRIB_CHECK(grib_set_long(itsHandle,"startStep",theStartStep),0);
 }
 
+long NFmiGribMessage::EndStep() const {
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"endStep",&l),0);
+  return l;
+}
+
 void NFmiGribMessage::EndStep(long theEndStep) {
   GRIB_CHECK(grib_set_long(itsHandle,"endStep",theEndStep),0);
+}
+
+long NFmiGribMessage::StepUnits() const {
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"stepUnits",&l),0);
+  return l;
+}
+
+void NFmiGribMessage::StepUnits(long theUnit) {
+  GRIB_CHECK(grib_set_long(itsHandle,"stepUnits",theUnit),0);
+}
+
+long NFmiGribMessage::StepRange() const {
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"stepRange",&l),0);
+  return l;
+}
+
+void NFmiGribMessage::StepRange(long theRange) {
+  GRIB_CHECK(grib_set_long(itsHandle,"stepRange",theRange),0);
 }
 
 void NFmiGribMessage::Year(const std::string& theYear) {
