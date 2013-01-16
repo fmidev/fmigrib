@@ -180,10 +180,14 @@ double *NFmiGribMessage::Values() {
 
 void NFmiGribMessage::Values(const double* theValues, long theValuesLength) {
 
-  if (Bitmap())
+  if (Bitmap()) {
     GRIB_CHECK(grib_set_double(itsHandle,"missingValue",static_cast<double> (kFloatMissing)),0);
+  }
 
-  GRIB_CHECK(grib_set_long(itsHandle,"numberOfValues",theValuesLength),0);
+  if (Edition() == 2) {
+    GRIB_CHECK(grib_set_long(itsHandle,"numberOfValues",theValuesLength),0);
+  }
+
   GRIB_CHECK(grib_set_double_array(itsHandle,"values",theValues,theValuesLength),0);
 }
 
@@ -482,11 +486,19 @@ double NFmiGribMessage::SouthPoleX() const {
   return d;
 }
 
+void NFmiGribMessage::SouthPoleX(double theLongitude) {
+  GRIB_CHECK(grib_set_double(itsHandle,"longitudeOfSouthernPoleInDegrees",theLongitude),0);
+}
+
 double NFmiGribMessage::SouthPoleY() const {
   double d;
 
   GRIB_CHECK(grib_get_double(itsHandle,"latitudeOfSouthernPoleInDegrees",&d),0);
   return d;
+}
+
+void NFmiGribMessage::SouthPoleY(double theLatitude) {
+  GRIB_CHECK(grib_set_double(itsHandle,"latitudeOfSouthernPoleInDegrees",theLatitude),0);
 }
 
 long NFmiGribMessage::Edition() const {
@@ -743,10 +755,22 @@ bool NFmiGribMessage::Bitmap() const {
 
 void NFmiGribMessage::Bitmap(bool theBitmap) {
   //GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent",static_cast<int> (theBitmap)), 0);
-  if (theBitmap)
-    GRIB_CHECK(grib_set_long(itsHandle,"bitMapIndicator", 0), 0);
-  else
-    GRIB_CHECK(grib_set_long(itsHandle,"bitMapIndicator", 255), 0);
+  if (Edition() == 2) {
+    if (theBitmap) {
+      GRIB_CHECK(grib_set_long(itsHandle,"bitMapIndicator", 0), 0);
+    }
+    else {
+      GRIB_CHECK(grib_set_long(itsHandle,"bitMapIndicator", 255), 0);
+    }
+  }
+  else {
+    if (theBitmap) {
+      GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent", 1), 0);
+    }
+    else {
+      GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent", 0), 0);
+    }
+  }
 }
 
 void NFmiGribMessage::PackingType(const std::string& thePackingType)

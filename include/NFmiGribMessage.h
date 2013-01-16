@@ -47,7 +47,10 @@ class NFmiGribMessage {
 	void Y1(double theY1);
 
 	double SouthPoleX() const;
+	void SouthPoleX(double theLongitude);
+
 	double SouthPoleY() const;
+	void SouthPoleY(double theLatitude);
 
 	double *Values() ;
 	void Values(const double* theValues, long theValuesLength);
