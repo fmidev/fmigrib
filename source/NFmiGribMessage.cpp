@@ -817,10 +817,15 @@ void NFmiGribMessage::YLengthInMeters(double theLength) {
   GRIB_CHECK(grib_set_double(itsHandle,"yDirectionGridLengthInMetres",theLength),0);
 }
 
-bool NFmiGribMessage::Write(const std::string &theFileName) {
+bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   // Assume we have required directory structure in place
 
-  GRIB_CHECK(grib_write_message(itsHandle, theFileName.c_str(), "w"), 0);
+  std::string mode = "w";
+
+  if (appendToFile)
+    mode = "a";
+
+  GRIB_CHECK(grib_write_message(itsHandle, theFileName.c_str(), mode.c_str()), 0);
 
   return true;
 }

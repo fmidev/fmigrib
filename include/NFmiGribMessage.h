@@ -136,7 +136,7 @@ class NFmiGribMessage {
 
 	long TimeRangeIndicator() const { return itsTimeRangeIndicator; }
 
-	bool Write(const std::string& theOutputFile);
+	bool Write(const std::string& theOutputFile, bool appendToFile = false);
 
 	void Year(const std::string& theYear);
 	void Month(const std::string& theMonth);
