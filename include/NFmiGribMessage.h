@@ -148,6 +148,9 @@ class NFmiGribMessage {
 	bool Bitmap() const;
 	void Bitmap(bool theBitmap);
 
+	long BitsPerValue() const;
+	void BitsPerValue(long theBitsPerValue);
+
 	void PackingType(const std::string& thePackingType);
 	std::string PackingType() const;
 
@@ -159,6 +162,9 @@ class NFmiGribMessage {
 
 	bool IScansNegatively() const;
 	bool JScansPositively() const;
+
+	void IScansNegatively(bool theNegativeIScan);
+	void JScansPositively(bool thePositiveJScan);
 
 	double iDirectionIncrement() const;
 	void iDirectionIncrement(double theIncrement);

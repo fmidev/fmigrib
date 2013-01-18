@@ -554,6 +554,14 @@ bool NFmiGribMessage::JScansPositively() const {
   return (l == 1);
 }
 
+void NFmiGribMessage::IScansNegatively(bool theNegativeIScan) {
+  GRIB_CHECK(grib_set_long(itsHandle,"iScansNegatively",static_cast<long> (theNegativeIScan)),0);
+}
+
+void NFmiGribMessage::JScansPositively(bool thePositiveJScan) {
+  GRIB_CHECK(grib_set_long(itsHandle,"jScansPositively",static_cast<long> (thePositiveJScan)),0);
+}
+
 long NFmiGribMessage::SizeX() const {
   long l;
 
@@ -764,13 +772,20 @@ void NFmiGribMessage::Bitmap(bool theBitmap) {
     }
   }
   else {
-    if (theBitmap) {
-      GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent", 1), 0);
-    }
-    else {
-      GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent", 0), 0);
-    }
+    GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent", static_cast<long> (theBitmap)), 0);
   }
+}
+
+long NFmiGribMessage::BitsPerValue() const
+{
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"bitsPerValue",&l), 0);
+  return l;
+}
+
+void NFmiGribMessage::BitsPerValue(long theBitsPerValue)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"bitsPerValue", theBitsPerValue), 0);
 }
 
 void NFmiGribMessage::PackingType(const std::string& thePackingType)
