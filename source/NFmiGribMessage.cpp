@@ -788,6 +788,40 @@ void NFmiGribMessage::BitsPerValue(long theBitsPerValue)
   GRIB_CHECK(grib_set_long(itsHandle,"bitsPerValue", theBitsPerValue), 0);
 }
 
+bool NFmiGribMessage::UVRelativeToGrid() const
+{
+  long l;
+
+  if (Edition() == 1)
+  {
+    GRIB_CHECK(grib_get_long(itsHandle,"uvRelativeToGrid", &l), 0);
+  }
+  else
+  {
+    GRIB_CHECK(grib_get_long(itsHandle,"resolutionAndComponentFlags", &l), 0);
+  }
+
+  if (l < 0 || l > 1)
+  {
+    throw std::runtime_error("Unknown value in uvRelativeToGrid()");
+  }
+
+  return static_cast<bool> (l);
+}
+
+void NFmiGribMessage::UVRelativeToGrid(bool theRelativity)
+{
+  if (Edition() == 1)
+  {
+    GRIB_CHECK(grib_set_long(itsHandle,"uvRelativeToGrid", static_cast<long> (theRelativity)), 0);
+  }
+  else
+  {
+    GRIB_CHECK(grib_set_long(itsHandle,"resolutionAndComponentFlags", static_cast<long> (theRelativity)), 0);
+  }
+}
+
+
 void NFmiGribMessage::PackingType(const std::string& thePackingType)
 {
   // Should probably check edition -- v2 has more packing types
