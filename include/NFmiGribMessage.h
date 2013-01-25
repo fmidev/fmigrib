@@ -187,6 +187,9 @@ class NFmiGribMessage {
 	bool UVRelativeToGrid() const;
 	void UVRelativeToGrid(bool theRelativity);
 
+	long UnitOfTimeRange() const;
+	void UnitOfTimeRange(long theUnit);
+
   private:
 	void Clear();
 

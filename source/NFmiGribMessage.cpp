@@ -866,6 +866,20 @@ void NFmiGribMessage::YLengthInMeters(double theLength) {
   GRIB_CHECK(grib_set_double(itsHandle,"yDirectionGridLengthInMetres",theLength),0);
 }
 
+long NFmiGribMessage::UnitOfTimeRange() const
+{
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"unitOfTimeRange",&l), 0);
+
+  return l;
+}
+
+void NFmiGribMessage::UnitOfTimeRange(long theUnit)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"unitOfTimeRange",theUnit),0);
+}
+
+
 bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   // Assume we have required directory structure in place
 
