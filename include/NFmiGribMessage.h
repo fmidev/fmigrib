@@ -134,7 +134,8 @@ class NFmiGribMessage {
 	long StepRange() const;
 	void StepRange(long theRange);
 
-	long TimeRangeIndicator() const { return itsTimeRangeIndicator; }
+	long TimeRangeIndicator() const;
+	void TimeRangeIndicator(long theTimeRangeIndicator);
 
 	bool Write(const std::string& theOutputFile, bool appendToFile = false);
 
@@ -190,6 +191,12 @@ class NFmiGribMessage {
 	long UnitOfTimeRange() const;
 	void UnitOfTimeRange(long theUnit);
 
+	long P1() const;
+	void P1(long theP1);
+
+	long P2() const;
+	void P2(long theP2);
+
   private:
 	void Clear();
 
@@ -203,7 +210,6 @@ class NFmiGribMessage {
 	long itsHour;
 	long itsMinute;
 
-	long itsTimeRangeIndicator;
 	long itsLocalDefinitionNumber;
 
 	long itsPerturbationNumber;

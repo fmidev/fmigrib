@@ -66,8 +66,6 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   GRIB_CHECK(grib_get_long(h, "hour", &itsHour), 0);
   GRIB_CHECK(grib_get_long(h, "minute", &itsMinute), 0);
 
-  GRIB_CHECK(grib_get_long(h,"timeRangeIndicator", &itsTimeRangeIndicator), 0);
-
   // Edition-specific keys
 
   if (Edition() == 1) {
@@ -414,7 +412,6 @@ void NFmiGribMessage::Clear() {
   itsHour = INVALID_INT_VALUE;
   itsMinute = INVALID_INT_VALUE;
 
-  itsTimeRangeIndicator = INVALID_INT_VALUE;
   itsLocalDefinitionNumber = INVALID_INT_VALUE;
 
   itsDataType = INVALID_INT_VALUE;
@@ -879,6 +876,44 @@ void NFmiGribMessage::UnitOfTimeRange(long theUnit)
   GRIB_CHECK(grib_set_long(itsHandle,"unitOfTimeRange",theUnit),0);
 }
 
+long NFmiGribMessage::TimeRangeIndicator() const
+{
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"timeRangeIndicator",&l), 0);
+
+  return l;
+}
+
+void NFmiGribMessage::TimeRangeIndicator(long theTimeRangeIndicator)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"timeRangeIndicator",theTimeRangeIndicator),0);
+}
+
+long NFmiGribMessage::P1() const
+{
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"P1",&l), 0);
+
+  return l;
+}
+
+void NFmiGribMessage::P1(long theP1)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"P1",theP1), 0);
+}
+
+long NFmiGribMessage::P2() const
+{
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"P2",&l), 0);
+
+  return l;
+}
+
+void NFmiGribMessage::P2(long theP2)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"P2",theP2), 0);
+}
 
 bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   // Assume we have required directory structure in place
