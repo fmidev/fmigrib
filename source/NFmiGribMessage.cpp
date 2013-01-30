@@ -787,15 +787,11 @@ void NFmiGribMessage::BitsPerValue(long theBitsPerValue)
 
 bool NFmiGribMessage::UVRelativeToGrid() const
 {
-  long l;
+  long l = -1;
 
   if (Edition() == 1)
   {
     GRIB_CHECK(grib_get_long(itsHandle,"uvRelativeToGrid", &l), 0);
-  }
-  else
-  {
-    GRIB_CHECK(grib_get_long(itsHandle,"resolutionAndComponentFlags", &l), 0);
   }
 
   if (l < 0 || l > 1)
@@ -812,10 +808,20 @@ void NFmiGribMessage::UVRelativeToGrid(bool theRelativity)
   {
     GRIB_CHECK(grib_set_long(itsHandle,"uvRelativeToGrid", static_cast<long> (theRelativity)), 0);
   }
-  else
-  {
-    GRIB_CHECK(grib_set_long(itsHandle,"resolutionAndComponentFlags", static_cast<long> (theRelativity)), 0);
-  }
+}
+
+long NFmiGribMessage::ResolutionAndComponentFlags() const
+{
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"resolutionAndComponentFlags", &l), 0);
+
+  return l;
+}
+
+void NFmiGribMessage::ResolutionAndComponentFlags(long theResolutionAndComponentFlags)
+{
+    GRIB_CHECK(grib_set_long(itsHandle,"resolutionAndComponentFlags", theResolutionAndComponentFlags), 0);
 }
 
 

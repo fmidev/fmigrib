@@ -197,6 +197,9 @@ class NFmiGribMessage {
 	long P2() const;
 	void P2(long theP2);
 
+	long ResolutionAndComponentFlags() const;
+	void ResolutionAndComponentFlags(long theResolutionAndComponentFlags);
+
   private:
 	void Clear();
 
