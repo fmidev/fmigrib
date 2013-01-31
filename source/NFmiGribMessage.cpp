@@ -872,14 +872,19 @@ void NFmiGribMessage::YLengthInMeters(double theLength) {
 long NFmiGribMessage::UnitOfTimeRange() const
 {
   long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"unitOfTimeRange",&l), 0);
-
+  if (Edition() == 1)
+    GRIB_CHECK(grib_get_long(itsHandle,"unitOfTimeRange",&l), 0);
+  else
+    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfUnitOfTimeRange",&l), 0);
   return l;
 }
 
 void NFmiGribMessage::UnitOfTimeRange(long theUnit)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"unitOfTimeRange",theUnit),0);
+  if (Edition() == 1)
+    GRIB_CHECK(grib_set_long(itsHandle,"unitOfTimeRange",theUnit),0);
+  else
+    GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfUnitOfTimeRange",theUnit), 0);
 }
 
 long NFmiGribMessage::TimeRangeIndicator() const
