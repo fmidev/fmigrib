@@ -176,9 +176,11 @@ class NFmiGribMessage {
 	long TypeOfGeneratingProcess() const;
 	void TypeOfGeneratingProcess(long theProcess);
 
-	// Are these valid ?
 	void XLengthInMeters(double theLength);
 	void YLengthInMeters(double theLength);
+
+	double XLengthInMeters() const;
+	double YLengthInMeters() const;
 
 	long GridTypeToAnotherEdition(long gridType, long edition) const;
 	long LevelTypeToAnotherEdition(long levelType, long edition) const;

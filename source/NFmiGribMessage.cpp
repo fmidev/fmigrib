@@ -166,8 +166,9 @@ double *NFmiGribMessage::Values() {
 
   // Set missing value to kFloatMissing
 
-  if (Bitmap())
+  if (Bitmap()) {
     GRIB_CHECK(grib_set_double(itsHandle,"missingValue",kFloatMissing),0);
+  }
 
   double* vals = static_cast<double*> (malloc(itsValuesLength*sizeof(double)));
 
@@ -862,12 +863,23 @@ void NFmiGribMessage::TypeOfGeneratingProcess(long theProcess)
 
 
 void NFmiGribMessage::XLengthInMeters(double theLength) {
-  GRIB_CHECK(grib_set_double(itsHandle,"xDirectionGridLengthInMetres",theLength),0);
+  GRIB_CHECK(grib_set_double(itsHandle,"DxInMetres",theLength),0);
 }
 
 void NFmiGribMessage::YLengthInMeters(double theLength) {
-  GRIB_CHECK(grib_set_double(itsHandle,"yDirectionGridLengthInMetres",theLength),0);
+  GRIB_CHECK(grib_set_double(itsHandle,"DyInMetres",theLength),0);
 }
+
+double NFmiGribMessage::XLengthInMeters() const {
+  double d;
+  GRIB_CHECK(grib_get_double(itsHandle,"DxInMetres",&d),0);
+  return d;
+}
+
+double NFmiGribMessage::YLengthInMeters() const {
+  double d;
+  GRIB_CHECK(grib_get_double(itsHandle,"DyInMetres",&d),0);
+  return d;}
 
 long NFmiGribMessage::UnitOfTimeRange() const
 {
