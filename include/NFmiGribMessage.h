@@ -16,6 +16,7 @@
 #include <grib_api.h>
 #include <string>
 #include <boost/bimap.hpp>
+#include <vector>
 
 class NFmiGribMessage {
 
@@ -202,6 +203,11 @@ class NFmiGribMessage {
 	long ResolutionAndComponentFlags() const;
 	void ResolutionAndComponentFlags(long theResolutionAndComponentFlags);
 
+	long NV() const;
+	void NV(long theNV);
+
+	std::vector<double> PV(size_t theNumberOfCoordinates, size_t level);
+  
   private:
 	void Clear();
 

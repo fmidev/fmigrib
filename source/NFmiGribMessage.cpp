@@ -938,6 +938,44 @@ void NFmiGribMessage::P2(long theP2)
   GRIB_CHECK(grib_set_long(itsHandle,"P2",theP2), 0);
 }
 
+long NFmiGribMessage::NV() const
+{
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"NV",&l), 0);
+
+  return l;
+}
+
+void NFmiGribMessage::NV(long theNV)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"NV",theNV), 0);
+}
+
+std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t level)
+{
+
+  double* pv = static_cast<double *> (malloc(theNumberOfCoordinates*sizeof(double)));
+  GRIB_CHECK(grib_get_double_array(itsHandle,"pv",pv,&theNumberOfCoordinates),0);
+  std::vector<double> ret;
+
+  if (theNumberOfCoordinates == 2) {  /* Hirlam: A, B, A, B */
+      ret.push_back(pv[0]);
+      ret.push_back(pv[1]);
+  }
+  else
+  {
+/* More vertical parameters, let's get'em 
+    AROME, ECMWF: A, A, A, B, B, B */
+    if (level <= theNumberOfCoordinates)
+    {
+      ret.push_back((pv[level -1] + pv[level]) / 2.);  
+      ret.push_back((pv[theNumberOfCoordinates/2 + level -1] + pv[theNumberOfCoordinates/2 + level]) / 2.); 
+      }
+  }
+  free(pv);
+  return ret;
+}
+
 bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   // Assume we have required directory structure in place
 
