@@ -56,7 +56,7 @@ class NFmiGribMessage {
 	double *Values() ;
 	void Values(const double* theValues, long theValuesLength);
 
-	int ValuesLength() const;
+	size_t ValuesLength() const;
 
 	long DataDate() const;
 	void DataDate(long theDate);
@@ -207,7 +207,17 @@ class NFmiGribMessage {
 	void NV(long theNV);
 
 	std::vector<double> PV(size_t theNumberOfCoordinates, size_t level);
-  
+ 
+	size_t UnpackedValuesLength() const;
+	
+	unsigned char* UnpackedValues() const;
+
+	double BinaryScaleFactor() const;
+	double DecimalScaleFactor() const;
+	double ReferenceValue() const;
+
+	long Section4Length() const;
+
   private:
 	void Clear();
 
@@ -239,6 +249,8 @@ class NFmiGribMessage {
 
 	boost::bimap<long,long> itsGridTypeMap;
 	boost::bimap<long,long> itsLevelTypeMap;
+
+	mutable size_t itsUnpackedValuesLength;
 };
 
 #endif /* NFMIGRIBMESSAGE_H_ */

@@ -190,8 +190,8 @@ void NFmiGribMessage::Values(const double* theValues, long theValuesLength) {
   GRIB_CHECK(grib_set_double_array(itsHandle,"values",theValues,theValuesLength),0);
 }
 
-int NFmiGribMessage::ValuesLength() const {
-  return static_cast<int> (itsValuesLength);
+size_t NFmiGribMessage::ValuesLength() const {
+  return static_cast<size_t> (itsValuesLength);
 }
 
 long NFmiGribMessage::DataDate() const {
@@ -236,7 +236,7 @@ std::string NFmiGribMessage::ParameterUnit() const {
 
   if (Edition() == 2)
   {
-	  keyName = "parameterUnits";
+    keyName = "parameterUnits";
   }
 
   GRIB_CHECK(grib_get_string(itsHandle,keyName.c_str(), unit, &len), 0);
@@ -259,7 +259,7 @@ long NFmiGribMessage::ParameterNumber() const {
 
 long NFmiGribMessage::ParameterCategory() const {
   if (Edition() == 2) {
-	  long l;
+    long l;
       GRIB_CHECK(grib_get_long(itsHandle,"parameterCategory",&l),0);
       return l;
   }
@@ -427,6 +427,7 @@ void NFmiGribMessage::Clear() {
   itsNumberOfTimeRange = INVALID_INT_VALUE;
   itsTypeOfTimeIncrement = INVALID_INT_VALUE;
 
+  itsUnpackedValuesLength = INVALID_INT_VALUE;
 }
 
 double NFmiGribMessage::X0() const {
@@ -532,7 +533,7 @@ long NFmiGribMessage::Centre() const {
 }
 
 void NFmiGribMessage::Centre(long theCentre) {
-	GRIB_CHECK(grib_set_long(itsHandle,"centre",theCentre),0);
+  GRIB_CHECK(grib_set_long(itsHandle,"centre",theCentre),0);
 }
 
 
@@ -629,14 +630,14 @@ long NFmiGribMessage::LevelTypeToAnotherEdition(long levelType, long targetEditi
       // iter->left  : grib1
       // iter->right : grib2
 
-	  if (targetEdition == 1 && iter->right == levelType)
-	  {
-		  return iter->left;
-	  }
-	  else if (targetEdition == 2 && iter->left == levelType)
-	  {
-		  return iter->right;
-	  }
+    if (targetEdition == 1 && iter->right == levelType)
+    {
+      return iter->left;
+    }
+    else if (targetEdition == 2 && iter->left == levelType)
+    {
+      return iter->right;
+    }
   }
 
   return INVALID_INT_VALUE;
@@ -646,19 +647,19 @@ long NFmiGribMessage::LevelTypeToAnotherEdition(long levelType, long targetEditi
 long NFmiGribMessage::GridTypeToAnotherEdition(long gridType, long targetEdition) const {
 
   for (boost::bimap<long,long>::const_iterator iter = itsGridTypeMap.begin(), iend = itsGridTypeMap.end();
-	  iter != iend; ++iter )
+    iter != iend; ++iter )
   {
-	  // iter->left  : grib1
-	  // iter->right : grib2
+    // iter->left  : grib1
+    // iter->right : grib2
 
-	  if (targetEdition == 1 && iter->right == gridType)
-	  {
-		  return iter->left;
-	  }
-	  else if (targetEdition == 2 && iter->left == gridType)
-	  {
-		  return iter->right;
-	  }
+    if (targetEdition == 1 && iter->right == gridType)
+    {
+      return iter->left;
+    }
+    else if (targetEdition == 2 && iter->left == gridType)
+    {
+      return iter->right;
+    }
   }
 
   return INVALID_INT_VALUE;
@@ -988,3 +989,64 @@ bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
 
   return true;
 }
+
+size_t NFmiGribMessage::UnpackedValuesLength() const
+{
+  if (itsUnpackedValuesLength != static_cast<size_t> (INVALID_INT_VALUE))
+  {
+    long section4Length;
+ 
+    GRIB_CHECK(grib_get_long(itsHandle,"section4Length",&section4Length),0);
+
+    section4Length -= 11;
+  
+    itsUnpackedValuesLength = section4Length;
+  }
+
+  return itsUnpackedValuesLength;
+}
+
+unsigned char* NFmiGribMessage::UnpackedValues() const
+{
+  unsigned char* unpackedValues = static_cast<unsigned char*> (malloc(UnpackedValuesLength() * sizeof(unsigned char))); // unsigned char is 1 byte so this is a bit redundant
+  size_t dataLength;
+
+  GRIB_CHECK(grib_get_packed_values(itsHandle,unpackedValues,&dataLength),0);
+
+  assert(dataLength == UnpackedValuesLength());
+
+  return unpackedValues;
+}
+
+double NFmiGribMessage::BinaryScaleFactor() const
+{
+  double d;
+  GRIB_CHECK(grib_get_double(itsHandle,"binaryScaleFactor",&d), 0);
+
+  return d;
+}
+
+double NFmiGribMessage::DecimalScaleFactor() const
+{
+  double d;
+  GRIB_CHECK(grib_get_double(itsHandle,"decimalScaleFactor",&d), 0);
+
+  return d;
+}
+
+double NFmiGribMessage::ReferenceValue() const
+{
+  double d;
+  GRIB_CHECK(grib_get_double(itsHandle,"referenceValue",&d), 0);
+
+  return d;
+}
+
+long NFmiGribMessage::Section4Length() const
+{
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle,"section4Length",&l), 0);
+
+  return l;
+}
+
