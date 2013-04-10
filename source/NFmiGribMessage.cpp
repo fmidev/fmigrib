@@ -1009,9 +1009,14 @@ size_t NFmiGribMessage::UnpackedValuesLength() const
 unsigned char* NFmiGribMessage::UnpackedValues() const
 {
   unsigned char* unpackedValues = reinterpret_cast<unsigned char*> (malloc(UnpackedValuesLength() * sizeof(unsigned char))); // unsigned char is 1 byte so this is a bit redundant
+
+#ifdef READ_PACKED_DATA
   size_t dataLength;
 
   GRIB_CHECK(grib_get_packed_values(itsHandle,unpackedValues,&dataLength),0);
+#else
+  throw std::runtime_error("This version on NFmiGrib is not compiled with support for reading of packed data");
+#endif
 
   assert(dataLength == UnpackedValuesLength());
 
