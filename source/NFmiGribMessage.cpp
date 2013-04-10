@@ -1014,11 +1014,12 @@ unsigned char* NFmiGribMessage::UnpackedValues() const
   size_t dataLength;
 
   GRIB_CHECK(grib_get_packed_values(itsHandle,unpackedValues,&dataLength),0);
+
+  assert(dataLength == UnpackedValuesLength());
+
 #else
   throw std::runtime_error("This version on NFmiGrib is not compiled with support for reading of packed data");
 #endif
-
-  assert(dataLength == UnpackedValuesLength());
 
   return unpackedValues;
 }
