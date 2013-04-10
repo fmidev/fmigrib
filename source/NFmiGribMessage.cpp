@@ -992,7 +992,7 @@ bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
 
 size_t NFmiGribMessage::UnpackedValuesLength() const
 {
-  if (itsUnpackedValuesLength != static_cast<size_t> (INVALID_INT_VALUE))
+  if (itsUnpackedValuesLength == static_cast<size_t> (INVALID_INT_VALUE))
   {
     long section4Length;
  
@@ -1008,7 +1008,7 @@ size_t NFmiGribMessage::UnpackedValuesLength() const
 
 unsigned char* NFmiGribMessage::UnpackedValues() const
 {
-  unsigned char* unpackedValues = static_cast<unsigned char*> (malloc(UnpackedValuesLength() * sizeof(unsigned char))); // unsigned char is 1 byte so this is a bit redundant
+  unsigned char* unpackedValues = reinterpret_cast<unsigned char*> (malloc(UnpackedValuesLength() * sizeof(unsigned char))); // unsigned char is 1 byte so this is a bit redundant
   size_t dataLength;
 
   GRIB_CHECK(grib_get_packed_values(itsHandle,unpackedValues,&dataLength),0);
