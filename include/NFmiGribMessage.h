@@ -207,6 +207,7 @@ class NFmiGribMessage {
 	void NV(long theNV);
 
 	std::vector<double> PV(size_t theNumberOfCoordinates, size_t level);
+	void PV(const std::vector<double>& theAB, size_t abLen);
  
 	size_t UnpackedValuesLength() const;
 	

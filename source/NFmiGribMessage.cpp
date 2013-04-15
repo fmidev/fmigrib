@@ -977,6 +977,11 @@ std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t le
   return ret;
 }
 
+void NFmiGribMessage::PV(const std::vector<double>& theAB, size_t abLen)
+{
+  GRIB_CHECK(grib_set_double_array(itsHandle,"pv",&theAB[0],abLen),0);
+}
+
 bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   // Assume we have required directory structure in place
 
