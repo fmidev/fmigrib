@@ -979,6 +979,7 @@ std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t le
 
 void NFmiGribMessage::PV(const std::vector<double>& theAB, size_t abLen)
 {
+  GRIB_CHECK(grib_set_long(itsHandle,"PVPresent", 1), 0);
   GRIB_CHECK(grib_set_double_array(itsHandle,"pv",&theAB[0],abLen),0);
 }
 
