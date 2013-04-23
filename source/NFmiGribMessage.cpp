@@ -12,6 +12,8 @@
 const long INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
 
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
 NFmiGribMessage::NFmiGribMessage() {
 
   itsHandle = grib_handle_new_from_template(NULL,"GRIB2");
@@ -795,10 +797,16 @@ bool NFmiGribMessage::UVRelativeToGrid() const
   {
     GRIB_CHECK(grib_get_long(itsHandle,"uvRelativeToGrid", &l), 0);
   }
-
+  else
+  {
+	 long r = ResolutionAndComponentFlags();
+	 
+	 l = (CHECK_BIT(r, 3) == 8) ? 1 : 0; // in grib2 4th bit tells if uv is relative to grid or not (1000 == 8 == true)
+  }
+  
   if (l < 0 || l > 1)
   {
-    throw std::runtime_error("Unknown value in uvRelativeToGrid()");
+    throw std::runtime_error("Unknown value in uvRelativeToGrid(): " + boost::lexical_cast<std::string> (l));
   }
 
   return static_cast<bool> (l);
