@@ -1020,6 +1020,41 @@ size_t NFmiGribMessage::UnpackedValuesLength() const
   return itsUnpackedValuesLength;
 }
 
+size_t NFmiGribMessage::BytesLength(const std::string& key) const
+{
+  size_t s;
+  
+  GRIB_CHECK(grib_get_size(itsHandle,key.c_str(),&s),0);
+
+  return s;
+}
+
+bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
+{
+  size_t length = BytesLength(key);
+  
+  GRIB_CHECK(grib_get_bytes(itsHandle,key.c_str(),data, &length),0);
+
+  return true;
+}
+
+
+bool NFmiGribMessage::UnpackedValues(unsigned char* data) const
+{
+#ifdef READ_PACKED_DATA
+  size_t dataLength;
+
+  GRIB_CHECK(grib_get_packed_values(itsHandle,data,&dataLength),0);
+
+  assert(dataLength == UnpackedValuesLength());
+
+#else
+  throw std::runtime_error("This version on NFmiGrib is not compiled with support for reading of packed data");
+#endif
+
+  return true;
+}
+
 unsigned char* NFmiGribMessage::UnpackedValues() const
 {
   unsigned char* unpackedValues = reinterpret_cast<unsigned char*> (malloc(UnpackedValuesLength() * sizeof(unsigned char))); // unsigned char is 1 byte so this is a bit redundant
@@ -1069,4 +1104,3 @@ long NFmiGribMessage::Section4Length() const
 
   return l;
 }
-

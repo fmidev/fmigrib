@@ -212,12 +212,16 @@ class NFmiGribMessage {
 	size_t UnpackedValuesLength() const;
 	
 	unsigned char* UnpackedValues() const;
+	bool UnpackedValues(unsigned char* data) const;
 
 	double BinaryScaleFactor() const;
 	double DecimalScaleFactor() const;
 	double ReferenceValue() const;
 
 	long Section4Length() const;
+
+	size_t BytesLength(const std::string& key) const;
+	bool Bytes(const std::string& key, unsigned char* data) const;
 
   private:
 	void Clear();
