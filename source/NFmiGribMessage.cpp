@@ -12,6 +12,8 @@
 const long INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
 
+#define READ_PACKED_DATA
+
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
 NFmiGribMessage::NFmiGribMessage() {
