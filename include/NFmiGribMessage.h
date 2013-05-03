@@ -93,11 +93,12 @@ class NFmiGribMessage {
 	long Centre() const;
 	void Centre(long theCentre);
 
-	long Year() { return itsYear; }
-	long Month() { return itsMonth; }
-	long Day() { return itsDay; }
-	long Hour() { return itsHour; }
-	long Minute() { return itsMinute; }
+	long Year() const;
+	long Month() const;
+	long Day() const;
+	long Hour() const;
+	long Minute() const;
+	long Second() const;
 
 	long Process() const;
 	void Process(long theProcess);
@@ -105,13 +106,13 @@ class NFmiGribMessage {
 	long Table2Version() const;
 	void Table2Version(long theVersion);
 
-	long DataType() { return itsDataType; }
+	long DataType() const;
 	long PerturbationNumber() { return itsPerturbationNumber; }
 
 	long NormalizedGridType(unsigned int targetEdition = 1) const;
 	long NormalizedLevelType(unsigned int targetEdition = 1) const;
 
-	long LocalDefinitionNumber() { return itsLocalDefinitionNumber; }
+	long LocalDefinitionNumber() const;
 	long DerivedForecast() { return itsDerivedForecast; }
 	long TypeOfEnsembleForecast() { return itsTypeOfEnsembleForecast; }
 	long NumberOfForecastsInTheEnsemble() { return itsNumberOfForecastsInTheEnsemble; }
@@ -209,10 +210,9 @@ class NFmiGribMessage {
 	std::vector<double> PV(size_t theNumberOfCoordinates, size_t level);
 	void PV(const std::vector<double>& theAB, size_t abLen);
  
-	size_t UnpackedValuesLength() const;
+	size_t PackedValuesLength() const;
 	
-	unsigned char* UnpackedValues() const;
-	bool UnpackedValues(unsigned char* data) const;
+	bool PackedValues(unsigned char* data) const;
 
 	double BinaryScaleFactor() const;
 	double DecimalScaleFactor() const;
@@ -226,20 +226,9 @@ class NFmiGribMessage {
   private:
 	void Clear();
 
-	size_t itsValuesLength;
-
 	long itsTotalLength;
 
-	long itsYear;
-	long itsMonth;
-	long itsDay;
-	long itsHour;
-	long itsMinute;
-
-	long itsLocalDefinitionNumber;
-
 	long itsPerturbationNumber;
-	long itsDataType;
 	long itsTypeOfEnsembleForecast;
 	long itsDerivedForecast;
 	long itsNumberOfForecastsInTheEnsemble;
@@ -255,7 +244,7 @@ class NFmiGribMessage {
 	boost::bimap<long,long> itsGridTypeMap;
 	boost::bimap<long,long> itsLevelTypeMap;
 
-	mutable size_t itsUnpackedValuesLength;
+	mutable size_t itsPackedValuesLength;
 };
 
 #endif /* NFMIGRIBMESSAGE_H_ */

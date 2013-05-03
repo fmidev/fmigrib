@@ -61,39 +61,7 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 
   Clear();
 
-  GRIB_CHECK(grib_get_long(h, "totalLength", &itsTotalLength), 0);
-
-  GRIB_CHECK(grib_get_long(h, "year", &itsYear), 0);
-  GRIB_CHECK(grib_get_long(h, "month", &itsMonth), 0);
-  GRIB_CHECK(grib_get_long(h, "day", &itsDay), 0);
-  GRIB_CHECK(grib_get_long(h, "hour", &itsHour), 0);
-  GRIB_CHECK(grib_get_long(h, "minute", &itsMinute), 0);
-
   // Edition-specific keys
-
-  if (Edition() == 1) {
-
-    t = 0;
-
-    if (grib_get_long(h, "localDefinitionNumber", &t) == GRIB_SUCCESS)
-      itsLocalDefinitionNumber = t;
-
-    t = 0;
-
-    if (grib_get_long(h, "type", &t) == GRIB_SUCCESS)
-      itsDataType = t;
-
-  }
-  else if (Edition() == 2) {
-
-    GRIB_CHECK(grib_get_long(h,"productDefinitionTemplateNumber", &itsLocalDefinitionNumber), 0);
-
-
-  }
-  else
-    throw std::runtime_error("Unknown grib edition");
-
-  t = 0;
 
   if (grib_get_long(h, "perturbationNumber", &t) == GRIB_SUCCESS)
     itsPerturbationNumber = t;
@@ -145,7 +113,6 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 
   // Grib values
 
-  GRIB_CHECK(grib_get_size(h,"values",&itsValuesLength),0);
 
   if (itsHandle)
     grib_handle_delete(itsHandle);
@@ -153,6 +120,28 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   itsHandle = grib_handle_clone(h); // have to clone handle since data values are not returned until called
 
   return true;
+}
+
+long NFmiGribMessage::LocalDefinitionNumber() const
+{
+  long l;
+
+  if (Edition() == 1) {
+    GRIB_CHECK(grib_get_long(itsHandle, "localDefinitionNumber", &l), 0);
+  }
+  else
+  {
+    GRIB_CHECK(grib_get_long(itsHandle,"productDefinitionTemplateNumber", &l), 0);
+  }
+
+  return l;
+}
+
+long NFmiGribMessage::DataType() const
+{
+  long l;
+  GRIB_CHECK(grib_get_long(itsHandle, "type", &l),0);
+  return l;
 }
 
 /*
@@ -172,10 +161,10 @@ double *NFmiGribMessage::Values() {
   if (Bitmap()) {
     GRIB_CHECK(grib_set_double(itsHandle,"missingValue",kFloatMissing),0);
   }
+  size_t values_len = ValuesLength();
+  double* vals = static_cast<double*> (malloc(values_len*sizeof(double)));
 
-  double* vals = static_cast<double*> (malloc(itsValuesLength*sizeof(double)));
-
-  GRIB_CHECK(grib_get_double_array(itsHandle,"values",vals,&itsValuesLength),0);
+  GRIB_CHECK(grib_get_double_array(itsHandle,"values",vals,&values_len),0);
 
   return vals;
 }
@@ -194,7 +183,9 @@ void NFmiGribMessage::Values(const double* theValues, long theValuesLength) {
 }
 
 size_t NFmiGribMessage::ValuesLength() const {
-  return static_cast<size_t> (itsValuesLength);
+  size_t s;
+  GRIB_CHECK(grib_get_size(itsHandle,"values",&s),0);
+  return s;
 }
 
 long NFmiGribMessage::DataDate() const {
@@ -404,21 +395,7 @@ void NFmiGribMessage::LevelValue(long theLevelValue) {
  */
 
 void NFmiGribMessage::Clear() {
-
-  itsValuesLength = 0;
-
-  itsValuesLength = INVALID_INT_VALUE;
-
-  itsTotalLength = INVALID_INT_VALUE;
-  itsYear = INVALID_INT_VALUE;
-  itsMonth = INVALID_INT_VALUE;
-  itsDay = INVALID_INT_VALUE;
-  itsHour = INVALID_INT_VALUE;
-  itsMinute = INVALID_INT_VALUE;
-
-  itsLocalDefinitionNumber = INVALID_INT_VALUE;
-
-  itsDataType = INVALID_INT_VALUE;
+ 
   itsPerturbationNumber = INVALID_INT_VALUE;
   itsTypeOfEnsembleForecast = INVALID_INT_VALUE;
   itsDerivedForecast = INVALID_INT_VALUE;
@@ -430,7 +407,7 @@ void NFmiGribMessage::Clear() {
   itsNumberOfTimeRange = INVALID_INT_VALUE;
   itsTypeOfTimeIncrement = INVALID_INT_VALUE;
 
-  itsUnpackedValuesLength = INVALID_INT_VALUE;
+  itsPackedValuesLength = INVALID_INT_VALUE;
 }
 
 double NFmiGribMessage::X0() const {
@@ -731,24 +708,72 @@ void NFmiGribMessage::StepRange(long theRange) {
   GRIB_CHECK(grib_set_long(itsHandle,"stepRange",theRange),0);
 }
 
+long NFmiGribMessage::Year() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"year", &l),0);
+
+  return l;
+}
+
 void NFmiGribMessage::Year(const std::string& theYear) {
   GRIB_CHECK(grib_set_long(itsHandle,"year",boost::lexical_cast<long> (theYear)),0);
+}
+
+long NFmiGribMessage::Month() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"month", &l),0);
+
+  return l;
 }
 
 void NFmiGribMessage::Month(const std::string& theMonth) {
   GRIB_CHECK(grib_set_long(itsHandle,"month",boost::lexical_cast<long> (theMonth)),0);
 }
 
+long NFmiGribMessage::Day() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"day", &l),0);
+
+  return l;
+}
+
 void NFmiGribMessage::Day(const std::string& theDay) {
   GRIB_CHECK(grib_set_long(itsHandle,"day",boost::lexical_cast<long> (theDay)),0);
+}
+
+long NFmiGribMessage::Hour() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"hour", &l),0);
+
+  return l;
 }
 
 void NFmiGribMessage::Hour(const std::string& theHour) {
   GRIB_CHECK(grib_set_long(itsHandle,"hour",boost::lexical_cast<long> (theHour)),0);
 }
 
+long NFmiGribMessage::Minute() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"minute", &l),0);
+
+  return l;
+}
+
 void NFmiGribMessage::Minute(const std::string& theMinute) {
   GRIB_CHECK(grib_set_long(itsHandle,"minute",boost::lexical_cast<long> (theMinute)),0);
+}
+
+long NFmiGribMessage::Second() const {
+  long l;
+
+  GRIB_CHECK(grib_get_long(itsHandle,"second", &l),0);
+
+  return l;
 }
 
 void NFmiGribMessage::Second(const std::string& theSecond) {
@@ -1005,20 +1030,27 @@ bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   return true;
 }
 
-size_t NFmiGribMessage::UnpackedValuesLength() const
+size_t NFmiGribMessage::PackedValuesLength() const
 {
-  if (itsUnpackedValuesLength == static_cast<size_t> (INVALID_INT_VALUE))
+  if (itsPackedValuesLength == static_cast<size_t> (INVALID_INT_VALUE))
   {
-    long section4Length;
+    long length;
  
-    GRIB_CHECK(grib_get_long(itsHandle,"section4Length",&section4Length),0);
+    if (Edition() == 1)
+    {
+      GRIB_CHECK(grib_get_long(itsHandle,"section4Length",&length),0);
+      length -= 11;
+    }
+    else
+    {
+      GRIB_CHECK(grib_get_long(itsHandle,"section7Length",&length),0);
+      length -= 5;
+    }
 
-    section4Length -= 11;
-  
-    itsUnpackedValuesLength = section4Length;
+    itsPackedValuesLength = length;
   }
 
-  return itsUnpackedValuesLength;
+  return itsPackedValuesLength;
 }
 
 size_t NFmiGribMessage::BytesLength(const std::string& key) const
@@ -1040,38 +1072,20 @@ bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
 }
 
 
-bool NFmiGribMessage::UnpackedValues(unsigned char* data) const
+bool NFmiGribMessage::PackedValues(unsigned char* data) const
 {
 #ifdef READ_PACKED_DATA
   size_t dataLength;
 
   GRIB_CHECK(grib_get_packed_values(itsHandle,data,&dataLength),0);
 
-  assert(dataLength == UnpackedValuesLength());
+  assert(dataLength == PackedValuesLength());
 
 #else
   throw std::runtime_error("This version on NFmiGrib is not compiled with support for reading of packed data");
 #endif
 
   return true;
-}
-
-unsigned char* NFmiGribMessage::UnpackedValues() const
-{
-  unsigned char* unpackedValues = reinterpret_cast<unsigned char*> (malloc(UnpackedValuesLength() * sizeof(unsigned char))); // unsigned char is 1 byte so this is a bit redundant
-
-#ifdef READ_PACKED_DATA
-  size_t dataLength;
-
-  GRIB_CHECK(grib_get_packed_values(itsHandle,unpackedValues,&dataLength),0);
-
-  assert(dataLength == UnpackedValuesLength());
-
-#else
-  throw std::runtime_error("This version on NFmiGrib is not compiled with support for reading of packed data");
-#endif
-
-  return unpackedValues;
 }
 
 double NFmiGribMessage::BinaryScaleFactor() const
