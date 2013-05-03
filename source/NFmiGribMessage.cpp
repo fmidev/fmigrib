@@ -1,5 +1,5 @@
 /*
- * NFmiGribMessageMessage.cpp
+ * NFmiGribMessage.cpp
  *
  *  Created on: Oct 16, 2012
  *      Author: partio
@@ -37,6 +37,7 @@ NFmiGribMessage::NFmiGribMessage() {
 
   // GRIB1 <--> GRIB2
 
+  itsLevelTypeMap.insert(element(1,1)); // ground
   itsLevelTypeMap.insert(element(100,100)); // isobaric
   itsLevelTypeMap.insert(element(160,160)); // depth below sea
   itsLevelTypeMap.insert(element(102,101)); // mean sea
