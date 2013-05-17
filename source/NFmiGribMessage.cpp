@@ -980,6 +980,22 @@ void NFmiGribMessage::UnitOfTimeRange(long theUnit)
     GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfUnitOfTimeRange",theUnit), 0);
 }
 
+long NFmiGribMessage::UnitForTimeRange() const
+{
+  long l = INVALID_INT_VALUE;
+
+  if (Edition() == 2)
+    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfUnitForTimeRange",&l), 0);
+  
+  return l;
+}
+
+void NFmiGribMessage::UnitForTimeRange(long theUnit)
+{
+  if (Edition() == 2)
+    GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfUnitForTimeRange",theUnit), 0);
+}
+
 long NFmiGribMessage::LengthOfTimeRange() const
 {
   long l = INVALID_INT_VALUE;

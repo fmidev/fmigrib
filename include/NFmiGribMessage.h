@@ -195,6 +195,9 @@ class NFmiGribMessage {
 	long UnitOfTimeRange() const;
 	void UnitOfTimeRange(long theUnit);
 
+	long UnitForTimeRange() const;
+	void UnitForTimeRange(long theUnit);
+
 	long LengthOfTimeRange() const;
 	void LengthOfTimeRange(long theLength);
 
