@@ -124,17 +124,53 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 
 long NFmiGribMessage::LocalDefinitionNumber() const
 {
-  long l;
-
+  
   if (Edition() == 1) {
+    long l;
     GRIB_CHECK(grib_get_long(itsHandle, "localDefinitionNumber", &l), 0);
+	return l;
   }
   else
   {
-    GRIB_CHECK(grib_get_long(itsHandle,"productDefinitionTemplateNumber", &l), 0);
+    return ProductDefinitionTemplateNumber();
+  }
+}
+
+long NFmiGribMessage::ProductDefinitionTemplateNumber() const
+{
+  long l = INVALID_INT_VALUE;
+
+  if (Edition() == 2)
+  {
+	  GRIB_CHECK(grib_get_long(itsHandle,"productDefinitionTemplateNumber",&l),0);
   }
 
   return l;
+}
+
+void NFmiGribMessage::ProductDefinitionTemplateNumber(long theNumber)
+{
+  GRIB_CHECK(grib_set_long(itsHandle,"productDefinitionTemplateNumber",theNumber),0);
+}
+
+long NFmiGribMessage::TypeOfStatisticalProcessing() const
+{
+  long l = INVALID_INT_VALUE;
+
+  if (Edition() == 2)
+  {
+	  GRIB_CHECK(grib_get_long(itsHandle,"typeOfStatisticalProcessing",&l),0);
+  }
+
+  return l;
+}
+
+void NFmiGribMessage::TypeOfStatisticalProcessing(long theType)
+{
+  if (Edition() == 2)
+  {
+    GRIB_CHECK(grib_set_long(itsHandle,"typeOfStatisticalProcessing",theType),0);
+  }
 }
 
 long NFmiGribMessage::DataType() const
@@ -415,6 +451,11 @@ double NFmiGribMessage::X0() const {
 
   GRIB_CHECK(grib_get_double(itsHandle,"longitudeOfFirstGridPointInDegrees",&d),0);
 
+  if (Edition() == 2)
+  {
+//	  d -= 180;
+  }
+
   return d;
 }
 
@@ -439,6 +480,11 @@ double NFmiGribMessage::X1() const {
 
   GRIB_CHECK(grib_get_double(itsHandle,"longitudeOfLastGridPointInDegrees",&d),0);
 
+  if (Edition() == 2)
+  {
+//	  d -= 180;
+  }
+  
   return d;
 }
 
@@ -934,6 +980,26 @@ void NFmiGribMessage::UnitOfTimeRange(long theUnit)
     GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfUnitOfTimeRange",theUnit), 0);
 }
 
+long NFmiGribMessage::LengthOfTimeRange() const
+{
+  long l = INVALID_INT_VALUE;
+
+  if (Edition() == 2)
+  {
+    GRIB_CHECK(grib_get_long(itsHandle,"lengthOfTimeRange",&l), 0);
+  }
+
+  return l;
+}
+
+void NFmiGribMessage::LengthOfTimeRange(long theLength)
+{
+  if (Edition() == 2)
+  {
+    GRIB_CHECK(grib_set_long(itsHandle,"lengthOfTimeRange",theLength),0);
+  }
+}
+
 long NFmiGribMessage::TimeRangeIndicator() const
 {
   long l;
@@ -957,7 +1023,8 @@ long NFmiGribMessage::P1() const
 
 void NFmiGribMessage::P1(long theP1)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"P1",theP1), 0);
+  if (Edition() == 1)
+    GRIB_CHECK(grib_set_long(itsHandle,"P1",theP1), 0);
 }
 
 long NFmiGribMessage::P2() const
@@ -970,7 +1037,8 @@ long NFmiGribMessage::P2() const
 
 void NFmiGribMessage::P2(long theP2)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"P2",theP2), 0);
+  if (Edition() == 1)
+    GRIB_CHECK(grib_set_long(itsHandle,"P2",theP2), 0);
 }
 
 long NFmiGribMessage::NV() const

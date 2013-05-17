@@ -195,6 +195,9 @@ class NFmiGribMessage {
 	long UnitOfTimeRange() const;
 	void UnitOfTimeRange(long theUnit);
 
+	long LengthOfTimeRange() const;
+	void LengthOfTimeRange(long theLength);
+
 	long P1() const;
 	void P1(long theP1);
 
@@ -223,6 +226,12 @@ class NFmiGribMessage {
 	size_t BytesLength(const std::string& key) const;
 	bool Bytes(const std::string& key, unsigned char* data) const;
 
+	long ProductDefinitionTemplateNumber() const;
+	void ProductDefinitionTemplateNumber(long theNumber);
+
+	long TypeOfStatisticalProcessing() const;
+	void TypeOfStatisticalProcessing(long theType);
+	
   private:
 	void Clear();
 
