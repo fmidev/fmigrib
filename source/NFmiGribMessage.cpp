@@ -1158,7 +1158,7 @@ bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
 
 bool NFmiGribMessage::PackedValues(unsigned char* data) const
 {
-#ifdef READ_PACKED_DATA
+#ifdef GRIB_READ_PACKED_DATA
   size_t dataLength;
 
   GRIB_CHECK(grib_get_packed_values(itsHandle,data,&dataLength),0);

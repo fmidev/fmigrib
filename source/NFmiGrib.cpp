@@ -37,21 +37,16 @@ NFmiGrib::~NFmiGrib() {
 
 bool NFmiGrib::Open(const std::string &theFileName) {
 
-   // Open with 'rb', although in linux it equals to 'r'
-
   if (f)
     fclose(f);
+
+  // Open with 'rb', although in linux it equals to 'r'
 
   if (!(f = fopen(theFileName.c_str(), "rb")))
     return false;
 
   if (grib_count_in_file(0, f, &itsMessageCount) != GRIB_SUCCESS)
     return false;
-
-  //if (h)
-  //  grib_handle_delete(h);
-
-  grib_multi_support_on(0); // Multigrib support on
 
   return true;
 }
@@ -60,6 +55,9 @@ bool NFmiGrib::NextMessage() {
 
   int err;
 
+  if (h)
+    grib_handle_delete(h);
+  
   if ((h = grib_handle_new_from_file(0,f,&err)) != NULL) {
     itsCurrentMessage++;
 
