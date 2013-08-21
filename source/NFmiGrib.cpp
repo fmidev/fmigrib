@@ -79,9 +79,9 @@ int NFmiGrib::CurrentMessageIndex() {
 
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport) {
   if (theMultiGribSupport)
-    grib_multi_support_on(0); // Multigrib support on
+    grib_multi_support_on(0);
   else
-    grib_multi_support_off(0); // Multigrib support on
+    grib_multi_support_off(0);
 }
 
 bool NFmiGrib::WriteMessage(const std::string &theFileName) {
