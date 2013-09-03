@@ -1166,6 +1166,7 @@ bool NFmiGribMessage::PackedValues(unsigned char* data) const
   assert(dataLength == PackedValuesLength());
 
 #else
+#warning GRIB_READ_PACKED_DATA not defined -- reading packed data with fmigrib is not supported
   throw std::runtime_error("This version on NFmiGrib is not compiled with support for reading of packed data");
 #endif
 
