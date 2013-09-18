@@ -128,7 +128,7 @@ long NFmiGribMessage::LocalDefinitionNumber() const
   if (Edition() == 1) {
     long l;
     GRIB_CHECK(grib_get_long(itsHandle, "localDefinitionNumber", &l), 0);
-	return l;
+    return l;
   }
   else
   {
@@ -1089,7 +1089,7 @@ std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t le
     {
       ret.push_back((pv[level -1] + pv[level]) / 2.);  
       ret.push_back((pv[theNumberOfCoordinates/2 + level -1] + pv[theNumberOfCoordinates/2 + level]) / 2.); 
-      }
+    }
   }
   free(pv);
   return ret;
@@ -1155,7 +1155,6 @@ bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
   return true;
 }
 
-
 bool NFmiGribMessage::PackedValues(unsigned char* data) const
 {
 #ifdef GRIB_READ_PACKED_DATA
@@ -1203,4 +1202,11 @@ long NFmiGribMessage::Section4Length() const
   GRIB_CHECK(grib_get_long(itsHandle,"section4Length",&l), 0);
 
   return l;
+}
+
+bool NFmiGribMessage::KeyExists(const std::string& theKey) const
+{
+  int i;
+  i = grib_is_defined(itsHandle, theKey.c_str());
+  return (i == 0 ? false: true);
 }

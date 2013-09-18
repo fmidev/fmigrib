@@ -234,6 +234,9 @@ class NFmiGribMessage {
 
 	long TypeOfStatisticalProcessing() const;
 	void TypeOfStatisticalProcessing(long theType);
+
+	// grib_api version > 1.10.4
+	bool KeyExists(const std::string& theKey) const;
 	
   private:
 	void Clear();
