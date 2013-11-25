@@ -142,7 +142,7 @@ long NFmiGribMessage::ProductDefinitionTemplateNumber() const
 
   if (Edition() == 2)
   {
-	  GRIB_CHECK(grib_get_long(itsHandle,"productDefinitionTemplateNumber",&l),0);
+    GRIB_CHECK(grib_get_long(itsHandle,"productDefinitionTemplateNumber",&l),0);
   }
 
   return l;
@@ -159,7 +159,7 @@ long NFmiGribMessage::TypeOfStatisticalProcessing() const
 
   if (Edition() == 2)
   {
-	  GRIB_CHECK(grib_get_long(itsHandle,"typeOfStatisticalProcessing",&l),0);
+    GRIB_CHECK(grib_get_long(itsHandle,"typeOfStatisticalProcessing",&l),0);
   }
 
   return l;
@@ -453,7 +453,7 @@ double NFmiGribMessage::X0() const {
 
   if (Edition() == 2)
   {
-//	  d -= 180;
+//    d -= 180;
   }
 
   return d;
@@ -482,7 +482,7 @@ double NFmiGribMessage::X1() const {
 
   if (Edition() == 2)
   {
-//	  d -= 180;
+//    d -= 180;
   }
   
   return d;
@@ -714,6 +714,94 @@ long NFmiGribMessage::NormalizedGridType(unsigned int targetEdition) const {
 
 }
 
+long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
+
+  long step = INVALID_INT_VALUE;
+
+  if (Edition() == 1) {
+
+    // http://rda.ucar.edu/docs/formats/grib/gribdoc/timer.html
+
+    long timeRangeIndicator = TimeRangeIndicator();
+
+    switch (timeRangeIndicator)
+    {
+      // "normal" case
+        case 0:
+        case 1:
+          step = P1();
+          break;
+
+        case 10:
+          // Old Harmonie
+          step = (P1() << 8 ) | P2();
+          break;
+
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          if (endStep)
+            step = P2();
+          else
+            step = P1();
+          break;
+
+        default:
+          std::cerr << "NFmiGribMessage: Invalid timeRangeIndicator value: " << timeRangeIndicator << std::endl;
+          break;
+
+    }
+  }
+  else {
+    step = ForecastTime();
+  }
+
+  if (!flatten)
+    return step;
+
+  long multiplier = 1;
+  long unitOfTimeRange = NormalizedUnitOfTimeRange();
+
+  // http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table4-4.shtml
+  
+  switch (unitOfTimeRange)
+  {
+	case 0: // minute
+    case 1: // hour
+	  break;
+		
+    case 10: // 3 hours
+      multiplier = 3;
+      break;
+
+    case 11: // 6 hours
+      multiplier = 6;
+      break;
+
+    case 12: // 12 hours
+      multiplier = 12;
+      break;
+
+    case 13: // 15 minutes
+      multiplier = 15;
+      break;
+
+    case 14: // 30 minutes
+      multiplier = 30;
+      break;
+
+    default:
+      std::cerr << "NFmiGribMessage: Invalid unitOfTimeRange value: " << unitOfTimeRange << std::endl;
+      break;
+  }
+
+  if (step != INVALID_INT_VALUE)
+    step *= multiplier;
+  
+  return step;
+}
+
 long NFmiGribMessage::StartStep() const {
   long l;
   GRIB_CHECK(grib_get_long(itsHandle,"startStep",&l),0);
@@ -871,9 +959,9 @@ bool NFmiGribMessage::UVRelativeToGrid() const
   }
   else
   {
-	 long r = ResolutionAndComponentFlags();
-	 
-	 l = (CHECK_BIT(r, 3) == 8) ? 1 : 0; // in grib2 4th bit tells if uv is relative to grid or not (1000 == 8 == true)
+   long r = ResolutionAndComponentFlags();
+
+   l = (CHECK_BIT(r, 3) == 8) ? 1 : 0; // in grib2 4th bit tells if uv is relative to grid or not (1000 == 8 == true)
   }
   
   if (l < 0 || l > 1)
@@ -961,6 +1049,35 @@ double NFmiGribMessage::YLengthInMeters() const {
   double d;
   GRIB_CHECK(grib_get_double(itsHandle,"DyInMetres",&d),0);
   return d;}
+
+long NFmiGribMessage::NormalizedUnitOfTimeRange() const
+{
+
+  // http://www.nco.ncep.noaa.gov/pmb/docs/on388/table4.html
+  // http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table4-4.shtml
+
+  long l;
+
+  if (Edition() == 1) {
+    GRIB_CHECK(grib_get_long(itsHandle,"unitOfTimeRange",&l), 0);
+  }
+
+  else {
+    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfUnitOfTimeRange",&l), 0);
+
+  switch (l) {
+
+    case 13:
+      l = 254; // second
+      break;
+
+    default:
+      break;
+  }
+  }
+
+  return l;
+}
 
 long NFmiGribMessage::UnitOfTimeRange() const
 {

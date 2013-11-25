@@ -1,8 +1,8 @@
 /*
  * NFmiGribMessage.h
  *
- *  Created on: Oct 16, 2012
- *	  Author: partio
+ * Created on: Oct 16, 2012
+ * Author: partio
  *
  * One NFmiGribMessage equals to one grib message.
  * All the setter functions modify in-memory structures,
@@ -22,244 +22,267 @@ class NFmiGribMessage {
 
   public:
 
-	NFmiGribMessage();
-	~NFmiGribMessage();
+    NFmiGribMessage();
+    ~NFmiGribMessage();
 
-	bool Read(grib_handle *h);
+    bool Read(grib_handle *h);
 
-	long SizeX() const;
-	long SizeY() const;
-	//long SizeZ();
+    long SizeX() const;
+    long SizeY() const;
+    //long SizeZ();
 
-	void SizeX(long theXSize);
-	void SizeY(long theYSize);
-	//void SizeZ();
+    void SizeX(long theXSize);
+    void SizeY(long theYSize);
+    //void SizeZ();
 
-	double X0() const;
-	double Y0() const;
+    double X0() const;
+    double Y0() const;
 
-	void X0(double theX0);
-	void Y0(double theY0);
+    void X0(double theX0);
+    void Y0(double theY0);
 
-	double X1() const;
-	double Y1() const;
+    double X1() const;
+    double Y1() const;
 
-	void X1(double theX1);
-	void Y1(double theY1);
+    void X1(double theX1);
+    void Y1(double theY1);
 
-	double SouthPoleX() const;
-	void SouthPoleX(double theLongitude);
+    double SouthPoleX() const;
+    void SouthPoleX(double theLongitude);
 
-	double SouthPoleY() const;
-	void SouthPoleY(double theLatitude);
+    double SouthPoleY() const;
+    void SouthPoleY(double theLatitude);
 
-	double *Values() ;
-	void Values(const double* theValues, long theValuesLength);
+    double *Values() ;
+    void Values(const double* theValues, long theValuesLength);
 
-	size_t ValuesLength() const;
+    size_t ValuesLength() const;
 
-	long DataDate() const;
-	void DataDate(long theDate);
+    long DataDate() const;
+    void DataDate(long theDate);
 
-	long DataTime() const;
-	void DataTime(long theTime);
+    long DataTime() const;
+    void DataTime(long theTime);
 
-	long ForecastTime() const;
-	void ForecastTime(long theTime);
+    long ForecastTime() const;
+    void ForecastTime(long theTime);
 
-	std::string ParameterUnit() const;
-	long ParameterNumber() const;
-	long ParameterDiscipline() const;
-	long ParameterCategory() const;
+    std::string ParameterUnit() const;
+    long ParameterNumber() const;
+    long ParameterDiscipline() const;
+    long ParameterCategory() const;
 
-	void ParameterNumber(long theNumber);
-	void ParameterDiscipline(long theDiscipline);
-	void ParameterCategory(long theCategory);
+    void ParameterNumber(long theNumber);
+    void ParameterDiscipline(long theDiscipline);
+    void ParameterCategory(long theCategory);
 
-	std::string ParameterName() const;
+    std::string ParameterName() const;
 
-	long GridType() const;
-	void GridType(long theGridType);
+    long GridType() const;
+    void GridType(long theGridType);
 
-	double XResolution() const;
-	double YResolution() const;
+    double XResolution() const;
+    double YResolution() const;
 
-	long Edition() const;
-	void Edition(long theEdition);
+    long Edition() const;
+    void Edition(long theEdition);
 
-	double GridOrientation() const;
-	void GridOrientation(double theGridOrientation);
+    double GridOrientation() const;
+    void GridOrientation(double theGridOrientation);
 
-	long Centre() const;
-	void Centre(long theCentre);
+    long Centre() const;
+    void Centre(long theCentre);
 
-	long Year() const;
-	long Month() const;
-	long Day() const;
-	long Hour() const;
-	long Minute() const;
-	long Second() const;
+    long Year() const;
+    long Month() const;
+    long Day() const;
+    long Hour() const;
+    long Minute() const;
+    long Second() const;
 
-	long Process() const;
-	void Process(long theProcess);
+    long Process() const;
+    void Process(long theProcess);
 
-	long Table2Version() const;
-	void Table2Version(long theVersion);
+    long Table2Version() const;
+    void Table2Version(long theVersion);
 
-	long DataType() const;
-	long PerturbationNumber() { return itsPerturbationNumber; }
+    long DataType() const;
+    long PerturbationNumber() { return itsPerturbationNumber; }
 
-	long NormalizedGridType(unsigned int targetEdition = 1) const;
-	long NormalizedLevelType(unsigned int targetEdition = 1) const;
+    long NormalizedGridType(unsigned int targetEdition = 1) const;
+    long NormalizedLevelType(unsigned int targetEdition = 1) const;
 
-	long LocalDefinitionNumber() const;
-	long DerivedForecast() { return itsDerivedForecast; }
-	long TypeOfEnsembleForecast() { return itsTypeOfEnsembleForecast; }
-	long NumberOfForecastsInTheEnsemble() { return itsNumberOfForecastsInTheEnsemble; }
-	long ClusterIdentifier() { return itsClusterIdentifier; }
+    long LocalDefinitionNumber() const;
+    long DerivedForecast() { return itsDerivedForecast; }
+    long TypeOfEnsembleForecast() { return itsTypeOfEnsembleForecast; }
+    long NumberOfForecastsInTheEnsemble() { return itsNumberOfForecastsInTheEnsemble; }
+    long ClusterIdentifier() { return itsClusterIdentifier; }
 
-	long ForecastProbabilityNumber() { return itsForecastProbabilityNumber; }
-	long ProbabilityType() { return itsProbabilityType; }
-	long PercentileValue() { return itsPercentileValue; }
-	long NumberOfTimeRange() { return itsNumberOfTimeRange; }
-	long TypeOfTimeIncrement() { return itsTypeOfTimeIncrement; }
+    long ForecastProbabilityNumber() { return itsForecastProbabilityNumber; }
+    long ProbabilityType() { return itsProbabilityType; }
+    long PercentileValue() { return itsPercentileValue; }
+    long NumberOfTimeRange() { return itsNumberOfTimeRange; }
+    long TypeOfTimeIncrement() { return itsTypeOfTimeIncrement; }
 
-	long StartStep() const;
-	void StartStep(long theStartStep);
+    long StartStep() const;
+    void StartStep(long theStartStep);
 
-	long EndStep() const;
-	void EndStep(long theEndStep);
+    long EndStep() const;
+    void EndStep(long theEndStep);
 
-	long StepUnits() const;
-	void StepUnits(long theUnits);
+    long StepUnits() const;
+    void StepUnits(long theUnits);
 
-	long StepRange() const;
-	void StepRange(long theRange);
+    long StepRange() const;
+    void StepRange(long theRange);
 
-	long TimeRangeIndicator() const;
-	void TimeRangeIndicator(long theTimeRangeIndicator);
+    long TimeRangeIndicator() const;
+    void TimeRangeIndicator(long theTimeRangeIndicator);
 
-	bool Write(const std::string& theOutputFile, bool appendToFile = false);
+    bool Write(const std::string& theOutputFile, bool appendToFile = false);
 
-	void Year(const std::string& theYear);
-	void Month(const std::string& theMonth);
-	void Day(const std::string& theDay);
-	void Hour(const std::string& theHour);
-	void Minute(const std::string& theMinute);
-	void Second(const std::string& theSecond);
+    void Year(const std::string& theYear);
+    void Month(const std::string& theMonth);
+    void Day(const std::string& theDay);
+    void Hour(const std::string& theHour);
+    void Minute(const std::string& theMinute);
+    void Second(const std::string& theSecond);
 
-	bool Bitmap() const;
-	void Bitmap(bool theBitmap);
+    bool Bitmap() const;
+    void Bitmap(bool theBitmap);
 
-	long BitsPerValue() const;
-	void BitsPerValue(long theBitsPerValue);
+    long BitsPerValue() const;
+    void BitsPerValue(long theBitsPerValue);
 
-	void PackingType(const std::string& thePackingType);
-	std::string PackingType() const;
+    void PackingType(const std::string& thePackingType);
+    std::string PackingType() const;
 
-	long LevelValue() const;
-	void LevelValue(long theLevelValue);
+    long LevelValue() const;
+    void LevelValue(long theLevelValue);
 
-	long LevelType() const;
-	void LevelType(long theLevelType);
+    long LevelType() const;
+    void LevelType(long theLevelType);
 
-	bool IScansNegatively() const;
-	bool JScansPositively() const;
+    bool IScansNegatively() const;
+    bool JScansPositively() const;
 
-	void IScansNegatively(bool theNegativeIScan);
-	void JScansPositively(bool thePositiveJScan);
+    void IScansNegatively(bool theNegativeIScan);
+    void JScansPositively(bool thePositiveJScan);
 
-	double iDirectionIncrement() const;
-	void iDirectionIncrement(double theIncrement);
+    double iDirectionIncrement() const;
+    void iDirectionIncrement(double theIncrement);
 
-	double jDirectionIncrement() const;
-	void jDirectionIncrement(double theIncrement);
+    double jDirectionIncrement() const;
+    void jDirectionIncrement(double theIncrement);
 
-	long TypeOfGeneratingProcess() const;
-	void TypeOfGeneratingProcess(long theProcess);
+    long TypeOfGeneratingProcess() const;
+    void TypeOfGeneratingProcess(long theProcess);
 
-	void XLengthInMeters(double theLength);
-	void YLengthInMeters(double theLength);
+    void XLengthInMeters(double theLength);
+    void YLengthInMeters(double theLength);
 
-	double XLengthInMeters() const;
-	double YLengthInMeters() const;
+    double XLengthInMeters() const;
+    double YLengthInMeters() const;
 
-	long GridTypeToAnotherEdition(long gridType, long edition) const;
-	long LevelTypeToAnotherEdition(long levelType, long edition) const;
+    long GridTypeToAnotherEdition(long gridType, long edition) const;
+    long LevelTypeToAnotherEdition(long levelType, long edition) const;
 
-	long NumberOfMissing() const;
+    long NumberOfMissing() const;
 
-	bool UVRelativeToGrid() const;
-	void UVRelativeToGrid(bool theRelativity);
+    bool UVRelativeToGrid() const;
+    void UVRelativeToGrid(bool theRelativity);
 
-	long UnitOfTimeRange() const;
-	void UnitOfTimeRange(long theUnit);
+    long UnitOfTimeRange() const;
+    void UnitOfTimeRange(long theUnit);
 
-	long UnitForTimeRange() const;
-	void UnitForTimeRange(long theUnit);
+    long UnitForTimeRange() const;
+    void UnitForTimeRange(long theUnit);
 
-	long LengthOfTimeRange() const;
-	void LengthOfTimeRange(long theLength);
+    long LengthOfTimeRange() const;
+    void LengthOfTimeRange(long theLength);
 
-	long P1() const;
-	void P1(long theP1);
+    long P1() const;
+    void P1(long theP1);
 
-	long P2() const;
-	void P2(long theP2);
+    long P2() const;
+    void P2(long theP2);
 
-	long ResolutionAndComponentFlags() const;
-	void ResolutionAndComponentFlags(long theResolutionAndComponentFlags);
+    long ResolutionAndComponentFlags() const;
+    void ResolutionAndComponentFlags(long theResolutionAndComponentFlags);
 
-	long NV() const;
-	void NV(long theNV);
+    long NV() const;
+    void NV(long theNV);
 
-	std::vector<double> PV(size_t theNumberOfCoordinates, size_t level);
-	void PV(const std::vector<double>& theAB, size_t abLen);
+    std::vector<double> PV(size_t theNumberOfCoordinates, size_t level);
+    void PV(const std::vector<double>& theAB, size_t abLen);
  
-	size_t PackedValuesLength() const;
-	
-	bool PackedValues(unsigned char* data) const;
+    size_t PackedValuesLength() const;
 
-	double BinaryScaleFactor() const;
-	double DecimalScaleFactor() const;
-	double ReferenceValue() const;
+    bool PackedValues(unsigned char* data) const;
 
-	long Section4Length() const;
+    double BinaryScaleFactor() const;
+    double DecimalScaleFactor() const;
+    double ReferenceValue() const;
 
-	size_t BytesLength(const std::string& key) const;
-	bool Bytes(const std::string& key, unsigned char* data) const;
+    long Section4Length() const;
 
-	long ProductDefinitionTemplateNumber() const;
-	void ProductDefinitionTemplateNumber(long theNumber);
+    size_t BytesLength(const std::string& key) const;
+    bool Bytes(const std::string& key, unsigned char* data) const;
 
-	long TypeOfStatisticalProcessing() const;
-	void TypeOfStatisticalProcessing(long theType);
+    long ProductDefinitionTemplateNumber() const;
+    void ProductDefinitionTemplateNumber(long theNumber);
 
-	// grib_api version > 1.10.4
-	bool KeyExists(const std::string& theKey) const;
-	
+    long TypeOfStatisticalProcessing() const;
+    void TypeOfStatisticalProcessing(long theType);
+
+    // grib_api version > 1.10.4
+    bool KeyExists(const std::string& theKey) const;
+
+    /**
+     * @brief Normalizing unitOfTimeRange to GRIB 1 values
+     */
+
+    long NormalizedUnitOfTimeRange() const;
+
+    /**
+     * @brief Return "flattened" value of start step or end step
+     *
+     * For example unit for time range could be 15 minutes, and time step in
+     * grib could have value 3. This function would then return value 45.
+     *
+     * Function is normalized meaning it will return values in GRIB1 style
+     * even though data is in GRIB2.
+     *
+     * @param endStep If true, return value of end step. Otherwise return value of start step.
+	 * @param flatten If true, time value is flattened as described above
+     * @return Flattened time step value
+    */
+
+    long NormalizedStep(bool endStep, bool flatten) const;
+
+
   private:
-	void Clear();
+    void Clear();
 
-	long itsTotalLength;
+    long itsTotalLength;
 
-	long itsPerturbationNumber;
-	long itsTypeOfEnsembleForecast;
-	long itsDerivedForecast;
-	long itsNumberOfForecastsInTheEnsemble;
-	long itsClusterIdentifier;
-	long itsForecastProbabilityNumber;
-	long itsProbabilityType;
-	long itsPercentileValue;
-	long itsNumberOfTimeRange;
-	long itsTypeOfTimeIncrement;
+    long itsPerturbationNumber;
+    long itsTypeOfEnsembleForecast;
+    long itsDerivedForecast;
+    long itsNumberOfForecastsInTheEnsemble;
+    long itsClusterIdentifier;
+    long itsForecastProbabilityNumber;
+    long itsProbabilityType;
+    long itsPercentileValue;
+    long itsNumberOfTimeRange;
+    long itsTypeOfTimeIncrement;
 
-	grib_handle *itsHandle;
+    grib_handle *itsHandle;
 
-	boost::bimap<long,long> itsGridTypeMap;
-	boost::bimap<long,long> itsLevelTypeMap;
+    boost::bimap<long,long> itsGridTypeMap;
+    boost::bimap<long,long> itsLevelTypeMap;
 
-	mutable size_t itsPackedValuesLength;
+    mutable size_t itsPackedValuesLength;
 };
 
 #endif /* NFMIGRIBMESSAGE_H_ */
