@@ -748,7 +748,7 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
           break;
 
         default:
-          std::cerr << "NFmiGribMessage: Invalid timeRangeIndicator value: " << timeRangeIndicator << std::endl;
+          timeRangeIndicator = 1; // default to hour
           break;
 
     }
@@ -792,7 +792,6 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
       break;
 
     default:
-      std::cerr << "NFmiGribMessage: Invalid unitOfTimeRange value: " << unitOfTimeRange << std::endl;
       break;
   }
 
