@@ -8,7 +8,7 @@ const float kFloatMissing = 32700;
 NFmiGrib::NFmiGrib() :
   h(0),
   f(0),
-  itsMessageCount(0),
+  itsMessageCount(INVALID_INT_VALUE),
   itsCurrentMessage(0)
 {
   m = std::shared_ptr<NFmiGribMessage> (new NFmiGribMessage());
@@ -17,7 +17,7 @@ NFmiGrib::NFmiGrib() :
 NFmiGrib::NFmiGrib(const std::string &theFileName) :
   h(0),
   f(0),
-  itsMessageCount(0),
+  itsMessageCount(INVALID_INT_VALUE),
   itsCurrentMessage(0)
 {
 
@@ -45,9 +45,6 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   if (!(f = fopen(theFileName.c_str(), "rb")))
     return false;
 
-  if (grib_count_in_file(0, f, &itsMessageCount) != GRIB_SUCCESS)
-    return false;
-
   return true;
 }
 
@@ -70,6 +67,12 @@ bool NFmiGrib::NextMessage() {
 }
 
 int NFmiGrib::MessageCount() {
+
+  if (itsMessageCount == INVALID_INT_VALUE)
+  {
+    GRIB_CHECK(grib_count_in_file(0, f, &itsMessageCount), 0);
+  }
+
   return itsMessageCount;
 }
 
