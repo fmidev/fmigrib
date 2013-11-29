@@ -18,23 +18,24 @@ DIFFICULTFLAGS = -pedantic -Weffc++ -Wredundant-decls -Wshadow -Woverloaded-virt
 
 CC = /usr/bin/g++
 
+MAJOR_VERSION=0
+MINOR_VERSION=1
+
 # Default compiler flags
 
 CFLAGS = -fPIC -std=c++0x -DUNIX -O2 -DNDEBUG $(MAINFLAGS) 
-LDFLAGS = -s
+LDFLAGS = -shared -Wl,-soname,lib$(LIB).so.$(MAJOR_VERSION)
 
 # Special modes
 
 CFLAGS_DEBUG = -fPIC -std=c++0x -DUNIX -O0 -g -DDEBUG $(MAINFLAGS) $(EXTRAFLAGS)
-CFLAGS_PROFILE = -fPIC -std=c++0x -DUNIX -O2 -g -pg -DNDEBUG $(MAINFLAGS)
 
-LDFLAGS_DEBUG =
-LDFLAGS_PROFILE =
+LDFLAGS_DEBUG = $(LDFLAGS)
 
 INCLUDES = -I include \
            -I$(includedir)
 
-LIBS =  -L$(libdir) \
+LIBS =  -L$(LIBDIR) \
 	-lboost_date_time \
         -lboost_program_options \
         -lboost_filesystem \
@@ -54,13 +55,13 @@ else
 endif
 
 ifeq ($(processor), x86_64)
-  libdir = $(PREFIX)/lib64
+  LIBDIR = $(PREFIX)/lib64
 else
-  libdir = $(PREFIX)/lib
+  LIBDIR = $(PREFIX)/lib
 endif
 
 objdir = obj
-libdir = lib
+LIBDIR = lib
 
 includedir = $(PREFIX)/include
 
@@ -117,6 +118,8 @@ ALLSRCS = $(wildcard *.cpp source/*.cpp)
 
 .PHONY: test rpm
 
+rpmsourcedir = /tmp/$(shell whoami)/rpmbuild
+
 # The rules
 
 all: objdir $(LIB)
@@ -125,30 +128,38 @@ release: objdir $(LIB)
 profile: objdir $(LIB)
 
 $(LIB): $(OBJS)
-	ar rcs $(libdir)/lib$(LIB).a $(OBJFILES)
+	ar rcs $(LIBDIR)/lib$(LIB).a $(OBJFILES)
+	$(CC) -o $(LIBDIR)/lib$(LIB).so.$(MAJOR_VERSION).$(MINOR_VERSION) $(LDFLAGS) $(OBJFILES)
 
 clean:
-	rm -f $(libdir)/*.so $(libdir)/*.a $(OBJFILES) *~ source/*~ include/*~
+	rm -f $(LIBDIR)/*.so* $(LIBDIR)/*.a $(OBJFILES) *~ source/*~ include/*~
 
 install:
-	mkdir -p $(bindir)
-	@list='$(LIB)'; \
-	for prog in $$list; do \
-	  echo $(INSTALL_LIB) $$prog $(bindir)/$$prog; \
-	  $(INSTALL_LIB) $$prog $(bindir)/$$prog; \
-	done
-
-depend:
-	gccmakedep -fDependencies -- $(CFLAGS) $(INCLUDES) -- $(ALLSRCS)
+	mkdir -p $(libdir)
+	mkdir -p $(includedir)
+	@list=`cd include && ls -1 *.h`; \
+        for hdr in $$list; do \
+          $(INSTALL_DATA) include/$$hdr $(includedir)/$$hdr; \
+        done
+	$(INSTALL_DATA) lib/* $(libdir)
 
 objdir:
 	@mkdir -p $(objdir)
-	@mkdir -p $(libdir)
+	@mkdir -p $(LIBDIR)
 
+rpm:    clean
+	mkdir -p $(rpmsourcedir) ; \
+        if [ -e $(LIB).spec ]; then \
+          tar -C .. --exclude .svn -cf $(rpmsourcedir)/lib$(LIB).tar $(LIB) ; \
+          gzip -f $(rpmsourcedir)/lib$(LIB).tar ; \
+          rpmbuild -ta $(rpmsourcedir)/lib$(LIB).tar.gz ; \
+          rm -f $(rpmsourcedir)/lib$(LIB).tar.gz ; \
+        else \
+          echo $(rpmerr); \
+        fi;
 
 .SUFFIXES: $(SUFFIXES) .cpp
 
 .cpp.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $(objdir)/$@ $<
 
--include Dependencies
