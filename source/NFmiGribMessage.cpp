@@ -421,7 +421,14 @@ long NFmiGribMessage::LevelValue() const {
 }
 
 void NFmiGribMessage::LevelValue(long theLevelValue) {
-  GRIB_CHECK(grib_set_long(itsHandle,"level",theLevelValue),0);
+  if (Edition() == 2)
+  {
+    GRIB_CHECK(grib_set_long(itsHandle,"scaleFactorOfFirstFixedSurface",0),0);
+	GRIB_CHECK(grib_set_long(itsHandle,"scaledValueOfFirstFixedSurface",theLevelValue),0);
+  }
+  else
+    GRIB_CHECK(grib_set_long(itsHandle,"level",theLevelValue),0);
+    
 }
 
 /*
@@ -445,6 +452,8 @@ void NFmiGribMessage::Clear() {
   itsTypeOfTimeIncrement = INVALID_INT_VALUE;
 
   itsPackedValuesLength = INVALID_INT_VALUE;
+
+  itsEdition = INVALID_INT_VALUE;
 }
 
 double NFmiGribMessage::X0() const {
@@ -528,15 +537,23 @@ void NFmiGribMessage::SouthPoleY(double theLatitude) {
 }
 
 long NFmiGribMessage::Edition() const {
+  if (itsEdition != INVALID_INT_VALUE)
+  {
+    return itsEdition;
+  }
+
   long l;
 
   GRIB_CHECK(grib_get_long(itsHandle,"editionNumber",&l),0);
 
+  itsEdition = l;
+  
   return l;
 }
 
 void NFmiGribMessage::Edition(long theEdition) {
   GRIB_CHECK(grib_set_long(itsHandle,"editionNumber",theEdition),0);
+  itsEdition = theEdition;
 }
 
 long NFmiGribMessage::Process() const {
@@ -1184,7 +1201,9 @@ long NFmiGribMessage::NV() const
 
 void NFmiGribMessage::NV(long theNV)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"NV",theNV), 0);
+  // For some reason writing NV on grib2 disables the key "pv" !
+  if (Edition() == 1)
+    GRIB_CHECK(grib_set_long(itsHandle,"NV",theNV), 0);
 }
 
 std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t level)
@@ -1214,7 +1233,7 @@ std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t le
 
 void NFmiGribMessage::PV(const std::vector<double>& theAB, size_t abLen)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"PVPresent", 1), 0);
+  GRIB_CHECK(grib_set_long(itsHandle,"PVPresent",1), 0);
   GRIB_CHECK(grib_set_double_array(itsHandle,"pv",&theAB[0],abLen),0);
 }
 

@@ -277,6 +277,7 @@ class NFmiGribMessage {
     long itsNumberOfTimeRange;
     long itsTypeOfTimeIncrement;
 
+    mutable long itsEdition; //<! Cache this key since it's used quite a lot
     grib_handle *itsHandle;
 
     boost::bimap<long,long> itsGridTypeMap;
