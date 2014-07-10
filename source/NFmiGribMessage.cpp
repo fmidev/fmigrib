@@ -16,7 +16,7 @@ const float kFloatMissing = 32700;
 
 NFmiGribMessage::NFmiGribMessage() {
 
-  itsHandle = grib_handle_new_from_template(NULL,"GRIB2");
+  itsHandle = grib_handle_new_from_samples(NULL,"GRIB2");
 
   if (!itsHandle)
     throw std::runtime_error("Unable to create grib handle");
