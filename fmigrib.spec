@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 14.3.17
+Version: 14.9.29
 Release: 1.fmi
 License: FMI
 Group: Development/Tools
@@ -9,7 +9,7 @@ URL: http://www.fmi.fi
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}
-BuildRequires: grib_api-devel >= 1.10.4
+BuildRequires: grib_api-devel >= 1.12.1
 BuildRequires: boost-devel >= 1.54
 
 %description
@@ -54,6 +54,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Mon Sep 29 2014 Mikko Partio <mikko.partio@fmi.fi> - 14.9.29-1.fmi
+- Do not create grib_handle until it is necessary to avoid random crashes (ECMWF: SUP-1023)
 * Mon Mar 17 2014 Mikko Partio <mikko.partio@fmi.fi> - 14.3.17-1.fmi
 - Changes in grib2 writing
 * Fri Nov 29 2013 Mikko Partio <mikko.partio@fmi.fi> - 13.11.29-1.fmi
