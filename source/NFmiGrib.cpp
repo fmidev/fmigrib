@@ -2,7 +2,6 @@
 #include <stdexcept>
 #include <iostream>
 
-const int INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
 
 NFmiGrib::NFmiGrib() :
@@ -11,7 +10,7 @@ NFmiGrib::NFmiGrib() :
   itsMessageCount(INVALID_INT_VALUE),
   itsCurrentMessage(0)
 {
-  m = std::shared_ptr<NFmiGribMessage> (new NFmiGribMessage());
+  m = std::unique_ptr<NFmiGribMessage> (new NFmiGribMessage());
 }
 
 NFmiGrib::NFmiGrib(const std::string &theFileName) :
@@ -21,30 +20,36 @@ NFmiGrib::NFmiGrib(const std::string &theFileName) :
   itsCurrentMessage(0)
 {
 
-  m = std::shared_ptr<NFmiGribMessage> (new NFmiGribMessage());
+  m = std::unique_ptr<NFmiGribMessage> (new NFmiGribMessage());
   Open(theFileName);
 }
 
 NFmiGrib::~NFmiGrib() {
 
   if (h)
+  {
     grib_handle_delete(h);
-
+  }
   if (f)
+  {
     fclose(f);
-
+  }
 }
 
 bool NFmiGrib::Open(const std::string &theFileName) {
 
   if (f)
+  {
     fclose(f);
-
+  }
+    
   // Open with 'rb', although in linux it equals to 'r'
 
   if (!(f = fopen(theFileName.c_str(), "rb")))
+  {
     return false;
-
+  }
+  
   return true;
 }
 
@@ -58,12 +63,11 @@ bool NFmiGrib::NextMessage() {
   if ((h = grib_handle_new_from_file(0,f,&err)) != NULL) {
     itsCurrentMessage++;
 
-    Message()->Read(h);
-    return true;
-
+    return m->Read(h);
   }
-  else
+  else {
     return false;
+  }
 }
 
 int NFmiGrib::MessageCount() {

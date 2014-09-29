@@ -30,7 +30,7 @@ LDFLAGS = -shared -Wl,-soname,lib$(LIB).so.$(MAJOR_VERSION)
 
 CFLAGS_DEBUG = -fPIC -std=c++0x -DUNIX -O0 -g -DDEBUG $(MAINFLAGS) $(EXTRAFLAGS)
 
-LDFLAGS_DEBUG = $(LDFLAGS)
+LDFLAGS_DEBUG = -shared -Wl,-soname,lib$(LIB).so.$(MAJOR_VERSION)
 
 INCLUDES = -I include \
            -I$(includedir)
@@ -116,7 +116,7 @@ SUBOBJFILES = $(SUBOBJS:%.o=obj/%.o)
 
 ALLSRCS = $(wildcard *.cpp source/*.cpp)
 
-.PHONY: test rpm
+.PHONY: rpm
 
 rpmsourcedir = /tmp/$(shell whoami)/rpmbuild
 
@@ -134,6 +134,9 @@ $(LIB): $(OBJS)
 clean:
 	rm -f $(LIBDIR)/*.so* $(LIBDIR)/*.a $(OBJFILES) *~ source/*~ include/*~
 
+test:
+	$(CC) $(CFLAGS_DEBUG) tests/unit_tests.cpp $(INCLUDES) -L$(LIBDIR) -l$(LIB) $(LIBS) -lboost_unit_test_framework -o unit_tests || exit
+	./unit_tests --build_info --log_level=test_suite --show_progress
 install:
 	mkdir -p $(libdir)
 	mkdir -p $(includedir)

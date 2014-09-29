@@ -14,12 +14,8 @@ const float kFloatMissing = 32700;
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
-NFmiGribMessage::NFmiGribMessage() {
-
-  itsHandle = grib_handle_new_from_samples(NULL,"GRIB2");
-
-  if (!itsHandle)
-    throw std::runtime_error("Unable to create grib handle");
+NFmiGribMessage::NFmiGribMessage() 
+	: itsHandle(0) {
 
   Clear();
 
@@ -51,8 +47,8 @@ NFmiGribMessage::NFmiGribMessage() {
 
 NFmiGribMessage::~NFmiGribMessage() {
 
-  if (itsHandle)
-    grib_handle_delete(itsHandle);
+ // if (itsHandle)
+    //grib_handle_delete(itsHandle);
 
 }
 
@@ -63,7 +59,7 @@ bool NFmiGribMessage::Read(grib_handle *h) {
   Clear();
 
   // Edition-specific keys
-
+  
   if (grib_get_long(h, "perturbationNumber", &t) == GRIB_SUCCESS)
     itsPerturbationNumber = t;
 
@@ -113,13 +109,15 @@ bool NFmiGribMessage::Read(grib_handle *h) {
     itsTypeOfTimeIncrement = t;
 
   // Grib values
-
-
+/*
   if (itsHandle)
+  {std::cout << "grib_Handle_delete\n";
     grib_handle_delete(itsHandle);
-
+  }
   itsHandle = grib_handle_clone(h); // have to clone handle since data values are not returned until called
-
+*/
+  itsHandle = h;
+  
   return true;
 }
 
@@ -127,9 +125,7 @@ long NFmiGribMessage::LocalDefinitionNumber() const
 {
   
   if (Edition() == 1) {
-    long l;
-    GRIB_CHECK(grib_get_long(itsHandle, "localDefinitionNumber", &l), 0);
-    return l;
+    return GetLongKey("localDefinitionNumber");
   }
   else
   {
@@ -143,7 +139,7 @@ long NFmiGribMessage::ProductDefinitionTemplateNumber() const
 
   if (Edition() == 2)
   {
-    GRIB_CHECK(grib_get_long(itsHandle,"productDefinitionTemplateNumber",&l),0);
+    l = GetLongKey("productDefinitionTemplateNumber");
   }
 
   return l;
@@ -151,7 +147,7 @@ long NFmiGribMessage::ProductDefinitionTemplateNumber() const
 
 void NFmiGribMessage::ProductDefinitionTemplateNumber(long theNumber)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"productDefinitionTemplateNumber",theNumber),0);
+  SetLongKey("productDefinitionTemplateNumber",theNumber);
 }
 
 long NFmiGribMessage::TypeOfStatisticalProcessing() const
@@ -160,7 +156,7 @@ long NFmiGribMessage::TypeOfStatisticalProcessing() const
 
   if (Edition() == 2)
   {
-    GRIB_CHECK(grib_get_long(itsHandle,"typeOfStatisticalProcessing",&l),0);
+    l = GetLongKey("typeOfStatisticalProcessing");
   }
 
   return l;
@@ -170,17 +166,15 @@ void NFmiGribMessage::TypeOfStatisticalProcessing(long theType)
 {
   if (Edition() == 2)
   {
-    GRIB_CHECK(grib_set_long(itsHandle,"typeOfStatisticalProcessing",theType),0);
+    SetLongKey("typeOfStatisticalProcessing",theType);
   }
 }
-
+/*
 long NFmiGribMessage::DataType() const
 {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle, "type", &l),0);
-  return l;
+  return GetLongKey("type");
 }
-
+*/
 /*
  * Values()
  *
@@ -194,9 +188,9 @@ long NFmiGribMessage::DataType() const
 double *NFmiGribMessage::Values() {
 
   // Set missing value to kFloatMissing
-
+  CreateHandle();
   if (Bitmap()) {
-    GRIB_CHECK(grib_set_double(itsHandle,"missingValue",kFloatMissing),0);
+    SetDoubleKey("missingValue",kFloatMissing);
   }
   size_t values_len = ValuesLength();
   double* vals = static_cast<double*> (malloc(values_len*sizeof(double)));
@@ -208,60 +202,48 @@ double *NFmiGribMessage::Values() {
 
 void NFmiGribMessage::Values(const double* theValues, long theValuesLength) {
 
+  CreateHandle();
   if (Bitmap()) {
-    GRIB_CHECK(grib_set_double(itsHandle,"missingValue",static_cast<double> (kFloatMissing)),0);
+    SetDoubleKey("missingValue",kFloatMissing);
   }
 
   if (Edition() == 2) {
-    GRIB_CHECK(grib_set_long(itsHandle,"numberOfValues",theValuesLength),0);
+    SetLongKey("numberOfValues",theValuesLength);
   }
 
   GRIB_CHECK(grib_set_double_array(itsHandle,"values",theValues,theValuesLength),0);
 }
 
 size_t NFmiGribMessage::ValuesLength() const {
-  size_t s;
-  GRIB_CHECK(grib_get_size(itsHandle,"values",&s),0);
-  return s;
+  return GetSizeTKey("values");
 }
 
 long NFmiGribMessage::DataDate() const {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"dataDate",&l),0);
-  return l;
+  return GetLongKey("dataDate");
 }
 
 void NFmiGribMessage::DataDate(long theDate) {
-  GRIB_CHECK(grib_set_long(itsHandle,"dataDate",theDate),0);
+  SetLongKey("dataDate",theDate);
 }
 
 long NFmiGribMessage::DataTime() const {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"dataTime",&l),0);
-  return l;
+  return GetLongKey("dataTime");
 }
 
 void NFmiGribMessage::DataTime(long theTime) {
-  GRIB_CHECK(grib_set_long(itsHandle,"dataTime",theTime),0);
+  SetLongKey("dataTime",theTime);
 }
 
 long NFmiGribMessage::ForecastTime() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"forecastTime",&l),0);
-
-  return l;
+  return GetLongKey("forecastTime");
 }
 
 void NFmiGribMessage::ForecastTime(long theTime)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"forecastTime",theTime),0);
+  SetLongKey("forecastTime",theTime);
 }
 
 std::string NFmiGribMessage::ParameterUnit() const {
-
-  size_t len = 255;
-  char unit[256];
 
   std::string keyName = "units";
 
@@ -270,164 +252,133 @@ std::string NFmiGribMessage::ParameterUnit() const {
     keyName = "parameterUnits";
   }
 
-  GRIB_CHECK(grib_get_string(itsHandle,keyName.c_str(), unit, &len), 0);
-
-  return std::string(unit);
+  return GetStringKey(keyName);
 }
 
 long NFmiGribMessage::ParameterNumber() const {
-  long l;
-
   if (Edition() == 1) {
-    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfParameter",&l),0);
+    return GetLongKey("indicatorOfParameter");
   }
   else {
-    GRIB_CHECK(grib_get_long(itsHandle,"parameterNumber",&l),0);
+    return GetLongKey("parameterNumber");
   }
-
-  return l;
 }
 
 long NFmiGribMessage::ParameterCategory() const {
+  long l = INVALID_INT_VALUE;
   if (Edition() == 2) {
-    long l;
-      GRIB_CHECK(grib_get_long(itsHandle,"parameterCategory",&l),0);
-      return l;
+    l = GetLongKey("parameterCategory");
   }
-  else
-    return INVALID_INT_VALUE;
+  
+  return l;
 }
 
 long NFmiGribMessage::ParameterDiscipline() const {
+  long l = INVALID_INT_VALUE;
+
   if (Edition() == 2) {
-    long l;
-    GRIB_CHECK(grib_get_long(itsHandle,"discipline",&l),0);
-    return l;
+    l = GetLongKey("discipline");
   }
-  else
-    return INVALID_INT_VALUE;
+  
+  return l;
 }
 
 void NFmiGribMessage::ParameterNumber(long theNumber) {
 
   if (Edition() == 1) {
-    GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfParameter",theNumber),0);
+    SetLongKey("indicatorOfParameter",theNumber);
   }
   else {
-    GRIB_CHECK(grib_set_long(itsHandle,"parameterNumber",theNumber),0);
+    SetLongKey("parameterNumber",theNumber);
   }
 }
 
 void NFmiGribMessage::ParameterCategory(long theCategory) {
-  GRIB_CHECK(grib_set_long(itsHandle,"parameterCategory",theCategory),0);
+  if (Edition() == 2)
+    SetLongKey("parameterCategory",theCategory);
 }
 
 void NFmiGribMessage::ParameterDiscipline(long theDiscipline) {
-  GRIB_CHECK(grib_set_long(itsHandle,"discipline",theDiscipline),0);
+  if (Edition() == 2)
+    SetLongKey("discipline",theDiscipline);
 }
 
 std::string NFmiGribMessage::ParameterName() const {
-  size_t len = 255;
-  char name[256];
-
-  GRIB_CHECK(grib_get_string(itsHandle, "parameterName", name, &len), 0);
-
-  return std::string(name);
+  return GetStringKey("name");
 }
 
 long NFmiGribMessage::GridType() const {
-  long l;
-
   if (Edition() == 1)
-    GRIB_CHECK(grib_get_long(itsHandle,"dataRepresentationType",&l),0);
+    return GetLongKey("dataRepresentationType");
   else
-    GRIB_CHECK(grib_get_long(itsHandle,"gridDefinitionTemplateNumber",&l),0);
+    return GetLongKey("gridDefinitionTemplateNumber");
 
-  return l;
 }
 
 void NFmiGribMessage::GridType(long theGridType) {
   if (Edition() == 1)
-    GRIB_CHECK(grib_set_long(itsHandle,"dataRepresentationType",theGridType),0);
+    SetLongKey("dataRepresentationType",theGridType);
   else
-    GRIB_CHECK(grib_set_long(itsHandle,"gridDefinitionTemplateNumber",theGridType),0);
+    SetLongKey("gridDefinitionTemplateNumber",theGridType);
 }
 
 double NFmiGribMessage::GridOrientation() const {
-  double d;
-  GRIB_CHECK(grib_get_double(itsHandle,"orientationOfTheGridInDegrees",&d),0);
-  return d;
+  return GetDoubleKey("orientationOfTheGridInDegrees");
 }
 
 void NFmiGribMessage::GridOrientation(double theOrientation) {
-  GRIB_CHECK(grib_set_double(itsHandle,"orientationOfTheGridInDegrees",theOrientation),0);
+  SetDoubleKey("orientationOfTheGridInDegrees",theOrientation);
 }
 
 double NFmiGribMessage::iDirectionIncrement() const
 {
-  double d;
-
-  GRIB_CHECK(grib_get_double(itsHandle,"iDirectionIncrementInDegrees",&d),0);
-
-  return d;
+  return GetDoubleKey("iDirectionIncrementInDegrees");
 }
 
 void NFmiGribMessage::iDirectionIncrement(double theIncrement)
 {
-  GRIB_CHECK(grib_set_double(itsHandle,"iDirectionIncrementInDegrees",theIncrement),0);
+  SetDoubleKey("iDirectionIncrementInDegrees",theIncrement);
 }
 
 double NFmiGribMessage::jDirectionIncrement() const
 {
-  double d;
-
-  GRIB_CHECK(grib_get_double(itsHandle,"jDirectionIncrementInDegrees",&d),0);
-
-  return d;
+  return GetDoubleKey("jDirectionIncrementInDegrees");
 }
 
 void NFmiGribMessage::jDirectionIncrement(double theIncrement)
 {
-  GRIB_CHECK(grib_set_double(itsHandle,"jDirectionIncrementInDegrees",theIncrement),0);
+  SetDoubleKey("jDirectionIncrementInDegrees",theIncrement);
 }
 
 long NFmiGribMessage::LevelType() const {
-  long l;
-
   if (Edition() == 2)
-    GRIB_CHECK(grib_get_long(itsHandle,"typeOfFirstFixedSurface",&l),0);
+    return GetLongKey("typeOfFirstFixedSurface");
 
   else
-    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfTypeOfLevel",&l),0);
-
-  return l;
+    return GetLongKey("indicatorOfTypeOfLevel");
 }
 
 void NFmiGribMessage::LevelType(long theLevelType) {
   if (Edition() == 2)
-    GRIB_CHECK(grib_set_long(itsHandle,"typeOfFirstFixedSurface",theLevelType),0);
+    SetLongKey("typeOfFirstFixedSurface",theLevelType);
 
   else
-    GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfTypeOfLevel",theLevelType),0);
+    SetLongKey("indicatorOfTypeOfLevel",theLevelType);
 
 }
 
 long NFmiGribMessage::LevelValue() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"level",&l),0);
-
-  return l;
+  return GetLongKey("level");
 }
 
 void NFmiGribMessage::LevelValue(long theLevelValue) {
   if (Edition() == 2)
   {
-    GRIB_CHECK(grib_set_long(itsHandle,"scaleFactorOfFirstFixedSurface",0),0);
-	GRIB_CHECK(grib_set_long(itsHandle,"scaledValueOfFirstFixedSurface",theLevelValue),0);
+    SetLongKey("scaleFactorOfFirstFixedSurface", 0);
+	SetLongKey("scaledValueOfFirstFixedSurface",theLevelValue);
   }
   else
-    GRIB_CHECK(grib_set_long(itsHandle,"level",theLevelValue),0);
+    SetLongKey("level",theLevelValue);
     
 }
 
@@ -457,83 +408,51 @@ void NFmiGribMessage::Clear() {
 }
 
 double NFmiGribMessage::X0() const {
-  double d;
-
-  GRIB_CHECK(grib_get_double(itsHandle,"longitudeOfFirstGridPointInDegrees",&d),0);
-
-  if (Edition() == 2)
-  {
-//    d -= 180;
-  }
-
-  return d;
+  return GetDoubleKey("longitudeOfFirstGridPointInDegrees");
 }
 
 double NFmiGribMessage::Y0() const {
-  double d;
-
-  GRIB_CHECK(grib_get_double(itsHandle,"latitudeOfFirstGridPointInDegrees",&d),0);
-
-  return d;
+  return GetDoubleKey("latitudeOfFirstGridPointInDegrees");
 }
 
 void NFmiGribMessage::X0(double theX0) {
-  GRIB_CHECK(grib_set_double(itsHandle,"longitudeOfFirstGridPointInDegrees",theX0),0);
+  SetDoubleKey("longitudeOfFirstGridPointInDegrees",theX0);
 }
 
 void NFmiGribMessage::Y0(double theY0) {
-  GRIB_CHECK(grib_set_double(itsHandle,"latitudeOfFirstGridPointInDegrees",theY0),0);
+  SetDoubleKey("latitudeOfFirstGridPointInDegrees",theY0);
 }
 
 double NFmiGribMessage::X1() const {
-  double d;
-
-  GRIB_CHECK(grib_get_double(itsHandle,"longitudeOfLastGridPointInDegrees",&d),0);
-
-  if (Edition() == 2)
-  {
-//    d -= 180;
-  }
-  
-  return d;
+  return GetDoubleKey("longitudeOfLastGridPointInDegrees");
 }
 
 double NFmiGribMessage::Y1() const {
-  double d;
-
-  GRIB_CHECK(grib_get_double(itsHandle,"latitudeOfLastGridPointInDegrees",&d),0);
-
-  return d;
+  return GetDoubleKey("latitudeOfLastGridPointInDegrees");
 }
 
 void NFmiGribMessage::X1(double theX1) {
-  GRIB_CHECK(grib_set_double(itsHandle,"longitudeOfLastGridPointInDegrees",theX1),0);
+  SetDoubleKey("longitudeOfLastGridPointInDegrees",theX1);
 }
 
 void NFmiGribMessage::Y1(double theY1) {
-  GRIB_CHECK(grib_set_double(itsHandle,"latitudeOfLastGridPointInDegrees",theY1),0);
+  SetDoubleKey("latitudeOfLastGridPointInDegrees",theY1);
 }
 
 double NFmiGribMessage::SouthPoleX() const {
-  double d;
-
-  GRIB_CHECK(grib_get_double(itsHandle,"longitudeOfSouthernPoleInDegrees",&d),0);
-  return d;
+  return GetDoubleKey("longitudeOfSouthernPoleInDegrees");
 }
 
 void NFmiGribMessage::SouthPoleX(double theLongitude) {
-  GRIB_CHECK(grib_set_double(itsHandle,"longitudeOfSouthernPoleInDegrees",theLongitude),0);
+  SetDoubleKey("longitudeOfSouthernPoleInDegrees",theLongitude);
 }
 
 double NFmiGribMessage::SouthPoleY() const {
-  double d;
-
-  GRIB_CHECK(grib_get_double(itsHandle,"latitudeOfSouthernPoleInDegrees",&d),0);
-  return d;
+  return GetDoubleKey("latitudeOfSouthernPoleInDegrees");
 }
 
 void NFmiGribMessage::SouthPoleY(double theLatitude) {
-  GRIB_CHECK(grib_set_double(itsHandle,"latitudeOfSouthernPoleInDegrees",theLatitude),0);
+  SetDoubleKey("latitudeOfSouthernPoleInDegrees",theLatitude);
 }
 
 long NFmiGribMessage::Edition() const {
@@ -542,110 +461,77 @@ long NFmiGribMessage::Edition() const {
     return itsEdition;
   }
 
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"editionNumber",&l),0);
-
-  itsEdition = l;
+  itsEdition = GetLongKey("editionNumber");
   
-  return l;
+  return itsEdition;
 }
 
 void NFmiGribMessage::Edition(long theEdition) {
-  GRIB_CHECK(grib_set_long(itsHandle,"editionNumber",theEdition),0);
+  SetLongKey("editionNumber",theEdition);
   itsEdition = theEdition;
 }
 
 long NFmiGribMessage::Process() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"generatingProcessIdentifier",&l),0);
-
-  return l;
+  return GetLongKey("generatingProcessIdentifier");
 }
 
 void NFmiGribMessage::Process(long theProcess) {
-  GRIB_CHECK(grib_set_long(itsHandle,"generatingProcessIdentifier",theProcess),0);
+  SetLongKey("generatingProcessIdentifier",theProcess);
 }
 
 long NFmiGribMessage::Centre() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"centre",&l),0);
-
-  return l;
+  return GetLongKey("centre");
 }
 
 void NFmiGribMessage::Centre(long theCentre) {
-  GRIB_CHECK(grib_set_long(itsHandle,"centre",theCentre),0);
+  SetLongKey("centre",theCentre);
 }
 
 
 bool NFmiGribMessage::IScansNegatively() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"iScansNegatively",&l),0);
-
-  return (l == 1);
+  return (1 == GetLongKey("iScansNegatively"));
 }
 
 bool NFmiGribMessage::JScansPositively() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"jScansPositively",&l),0);
-
-  return (l == 1);
+  return (1 == GetLongKey("jScansPositively"));
 }
 
 void NFmiGribMessage::IScansNegatively(bool theNegativeIScan) {
-  GRIB_CHECK(grib_set_long(itsHandle,"iScansNegatively",static_cast<long> (theNegativeIScan)),0);
+  SetLongKey("iScansNegatively",static_cast<long> (theNegativeIScan));
 }
 
 void NFmiGribMessage::JScansPositively(bool thePositiveJScan) {
-  GRIB_CHECK(grib_set_long(itsHandle,"jScansPositively",static_cast<long> (thePositiveJScan)),0);
+  SetLongKey("jScansPositively",static_cast<long> (thePositiveJScan));
 }
 
 long NFmiGribMessage::SizeX() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"Ni",&l),0);
-
-  return l;
+  return GetLongKey("Ni");
 }
 
 long NFmiGribMessage::SizeY() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"Nj",&l),0);
-  return l;
+  return GetLongKey("Nj");
 }
 
 void NFmiGribMessage::SizeX(long theXSize) {
-  GRIB_CHECK(grib_set_long(itsHandle, "Ni", theXSize), 0);
+  SetLongKey("Ni", theXSize);
 }
 
 void NFmiGribMessage::SizeY(long theYSize) {
-  GRIB_CHECK(grib_set_long(itsHandle, "Nj", theYSize), 0);
+  SetLongKey("Nj", theYSize);
 }
 
 long NFmiGribMessage::Table2Version() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"table2Version",&l),0);
-  return l;
+  return GetLongKey("table2Version");
 }
 
 void NFmiGribMessage::Table2Version(long theVersion) {
-  GRIB_CHECK(grib_set_long(itsHandle, "table2Version", theVersion), 0);
+  SetLongKey("table2Version", theVersion);
 }
 
 long NFmiGribMessage::NumberOfMissing() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"numberOfMissing",&l),0);
-
-  return l;
+  return GetLongKey("numberOfMissing");
 }
+
 /*
  * NormalizedLevelType()
  *
@@ -710,8 +596,6 @@ long NFmiGribMessage::GridTypeToAnotherEdition(long gridType, long targetEdition
 
 }
 
-
-
 /*
  * NormalizedGridType()
  *
@@ -729,7 +613,6 @@ long NFmiGribMessage::NormalizedGridType(unsigned int targetEdition) const {
   else {
     return GridTypeToAnotherEdition(rawtype, targetEdition);
   }
-
 }
 
 long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
@@ -820,150 +703,111 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
 }
 
 long NFmiGribMessage::StartStep() const {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"startStep",&l),0);
-  return l;
+  return GetLongKey("startStep");
 }
 
 void NFmiGribMessage::StartStep(long theStartStep) {
-  GRIB_CHECK(grib_set_long(itsHandle,"startStep",theStartStep),0);
+  SetLongKey("startStep", theStartStep);
 }
 
 long NFmiGribMessage::EndStep() const {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"endStep",&l),0);
-  return l;
+  return GetLongKey("endStep");
 }
 
 void NFmiGribMessage::EndStep(long theEndStep) {
-  GRIB_CHECK(grib_set_long(itsHandle,"endStep",theEndStep),0);
+  SetLongKey("endStep",theEndStep);
 }
 
 long NFmiGribMessage::StepUnits() const {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"stepUnits",&l),0);
-  return l;
+  return GetLongKey("stepUnits");
 }
 
 void NFmiGribMessage::StepUnits(long theUnit) {
-  GRIB_CHECK(grib_set_long(itsHandle,"stepUnits",theUnit),0);
+  SetLongKey("stepUnits",theUnit);
 }
 
 long NFmiGribMessage::StepRange() const {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"stepRange",&l),0);
-  return l;
+  return GetLongKey("stepRange");
 }
 
 void NFmiGribMessage::StepRange(long theRange) {
-  GRIB_CHECK(grib_set_long(itsHandle,"stepRange",theRange),0);
+  SetLongKey("stepRange",theRange);
 }
 
 long NFmiGribMessage::Year() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"year", &l),0);
-
-  return l;
+  return GetLongKey("year");
 }
 
 void NFmiGribMessage::Year(const std::string& theYear) {
-  GRIB_CHECK(grib_set_long(itsHandle,"year",boost::lexical_cast<long> (theYear)),0);
+  SetLongKey("year", boost::lexical_cast<long> (theYear));
 }
 
 long NFmiGribMessage::Month() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"month", &l),0);
-
-  return l;
+  return GetLongKey("month");
 }
 
 void NFmiGribMessage::Month(const std::string& theMonth) {
-  GRIB_CHECK(grib_set_long(itsHandle,"month",boost::lexical_cast<long> (theMonth)),0);
+  SetLongKey("month", boost::lexical_cast<long> (theMonth));
 }
 
 long NFmiGribMessage::Day() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"day", &l),0);
-
-  return l;
+  return GetLongKey("day");
 }
 
 void NFmiGribMessage::Day(const std::string& theDay) {
-  GRIB_CHECK(grib_set_long(itsHandle,"day",boost::lexical_cast<long> (theDay)),0);
+  SetLongKey("day", boost::lexical_cast<long> (theDay));
 }
 
 long NFmiGribMessage::Hour() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"hour", &l),0);
-
-  return l;
+  return GetLongKey("hour");
 }
 
 void NFmiGribMessage::Hour(const std::string& theHour) {
-  GRIB_CHECK(grib_set_long(itsHandle,"hour",boost::lexical_cast<long> (theHour)),0);
+  SetLongKey("hour", boost::lexical_cast<long> (theHour));
 }
 
 long NFmiGribMessage::Minute() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"minute", &l),0);
-
-  return l;
+  return GetLongKey("minute");
 }
 
 void NFmiGribMessage::Minute(const std::string& theMinute) {
-  GRIB_CHECK(grib_set_long(itsHandle,"minute",boost::lexical_cast<long> (theMinute)),0);
+  SetLongKey("minute", boost::lexical_cast<long> (theMinute));
 }
 
 long NFmiGribMessage::Second() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"second", &l),0);
-
-  return l;
+  return GetLongKey("second");
 }
 
 void NFmiGribMessage::Second(const std::string& theSecond) {
-  GRIB_CHECK(grib_set_long(itsHandle,"second",boost::lexical_cast<long> (theSecond)),0);
+  SetLongKey("second", boost::lexical_cast<long> (theSecond));
 }
 
 bool NFmiGribMessage::Bitmap() const {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"bitmapPresent",&l), 0);
-
-  return static_cast<bool> (l);
+  return static_cast<bool> (GetLongKey("bitmapPresent"));
 }
 
 void NFmiGribMessage::Bitmap(bool theBitmap) {
-  //GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent",static_cast<int> (theBitmap)), 0);
   if (Edition() == 2) {
     if (theBitmap) {
-      GRIB_CHECK(grib_set_long(itsHandle,"bitMapIndicator", 0), 0);
+      SetLongKey("bitMapIndicator", 0);
     }
     else {
-      GRIB_CHECK(grib_set_long(itsHandle,"bitMapIndicator", 255), 0);
+      SetLongKey("bitMapIndicator", 255);
     }
   }
   else {
-    GRIB_CHECK(grib_set_long(itsHandle,"bitmapPresent", static_cast<long> (theBitmap)), 0);
+    SetLongKey("bitmapPresent", static_cast<long> (theBitmap));
   }
 }
 
 long NFmiGribMessage::BitsPerValue() const
 {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"bitsPerValue",&l), 0);
-  return l;
+  return GetLongKey("bitsPerValue");
 }
 
 void NFmiGribMessage::BitsPerValue(long theBitsPerValue)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"bitsPerValue", theBitsPerValue), 0);
+  SetLongKey("bitsPerValue", theBitsPerValue);
 }
 
 bool NFmiGribMessage::UVRelativeToGrid() const
@@ -972,13 +816,13 @@ bool NFmiGribMessage::UVRelativeToGrid() const
 
   if (Edition() == 1)
   {
-    GRIB_CHECK(grib_get_long(itsHandle,"uvRelativeToGrid", &l), 0);
+    l = GetLongKey("uvRelativeToGrid");
   }
   else
   {
    long r = ResolutionAndComponentFlags();
 
-   l = (CHECK_BIT(r, 3) == 8) ? 1 : 0; // in grib2 4th bit tells if uv is relative to grid or not (1000 == 8 == true)
+   l = (CHECK_BIT(r, 3) == 8) ? 1 : 0; // in grib2 5th bit tells if uv is relative to grid or not (100 == 8 == true)
   }
   
   if (l < 0 || l > 1)
@@ -993,29 +837,42 @@ void NFmiGribMessage::UVRelativeToGrid(bool theRelativity)
 {
   if (Edition() == 1)
   {
-    GRIB_CHECK(grib_set_long(itsHandle,"uvRelativeToGrid", static_cast<long> (theRelativity)), 0);
+    SetLongKey("uvRelativeToGrid", static_cast<long> (theRelativity));
+  }
+  else
+  {
+    CreateHandle();
+    long r = ResolutionAndComponentFlags();
+
+	// http://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit-in-c-c
+
+    if (theRelativity)
+    {
+      r |= 1 << 3;
+	}
+	else
+	{
+      r &= ~(1 << 3);
+	}
+		
+	ResolutionAndComponentFlags(r);
   }
 }
 
 long NFmiGribMessage::ResolutionAndComponentFlags() const
 {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"resolutionAndComponentFlags", &l), 0);
-
-  return l;
+  return GetLongKey("resolutionAndComponentFlags");
 }
 
 void NFmiGribMessage::ResolutionAndComponentFlags(long theResolutionAndComponentFlags)
 {
-    GRIB_CHECK(grib_set_long(itsHandle,"resolutionAndComponentFlags", theResolutionAndComponentFlags), 0);
+  SetLongKey("resolutionAndComponentFlags", theResolutionAndComponentFlags);
 }
-
 
 void NFmiGribMessage::PackingType(const std::string& thePackingType)
 {
   // Should probably check edition -- v2 has more packing types
-
+  CreateHandle();
   size_t len = thePackingType.length();
   GRIB_CHECK(grib_set_string(itsHandle, "packingType", thePackingType.c_str(), &len), 0);
 
@@ -1023,49 +880,38 @@ void NFmiGribMessage::PackingType(const std::string& thePackingType)
 
 std::string NFmiGribMessage::PackingType() const
 {
-  size_t len = 255;
-  char type[1024];
-
-  GRIB_CHECK(grib_get_string(itsHandle, "packingType", type, &len), 0);
-
-  return std::string(type);
-
+  return GetStringKey("packingType");
 }
 
 long NFmiGribMessage::TypeOfGeneratingProcess() const
 {
-  long l;
-
-  GRIB_CHECK(grib_get_long(itsHandle,"typeOfGeneratingProcess",&l), 0);
-
-  return l;
-
+  if (Edition() == 1)
+  {
+    return INVALID_INT_VALUE;
+  }
+  return GetLongKey("typeOfGeneratingProcess");
 }
 
 void NFmiGribMessage::TypeOfGeneratingProcess(long theProcess)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"typeOfGeneratingProcess",theProcess),0);
+  SetLongKey("typeOfGeneratingProcess",theProcess);
 }
 
-
 void NFmiGribMessage::XLengthInMeters(double theLength) {
-  GRIB_CHECK(grib_set_double(itsHandle,"DxInMetres",theLength),0);
+  SetDoubleKey("DxInMetres",theLength);
 }
 
 void NFmiGribMessage::YLengthInMeters(double theLength) {
-  GRIB_CHECK(grib_set_double(itsHandle,"DyInMetres",theLength),0);
+  SetDoubleKey("DyInMetres",theLength);
 }
 
 double NFmiGribMessage::XLengthInMeters() const {
-  double d;
-  GRIB_CHECK(grib_get_double(itsHandle,"DxInMetres",&d),0);
-  return d;
+  return GetDoubleKey("DxInMetres");
 }
 
 double NFmiGribMessage::YLengthInMeters() const {
-  double d;
-  GRIB_CHECK(grib_get_double(itsHandle,"DyInMetres",&d),0);
-  return d;}
+  return GetDoubleKey("DyInMetres");
+}
 
 long NFmiGribMessage::NormalizedUnitOfTimeRange() const
 {
@@ -1076,21 +922,21 @@ long NFmiGribMessage::NormalizedUnitOfTimeRange() const
   long l;
 
   if (Edition() == 1) {
-    GRIB_CHECK(grib_get_long(itsHandle,"unitOfTimeRange",&l), 0);
+    l = GetLongKey("unitOfTimeRange");
   }
 
   else {
-    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfUnitOfTimeRange",&l), 0);
+    l = GetLongKey("indicatorOfUnitOfTimeRange");
 
-  switch (l) {
+    switch (l) {
 
-    case 13:
-      l = 254; // second
-      break;
+      case 13:
+        l = 254; // second
+        break;
 
-    default:
-      break;
-  }
+      default:
+        break;
+    }
   }
 
   return l;
@@ -1098,37 +944,36 @@ long NFmiGribMessage::NormalizedUnitOfTimeRange() const
 
 long NFmiGribMessage::UnitOfTimeRange() const
 {
-  long l;
   if (Edition() == 1)
-    GRIB_CHECK(grib_get_long(itsHandle,"unitOfTimeRange",&l), 0);
+    return GetLongKey("unitOfTimeRange");
   else
-    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfUnitOfTimeRange",&l), 0);
-  return l;
+    return GetLongKey("indicatorOfUnitOfTimeRange");
 }
 
 void NFmiGribMessage::UnitOfTimeRange(long theUnit)
 {
   if (Edition() == 1)
-    GRIB_CHECK(grib_set_long(itsHandle,"unitOfTimeRange",theUnit),0);
+    SetLongKey("unitOfTimeRange",theUnit);
   else
-    GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfUnitOfTimeRange",theUnit), 0);
+    SetLongKey("indicatorOfUnitOfTimeRange",theUnit);
 }
 
+/*
 long NFmiGribMessage::UnitForTimeRange() const
 {
   long l = INVALID_INT_VALUE;
 
   if (Edition() == 2)
-    GRIB_CHECK(grib_get_long(itsHandle,"indicatorOfUnitForTimeRange",&l), 0);
+    l = return GetLongKey("indicatorOfUnitForTimeRange");
   
   return l;
 }
-
 void NFmiGribMessage::UnitForTimeRange(long theUnit)
 {
   if (Edition() == 2)
     GRIB_CHECK(grib_set_long(itsHandle,"indicatorOfUnitForTimeRange",theUnit), 0);
 }
+*/
 
 long NFmiGribMessage::LengthOfTimeRange() const
 {
@@ -1136,7 +981,7 @@ long NFmiGribMessage::LengthOfTimeRange() const
 
   if (Edition() == 2)
   {
-    GRIB_CHECK(grib_get_long(itsHandle,"lengthOfTimeRange",&l), 0);
+    l = GetLongKey("lengthOfTimeRange");
   }
 
   return l;
@@ -1146,69 +991,57 @@ void NFmiGribMessage::LengthOfTimeRange(long theLength)
 {
   if (Edition() == 2)
   {
-    GRIB_CHECK(grib_set_long(itsHandle,"lengthOfTimeRange",theLength),0);
+    SetLongKey("lengthOfTimeRange",theLength);
   }
 }
 
 long NFmiGribMessage::TimeRangeIndicator() const
 {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"timeRangeIndicator",&l), 0);
-
-  return l;
+  return GetLongKey("timeRangeIndicator");	
 }
 
 void NFmiGribMessage::TimeRangeIndicator(long theTimeRangeIndicator)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"timeRangeIndicator",theTimeRangeIndicator),0);
+  SetLongKey("timeRangeIndicator",theTimeRangeIndicator);
 }
 
 long NFmiGribMessage::P1() const
 {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"P1",&l), 0);
-
-  return l;
+  return GetLongKey("P1");
 }
 
 void NFmiGribMessage::P1(long theP1)
 {
   if (Edition() == 1)
-    GRIB_CHECK(grib_set_long(itsHandle,"P1",theP1), 0);
+    SetLongKey("P1",theP1);
 }
 
 long NFmiGribMessage::P2() const
 {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"P2",&l), 0);
-
-  return l;
+  return GetLongKey("P2");
 }
 
 void NFmiGribMessage::P2(long theP2)
 {
   if (Edition() == 1)
-    GRIB_CHECK(grib_set_long(itsHandle,"P2",theP2), 0);
+    SetLongKey("P2", theP2);
 }
 
 long NFmiGribMessage::NV() const
 {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"NV",&l), 0);
-
-  return l;
+  return GetLongKey("NV");	
 }
 
 void NFmiGribMessage::NV(long theNV)
 {
   // For some reason writing NV on grib2 disables the key "pv" !
   if (Edition() == 1)
-    GRIB_CHECK(grib_set_long(itsHandle,"NV",theNV), 0);
+    SetLongKey("NV",theNV);
 }
 
 std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t level)
 {
-
+  CreateHandle();
   double* pv = static_cast<double *> (malloc(theNumberOfCoordinates*sizeof(double)));
   GRIB_CHECK(grib_get_double_array(itsHandle,"pv",pv,&theNumberOfCoordinates),0);
   std::vector<double> ret;
@@ -1233,13 +1066,13 @@ std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t le
 
 void NFmiGribMessage::PV(const std::vector<double>& theAB, size_t abLen)
 {
-  GRIB_CHECK(grib_set_long(itsHandle,"PVPresent",1), 0);
+  SetDoubleKey("PVPresent",1);
   GRIB_CHECK(grib_set_double_array(itsHandle,"pv",&theAB[0],abLen),0);
 }
 
 bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   // Assume we have required directory structure in place
-
+  CreateHandle();
   std::string mode = "w";
 
   if (appendToFile)
@@ -1275,15 +1108,12 @@ size_t NFmiGribMessage::PackedValuesLength() const
 
 size_t NFmiGribMessage::BytesLength(const std::string& key) const
 {
-  size_t s;
-  
-  GRIB_CHECK(grib_get_size(itsHandle,key.c_str(),&s),0);
-
-  return s;
+  return GetSizeTKey(key);
 }
 
 bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
 {
+  CreateHandle();
   size_t length = BytesLength(key);
   
   GRIB_CHECK(grib_get_bytes(itsHandle,key.c_str(),data, &length),0);
@@ -1294,6 +1124,7 @@ bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
 bool NFmiGribMessage::PackedValues(unsigned char* data) const
 {
 #ifdef GRIB_READ_PACKED_DATA
+  CreateHandle();
   size_t dataLength;
 
   GRIB_CHECK(grib_get_packed_values(itsHandle,data,&dataLength),0);
@@ -1310,39 +1141,103 @@ bool NFmiGribMessage::PackedValues(unsigned char* data) const
 
 double NFmiGribMessage::BinaryScaleFactor() const
 {
-  double d;
-  GRIB_CHECK(grib_get_double(itsHandle,"binaryScaleFactor",&d), 0);
-
-  return d;
+  return GetDoubleKey("binaryScaleFactor");
 }
 
 double NFmiGribMessage::DecimalScaleFactor() const
 {
-  double d;
-  GRIB_CHECK(grib_get_double(itsHandle,"decimalScaleFactor",&d), 0);
-
-  return d;
+  return GetDoubleKey("decimalScaleFactor");
 }
 
 double NFmiGribMessage::ReferenceValue() const
 {
-  double d;
-  GRIB_CHECK(grib_get_double(itsHandle,"referenceValue",&d), 0);
-
-  return d;
+  return GetDoubleKey("referenceValue");
 }
 
 long NFmiGribMessage::Section4Length() const
 {
-  long l;
-  GRIB_CHECK(grib_get_long(itsHandle,"section4Length",&l), 0);
-
-  return l;
+  return GetLongKey("section4Length");
 }
 
 bool NFmiGribMessage::KeyExists(const std::string& theKey) const
 {
   int i;
+  CreateHandle();
+  
   i = grib_is_defined(itsHandle, theKey.c_str());
   return (i == 0 ? false: true);
+}
+
+long NFmiGribMessage::GetLongKey(const std::string& keyName) const
+{
+  long l;
+  
+  CreateHandle();
+  
+  int err = grib_get_long(itsHandle,keyName.c_str(),&l);
+
+  if (err != 0)
+  {
+	  l = INVALID_INT_VALUE;
+  }
+  
+  return l;
+}
+
+void NFmiGribMessage::SetLongKey(const std::string& keyName, long value)
+{
+  CreateHandle();
+  
+  int err = grib_set_long(itsHandle,keyName.c_str(),value);
+  
+  if (err != 0)
+  {
+	  throw err;
+  }
+}
+
+double NFmiGribMessage::GetDoubleKey(const std::string& keyName) const
+{
+  double d;
+  
+  CreateHandle();
+  
+  int err = grib_get_double(itsHandle,keyName.c_str(),&d);
+  
+  if (err != 0)
+  {
+	  d = static_cast<double> (INVALID_INT_VALUE);
+  }
+
+  return d;
+}
+
+void NFmiGribMessage::SetDoubleKey(const std::string& keyName, double value)
+{
+  CreateHandle();
+  
+  GRIB_CHECK(grib_set_double(itsHandle,keyName.c_str(),value), 0);
+}
+
+size_t NFmiGribMessage::GetSizeTKey(const std::string& keyName) const
+{
+  size_t s;
+  
+  CreateHandle();
+  
+  GRIB_CHECK(grib_get_size(itsHandle,keyName.c_str(),&s), 0);
+
+  return s;
+}
+
+std::string NFmiGribMessage::GetStringKey(const std::string& keyName) const
+{
+  size_t len = 1024;
+  char s[len];
+  
+  CreateHandle();
+
+  GRIB_CHECK(grib_get_string(itsHandle,keyName.c_str(), s, &len), 0);
+
+  return std::string(s);
 }

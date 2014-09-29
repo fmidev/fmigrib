@@ -80,10 +80,10 @@ class NFmiGribMessage {
 
     long GridType() const;
     void GridType(long theGridType);
-
+/*
     double XResolution() const;
     double YResolution() const;
-
+*/
     long Edition() const;
     void Edition(long theEdition);
 
@@ -106,7 +106,7 @@ class NFmiGribMessage {
     long Table2Version() const;
     void Table2Version(long theVersion);
 
-    long DataType() const;
+    // long DataType() const;
     long PerturbationNumber() { return itsPerturbationNumber; }
 
     long NormalizedGridType(unsigned int targetEdition = 1) const;
@@ -194,10 +194,10 @@ class NFmiGribMessage {
 
     long UnitOfTimeRange() const;
     void UnitOfTimeRange(long theUnit);
-
+/*
     long UnitForTimeRange() const;
     void UnitForTimeRange(long theUnit);
-
+*/
     long LengthOfTimeRange() const;
     void LengthOfTimeRange(long theLength);
 
@@ -263,6 +263,22 @@ class NFmiGribMessage {
 
   private:
     void Clear();
+	
+	/**
+	 * @brief Create a grib handle if one does not exist already
+	 * 
+	 * This function needs to be called before anything is accessed from grib,
+	 * because it is not guaranteed that we have a grib handle when instance is 
+	 * created and accessing a non-initialized handle will cause segfault.
+     */
+	
+	void CreateHandle() const;
+	long GetLongKey(const std::string& keyName) const;
+	void SetLongKey(const std::string& keyName, long value);
+	double GetDoubleKey(const std::string& keyName) const;
+	void SetDoubleKey(const std::string& keyName, double value);
+	size_t GetSizeTKey(const std::string& keyName) const;
+	std::string GetStringKey(const std::string& keyName) const;
 
     long itsTotalLength;
 
@@ -278,12 +294,24 @@ class NFmiGribMessage {
     long itsTypeOfTimeIncrement;
 
     mutable long itsEdition; //<! Cache this key since it's used quite a lot
-    grib_handle *itsHandle;
+    mutable grib_handle *itsHandle;
 
     boost::bimap<long,long> itsGridTypeMap;
     boost::bimap<long,long> itsLevelTypeMap;
 
     mutable size_t itsPackedValuesLength;
 };
+
+inline
+void NFmiGribMessage::CreateHandle() const
+{
+	if (itsHandle)
+	{
+		return;
+	}
+	
+	itsHandle = grib_handle_new_from_samples(NULL,"GRIB2");
+	assert(itsHandle);
+}
 
 #endif /* NFMIGRIBMESSAGE_H_ */

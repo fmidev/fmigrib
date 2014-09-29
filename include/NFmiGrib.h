@@ -12,6 +12,8 @@
 #include "NFmiGribMessage.h"
 #include <memory>
 
+const int INVALID_INT_VALUE = -999;
+
 class NFmiGrib {
 
   public:
@@ -29,7 +31,7 @@ class NFmiGrib {
     void MultiGribSupport(bool theMultiGribSupport);
     bool WriteMessage(const std::string &theFileName);
 
-    std::shared_ptr<NFmiGribMessage> Message() { return m; }
+    NFmiGribMessage& Message() const { return *m; }
 
   private:
 
@@ -39,7 +41,7 @@ class NFmiGrib {
     int itsMessageCount;
     int itsCurrentMessage;
 
-    std::shared_ptr<NFmiGribMessage> m;
+    std::unique_ptr<NFmiGribMessage> m;
 
 }; 
 
