@@ -260,7 +260,8 @@ class NFmiGribMessage {
 
     long NormalizedStep(bool endStep, bool flatten) const;
 
-
+    long Type() const;
+	
   private:
     void Clear();
 	

@@ -1241,3 +1241,9 @@ std::string NFmiGribMessage::GetStringKey(const std::string& keyName) const
 
   return std::string(s);
 }
+
+long NFmiGribMessage::Type() const
+{
+  // http://old.ecmwf.int/publications/manuals/d/gribapi/mars/att=type/	
+  return GetLongKey("type");
+}
