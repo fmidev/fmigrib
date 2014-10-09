@@ -651,13 +651,17 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
         default:
           timeRangeIndicator = 1; // default to hour
           break;
-
+	
     }
   }
   else {
-    step = ForecastTime();
+    if  (ProductDefinitionTemplateNumber() == 8) {
+      step = EndStep();
+    }
+    else {
+      step = ForecastTime();
+    }
   }
-
   if (!flatten)
     return step;
 
