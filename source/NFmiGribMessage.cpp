@@ -1143,19 +1143,58 @@ bool NFmiGribMessage::PackedValues(unsigned char* data) const
   return true;
 }
 
-double NFmiGribMessage::BinaryScaleFactor() const
+bool NFmiGribMessage::PackedValues(unsigned char* data, size_t unpacked_len, int* bitmap, size_t bitmap_len)
 {
-  return GetDoubleKey("binaryScaleFactor");
+#ifdef GRIB_WRITE_PACKED_DATA
+  CreateHandle();
+
+  GRIB_CHECK(grib_set_packed_values(itsHandle, data, unpacked_len, bitmap, bitmap_len), 0);
+#else
+#warning GRIB_WRITE_PACKED_DATA not defined -- writing of packed data with fmigrib is not supported
+  throw std::runtime_error("This version on NFmiGrib is not compiled with support for writing of packed data");
+#endif
+
+  return true;
 }
 
-double NFmiGribMessage::DecimalScaleFactor() const
+long NFmiGribMessage::BinaryScaleFactor() const
 {
-  return GetDoubleKey("decimalScaleFactor");
+  return GetLongKey("binaryScaleFactor");
+}
+
+void NFmiGribMessage::BinaryScaleFactor(long theFactor)
+{
+#ifdef GRIB_WRITE_PACKED_DATA
+  CreateHandle();
+  GRIB_CHECK(grib_set_long_internal(itsHandle, "binaryScaleFactor", theFactor), 0);
+#endif
+}
+
+
+long NFmiGribMessage::DecimalScaleFactor() const
+{
+  return GetLongKey("decimalScaleFactor");
+}
+
+void NFmiGribMessage::DecimalScaleFactor(long theFactor)
+{
+#ifdef GRIB_WRITE_PACKED_DATA
+  CreateHandle();
+  GRIB_CHECK(grib_set_long_internal(itsHandle, "decimalScaleFactor", theFactor), 0);
+#endif
 }
 
 double NFmiGribMessage::ReferenceValue() const
 {
   return GetDoubleKey("referenceValue");
+}
+
+void NFmiGribMessage::ReferenceValue(double theValue)
+{
+#ifdef GRIB_WRITE_PACKED_DATA
+  CreateHandle();
+  GRIB_CHECK(grib_set_double_internal(itsHandle,"referenceValue",theValue), 0);
+#endif
 }
 
 long NFmiGribMessage::Section4Length() const

@@ -219,10 +219,16 @@ class NFmiGribMessage {
     size_t PackedValuesLength() const;
 
     bool PackedValues(unsigned char* data) const;
+    bool PackedValues(unsigned char* data, size_t unpacked_len, int* bitmap, size_t bitmap_len);
 
-    double BinaryScaleFactor() const;
-    double DecimalScaleFactor() const;
+    long BinaryScaleFactor() const;
+    void BinaryScaleFactor(long theFactor);
+
+    long DecimalScaleFactor() const;
+    void DecimalScaleFactor(long theFactor);
+
     double ReferenceValue() const;
+    void ReferenceValue(double theValue);
 
     long Section4Length() const;
 
@@ -254,32 +260,32 @@ class NFmiGribMessage {
      * even though data is in GRIB2.
      *
      * @param endStep If true, return value of end step. Otherwise return value of start step.
-	 * @param flatten If true, time value is flattened as described above
+     * @param flatten If true, time value is flattened as described above
      * @return Flattened time step value
     */
 
     long NormalizedStep(bool endStep, bool flatten) const;
 
     long Type() const;
-	
+
   private:
     void Clear();
-	
-	/**
-	 * @brief Create a grib handle if one does not exist already
-	 * 
-	 * This function needs to be called before anything is accessed from grib,
-	 * because it is not guaranteed that we have a grib handle when instance is 
-	 * created and accessing a non-initialized handle will cause segfault.
+
+    /**
+     * @brief Create a grib handle if one does not exist already
+     *
+     * This function needs to be called before anything is accessed from grib,
+     * because it is not guaranteed that we have a grib handle when instance is
+     * created and accessing a non-initialized handle will cause segfault.
      */
-	
-	void CreateHandle() const;
-	long GetLongKey(const std::string& keyName) const;
-	void SetLongKey(const std::string& keyName, long value);
-	double GetDoubleKey(const std::string& keyName) const;
-	void SetDoubleKey(const std::string& keyName, double value);
-	size_t GetSizeTKey(const std::string& keyName) const;
-	std::string GetStringKey(const std::string& keyName) const;
+
+    void CreateHandle() const;
+    long GetLongKey(const std::string& keyName) const;
+    void SetLongKey(const std::string& keyName, long value);
+    double GetDoubleKey(const std::string& keyName) const;
+    void SetDoubleKey(const std::string& keyName, double value);
+    size_t GetSizeTKey(const std::string& keyName) const;
+    std::string GetStringKey(const std::string& keyName) const;
 
     long itsTotalLength;
 
@@ -306,13 +312,13 @@ class NFmiGribMessage {
 inline
 void NFmiGribMessage::CreateHandle() const
 {
-	if (itsHandle)
-	{
-		return;
-	}
-	
-	itsHandle = grib_handle_new_from_samples(NULL,"GRIB2");
-	assert(itsHandle);
+    if (itsHandle)
+    {
+        return;
+    }
+
+    itsHandle = grib_handle_new_from_samples(NULL,"GRIB2");
+    assert(itsHandle);
 }
 
 #endif /* NFMIGRIBMESSAGE_H_ */
