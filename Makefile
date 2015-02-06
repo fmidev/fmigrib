@@ -36,10 +36,11 @@ INCLUDES = -I include \
            -I$(includedir)
 
 LIBS =  -L$(LIBDIR) \
-	-lboost_date_time \
-        -lboost_program_options \
-        -lboost_filesystem \
-        -lboost_system \
+        -lboost_date_time-mt \
+        -lboost_program_options-mt \
+        -lboost_filesystem-mt \
+        -lboost_system-mt \
+		-lboost_unit_test_framework-mt \
         -lgrib_api
 
 # Common library compiling template
@@ -135,7 +136,7 @@ clean:
 	rm -f $(LIBDIR)/*.so* $(LIBDIR)/*.a $(OBJFILES) *~ source/*~ include/*~
 
 test:
-	$(CC) $(CFLAGS_DEBUG) tests/unit_tests.cpp $(INCLUDES) -L$(LIBDIR) -l$(LIB) $(LIBS) -lboost_unit_test_framework -o unit_tests || exit
+	$(CC) $(CFLAGS_DEBUG) tests/unit_tests.cpp $(INCLUDES) -L$(LIBDIR) -l$(LIB) $(LIBS) -o unit_tests || exit
 	./unit_tests --build_info --log_level=test_suite --show_progress
 install:
 	mkdir -p $(libdir)
