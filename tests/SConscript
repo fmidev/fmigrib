@@ -1,0 +1,15 @@
+#
+# SConstruct for himan-lib
+
+Import('env')
+import os
+import sys
+
+# cuda toolkit path
+
+for file in Glob('source/*.cpp'):
+        s=os.path.basename(str(file))
+        obj='obj/'+ s.replace(".cpp","")
+#	object = env.SharedObject(obj, file)
+	env.Program(target = s.split(".")[0], source = [file])
+

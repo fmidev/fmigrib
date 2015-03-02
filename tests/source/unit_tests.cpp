@@ -2,13 +2,13 @@
 //#define  BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
-#define BOOST_TEST_MODULE util
+#define BOOST_TEST_MODULE NFmiGrib
 
 #include "NFmiGrib.h"
 #include <iostream>
 
-const std::string grib1 = "tests/file.grib";
-const std::string grib2 = "tests/file.grib2";
+const std::string grib1 = "file.grib";
+const std::string grib2 = "file.grib2";
 
 NFmiGrib reader;
 
@@ -898,6 +898,33 @@ BOOST_AUTO_TEST_CASE(packedValuesLength)
 	init2();
 
 	BOOST_REQUIRE(reader.Message().PackedValuesLength() == 365804);
+
+}
+
+BOOST_AUTO_TEST_CASE(packedValues)
+{
+	init1();
+
+	size_t N = reader.Message().PackedValuesLength();
+
+	unsigned char* arr = new unsigned char[N];
+
+	reader.Message().PackedValues(arr);
+
+	BOOST_REQUIRE(arr[0] == 47);
+
+	delete [] arr;
+
+	init2();
+
+	N = reader.Message().PackedValuesLength();
+	arr = new unsigned char[N];	
+
+	reader.Message().PackedValues(arr);
+
+	BOOST_REQUIRE(arr[1] == 199);
+
+	delete [] arr;
 
 }
 
