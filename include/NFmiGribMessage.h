@@ -18,6 +18,19 @@
 #include <boost/bimap.hpp>
 #include <vector>
 
+#ifdef HAVE_CUDA
+ #ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+
+#include <cuda_runtime.h>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+#endif
+
 class NFmiGribMessage {
 
   public:
@@ -268,6 +281,16 @@ class NFmiGribMessage {
 
     long Type() const;
 
+	bool CudaUnpack(double* arr, size_t len);
+    bool CudaPack(double* arr, size_t len);
+
+#ifdef HAVE_CUDA
+    bool CudaUnpack(double* arr, size_t len, cudaStream_t& stream);
+    bool CudaPack(double* arr, size_t len, cudaStream_t& stream);
+#endif
+
+    double CalculateReferenceValue(double minimumValue);
+    
   private:
     void Clear();
 
