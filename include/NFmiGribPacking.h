@@ -12,8 +12,10 @@
 
 #include <iostream>
 
-#if defined __GNUC__ && __GNUC_MINOR__ > 5
+#if defined __GNUC__ 
+#if __GNUC_MINOR__ > 5
 #pragma GCC diagnostic push
+#endif
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif
 

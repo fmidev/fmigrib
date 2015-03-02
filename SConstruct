@@ -58,7 +58,7 @@ if os.path.isfile(cuda_toolkit_path + '/lib64/libcudart.so'):
 
 have_comprimato = False
 
-if os.path.isfile('/home/partio/src/comprimato/j2k_lin64_2.0.0-release-evaluation/cuda65-cpu/dec/libcmpto_j2k_dec.so'):
+if os.path.isfile('/usr/lib64/libcmpto_j2k_dec.so'):
         have_comprimato = True
 
 if os.environ.get('CC') != None:
@@ -79,9 +79,6 @@ includes.append('./include')
 
 if have_cuda:
         includes.append(cuda_toolkit_path + '/include')
-
-if have_comprimato:
-	includes.append('/home/partio/src/comprimato/j2k_lin64_2.0.0-release-evaluation/cuda65-cpu/dec')
 
 env.Append(CPPPATH = includes)
 

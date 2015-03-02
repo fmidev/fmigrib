@@ -47,7 +47,7 @@ if os.path.isfile(cuda_toolkit_path + '/lib64/libcudart.so'):
 
 have_comprimato = False
 
-if os.path.isfile('/home/partio/src/comprimato/j2k_lin64_2.0.0-release-evaluation/cuda65-cpu/dec/libcmpto_j2k_dec.so'):
+if os.path.isfile('/usr/lib64/libcmpto_j2k_dec.so'):
 	have_comprimato = True
 
 if os.environ.get('CC') != None:
@@ -67,7 +67,7 @@ includes = []
 includes.append('../../../include')
 
 if have_cuda:
-	includes.append('/usr/local/cuda/include')
+	includes.append(cuda_toolkit_path + '/include')
 
 env.Append(CPPPATH = includes)
 
@@ -75,7 +75,8 @@ env.Append(CPPPATH = includes)
 
 librarypaths = []
 
-librarypaths.append('/usr/local/cuda/lib64')
+if have_cuda:
+	librarypaths.append(cuda_toolkit_path + '/lib64')
 
 if DEBUG:
 	librarypaths.append('../../../build/debug')
@@ -86,10 +87,10 @@ env.Append(LIBPATH = librarypaths)
 
 # Libraries
 
-#env.Append(LIBS = [ 'fmigrib', 'grib_api', 'dl', 'rt', 'pthread'])
-env.Append(LIBS = [ 'fmigrib', 'dl', 'rt', 'pthread'])
+env.Append(LIBS = [ 'fmigrib', 'grib_api', 'dl', 'rt', 'pthread'])
+#env.Append(LIBS = [ 'fmigrib', 'dl', 'rt', 'pthread'])
 #env.Append(LIBS = env.File('/home/partio/src/grib_api-1.11.0/src/.libs/libgrib_api.a'))
-env.Append(LIBS = env.File('/usr/local/lib/libgrib_api.a'))
+#env.Append(LIBS = env.File('/usr/local/lib/libgrib_api.a'))
 
 env.Append(LIBS = [ 'openjpeg' ])
 
@@ -97,13 +98,10 @@ if have_cuda:
 	env.Append(LIBS = ['cudart'])
 
 if have_comprimato:
-	env.Append(LIBPATH = ['/home/partio/src/comprimato/j2k_lin64_2.0.0-release-evaluation/cuda65-cpu/dec'])
 	env.Append(LIBS = ['cmpto_j2k_dec'])
 
-env.Append(LIBS = env.File('/usr/lib/x86_64-linux-gnu/libboost_unit_test_framework.a'))
-
 if IS_RHEL and OS_VERSION < 7.0:
-	boost_libraries = [ 'boost_program_options', 'boost_filesystem', 'boost_system', 'boost_regex', 'boost_iostreams', 'boost_thread' ]
+	boost_libraries = [ 'boost_program_options', 'boost_filesystem', 'boost_system', 'boost_regex', 'boost_iostreams', 'boost_thread', 'boost_unit_test_framework' ]
 
 	for lib in boost_libraries:
 		libfile = '/usr/lib64/lib' + lib + '.a'
