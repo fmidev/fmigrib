@@ -1,0 +1,268 @@
+#include "NFmiGribPacking.h"
+#include <cub/cub.cuh>
+#include <cassert>
+
+void NFmiGribPacking::UnpackBitmap(const unsigned char* __restrict__ bitmap, int* __restrict__ unpacked, size_t len, size_t unpackedLen)
+{
+	size_t i, idx = 0;
+	int v = 1;
+
+	short j = 0;
+
+	for (i = 0; i < len; i++)
+	{
+		for (j = 7; j >= 0; j--)
+		{
+			if (BitTest(bitmap[i], j))
+			{
+				unpacked[idx] = v++;
+			}
+			else
+			{
+				unpacked[idx] = 0;
+			}
+
+			if (++idx >= unpackedLen)
+			{
+				// packed data might not be aligned nicely along byte boundaries --
+				// need to break from loop after final element has been processed
+				break;
+			}
+		}
+	}
+}
+
+//const double kFloatMissing = 32700.;
+
+template<typename T>
+__host__ T Min(T* d_arr, size_t N, cudaStream_t& stream)
+{
+	void* d_temp = 0;
+	size_t temp_N = 0;
+	T* d_min = 0;
+	T min;
+
+	CUDA_CHECK(cudaMalloc((void**) &d_min, sizeof(T)));
+
+	// Allocate temp storage
+	CUDA_CHECK(cub::DeviceReduce::Min(d_temp, temp_N, d_arr, d_min, N, stream));
+	CUDA_CHECK(cudaMalloc((void**)&d_temp, temp_N));
+
+	CUDA_CHECK(cub::DeviceReduce::Min(d_temp, temp_N, d_arr, d_min, N, stream));
+
+	CUDA_CHECK(cudaStreamSynchronize(stream));
+
+	CUDA_CHECK(cudaFree(d_temp));
+	CUDA_CHECK(cudaMemcpyAsync(&min,d_min,sizeof(T),cudaMemcpyDeviceToHost, stream));
+	CUDA_CHECK(cudaFree(d_min));
+
+	return min;
+}
+
+template<typename T>
+__host__ T Max(T* d_arr, size_t N, cudaStream_t& stream)
+{
+	void* d_temp = 0;
+	size_t temp_N = 0;
+	T* d_max = 0;
+	T max;
+	
+	CUDA_CHECK(cudaMalloc((void**) &d_max, sizeof(T)));
+
+	// Allocate temp storage
+	CUDA_CHECK(cub::DeviceReduce::Max(d_temp, temp_N, d_arr, d_max, N, stream));
+	CUDA_CHECK(cudaMalloc((void**)&d_temp, temp_N));
+
+	CUDA_CHECK(cub::DeviceReduce::Max(d_temp, temp_N, d_arr, d_max, N, stream));
+
+	CUDA_CHECK(cudaStreamSynchronize(stream));
+
+	CUDA_CHECK(cudaFree(d_temp));
+	CUDA_CHECK(cudaMemcpyAsync(&max,d_max,sizeof(T),cudaMemcpyDeviceToHost, stream));
+	CUDA_CHECK(cudaFree(d_max));
+
+	return max;
+	
+}
+
+__device__
+void SetBitOn(unsigned char* p, long bitp)
+{
+  p += bitp/8;
+  *p |= (1u << (7-((bitp)%8)));
+}
+
+__device__
+void SetBitOff( unsigned char* p, long bitp)
+{
+  p += bitp/8;
+  *p &= ~(1u << (7-((bitp)%8)));
+}
+
+long NFmiGribPacking::simple_packing::get_binary_scale_fact(double max, double min, long bpval)
+{
+  assert(max >= min);
+  double range         = max - min;
+  double  zs           = 1;
+  long          scale  = 0;
+  const long last = 127; /* Depends on edition, should be parameter */
+
+  unsigned long maxint = NFmiGribPacking::ToPower(bpval,2) - 1;
+  double dmaxint=(double)maxint;
+
+  assert (bpval >= 1);
+
+  if(range == 0)
+    return 0;
+
+  /* range -= 1e-10; */
+  while( (range * zs)  <= dmaxint) {
+    scale--;
+    zs *= 2;
+  }
+
+  while( (range * zs ) > dmaxint) {
+    scale++;
+    zs /= 2;
+  }
+
+  while( (unsigned long)(range * zs + 0.5)  <= maxint) {
+    scale--;
+    zs *= 2;
+  }
+
+  while( (unsigned long)(range * zs + 0.5) > maxint) {
+    scale++;
+    zs /= 2;
+  }
+
+  if (scale < -last) {
+          printf("grib_get_binary_scale_fact: max=%g min=%g\n",max,min);
+          scale = -last;
+  }
+  assert(scale <= last);
+
+  return scale;
+
+}
+
+long NFmiGribPacking::simple_packing::get_decimal_scale_fact(double max, double min, long bpval,long binary_scale)
+{
+  assert(max >= min);
+
+  double range         = max - min;
+  const long last = 127; /* Depends on edition, should be parameter */
+  double decimal_scale_factor = 0;
+  double f;
+  double minrange = 0, maxrange = 0;
+  double decimal = 1;
+  long bits_per_value = bpval;
+
+  double    unscaled_min=min;
+  double  unscaled_max=max;
+
+      f= NFmiGribPacking::ToPower(bits_per_value,2)-1;
+      minrange=NFmiGribPacking::ToPower(-last,2)*f;
+      maxrange=NFmiGribPacking::ToPower(last,2)*f;
+
+      while (range<minrange) {
+        decimal_scale_factor+=1;
+        decimal*=10;
+        min=unscaled_min*decimal;
+        max=unscaled_max*decimal;
+        range=(max-min);
+      }
+      while (range>maxrange) {
+        decimal_scale_factor-=1;
+        decimal/=10;
+        min=unscaled_min*decimal;
+        max=unscaled_max*decimal;
+        range=(max-min);
+      }
+
+  return decimal_scale_factor;
+}
+
+__device__
+void PackUnevenBytes(unsigned char* __restrict__ d_p, const double* __restrict__ d_u,
+									size_t values_len, NFmiGribPacking::packing_coefficients coeff, int idx)
+{
+
+	double decimal = NFmiGribPacking::ToPower(-coeff.decimalScaleFactor, 10);
+	double divisor = NFmiGribPacking::ToPower(-coeff.binaryScaleFactor, 2);
+
+	double x=(((d_u[idx]*decimal)-coeff.referenceValue)*divisor)+0.5;
+	unsigned long unsigned_val = static_cast<unsigned long> (x);
+	
+	long bitp = coeff.bitsPerValue * idx;
+
+	long i = 0;
+
+	for (i=coeff.bitsPerValue-1; i >= 0; i--)
+	{
+		if(BitTest(unsigned_val,i))
+		{
+			SetBitOn(d_p, bitp);
+		}
+		else
+		{
+			SetBitOff(d_p, bitp);
+		}
+
+		bitp++;
+	}
+}
+
+__device__
+void PackFullBytes(unsigned char* __restrict__ d_p, const double* __restrict__ d_u,
+									size_t values_len, NFmiGribPacking::packing_coefficients coeff, int idx)
+{
+
+	double decimal = NFmiGribPacking::ToPower(-coeff.decimalScaleFactor, 10);
+	double divisor = NFmiGribPacking::ToPower(-coeff.binaryScaleFactor, 2);
+	
+	// unsigned char* encoded = d_p + idx * static_cast<int> (coefficients.bpv/8);
+
+	double x = ((((d_u[idx]*decimal)-coeff.referenceValue)*divisor)+0.5);
+	unsigned long unsigned_val = static_cast<unsigned long> (x);
+
+	unsigned char* encoded = &d_p[idx * static_cast<int> (coeff.bitsPerValue/8)];
+
+	while(coeff.bitsPerValue >= 8)
+	{
+		coeff.bitsPerValue -= 8;
+		*encoded = (unsigned_val >> coeff.bitsPerValue);
+		encoded++;
+	}
+}
+
+__global__
+void PackSimpleKernel(const double* d_u, unsigned char* d_p, const int* d_b, size_t N, NFmiGribPacking::packing_coefficients coeff)
+{
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (idx < N)
+	{
+		if (coeff.bitsPerValue % 8) // modulo is expensive but "Compiler will convert literal power-of-2 divides to bitwise shifts"
+		{
+			PackUnevenBytes(d_p, d_u, N, coeff, idx);
+		}
+		else
+		{
+			PackFullBytes(d_p, d_u, N, coeff, idx);
+		}
+	}
+}
+
+bool NFmiGribPacking::simple_packing::Pack(const double* d_arr, unsigned char* d_packed, const int* d_bitmap, size_t unpackedLength, NFmiGribPacking::packing_coefficients coeffs, cudaStream_t& stream)
+{
+	
+	int blockSize = 512;
+	int gridSize = unpackedLength / blockSize + (unpackedLength % blockSize == 0 ? 0 : 1);
+
+	PackSimpleKernel <<< gridSize, blockSize, 0, stream >>> (d_arr, d_packed, d_bitmap, unpackedLength, coeffs);
+
+	return true;
+
+}
+
