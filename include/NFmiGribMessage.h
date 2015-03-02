@@ -19,14 +19,14 @@
 #include <vector>
 
 #ifdef HAVE_CUDA
- #ifdef __GNUC__
+#if defined __GNUC__&& __GNUC_MINOR__ > 5
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #endif
 
 #include <cuda_runtime.h>
 
-#ifdef __GNUC__
+#if defined __GNUC__ && __GNUC_MINOR__ > 5
 #pragma GCC diagnostic pop
 #endif
 #endif
