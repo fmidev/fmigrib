@@ -1315,8 +1315,6 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 {
   using namespace NFmiGribPacking;
 
-  const std::string packingType = PackingType();
-
   assert(unpackedLen == ValuesLength());
   CreateHandle();
  
@@ -1362,7 +1360,11 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 	coeffs.binaryScaleFactor = ToPower(static_cast<double>(BinaryScaleFactor()),2);
 	coeffs.decimalScaleFactor = ToPower(-static_cast<double>(DecimalScaleFactor()), 10);
 	coeffs.referenceValue = ReferenceValue();
-		
+	
+#ifdef DEBUG
+  std::cout << "grib packing type: " << PackingType() << std::endl;
+#endif
+
 	if (PackingType() == "grid_simple")
 	{
 		simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, coeffs, stream);
@@ -1392,81 +1394,23 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
   using namespace NFmiGribPacking;
   CreateHandle();
 
-  assert(PackingType() == "grid_simple");
+  // 1. No bitmap support for now
 
-  // 0. Check pointer type
-
-  bool isHostMemory;
-
-  cudaPointerAttributes attributes;
-  cudaError_t err = cudaPointerGetAttributes(&attributes, arr);
-
-  double* d_arr = 0;
-  
-  if (err == cudaErrorInvalidValue && arr)
-  {
-    std::cerr << "CudaPack: Host memory was allocated with malloc" << std::endl;
-    isHostMemory = true;
-  }
-  else if (err == cudaSuccess)
-  {
-    if (attributes.memoryType == cudaMemoryTypeHost)
-    {
-      isHostMemory = true;
-    }
-    else
-    {
-      isHostMemory = false;
-      d_arr = arr;
-    }
-  }
-  else
-  {
-    std::cerr << "NFmiGribMessage::CudaPack Error " << static_cast<int> (err) << " (" << cudaGetErrorString(err) << ") while checking pointer attributes" << std::endl;
-    exit(1);
-  }
-
-  // 1. Copy unpacked data to device
-
-  if (isHostMemory)
-  {
-    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_arr), unpackedLen * sizeof(double)));
-    CUDA_CHECK(cudaMemcpyAsync(d_arr, arr, unpackedLen * sizeof(double), cudaMemcpyHostToDevice, stream));
-    CUDA_CHECK(cudaStreamSynchronize(stream));
-  }
-
-  // 2. No bitmap support for now
+  assert(!Bitmap());
 
   // 3. Set up coefficients
 
   packing_coefficients coeffs;
 
   coeffs.bitsPerValue = static_cast<int> (BitsPerValue());
-  
-  // TODO: Rethink or move this code
 
-  double* d = 0;
-  CUDA_CHECK(cudaMallocHost(&d, sizeof(double)*unpackedLen));
-  CUDA_CHECK(cudaMemcpy(d, d_arr,sizeof(double)*unpackedLen, cudaMemcpyDeviceToHost));
-
-  double min = 1e38, max = -1e38;
-  const double kFloatMissing = 32700.;
-
-  for (size_t i = 0; i < unpackedLen; i++)
-  {
-    double val = d[i];
-    if (val == kFloatMissing) continue;
-
-    if (val < min) min = val;
-    if (val > max) max = val;
-  }
-
-  CUDA_CHECK(cudaFreeHost(d));
-
-  // END
+  double min, max;
+  MinMax(arr, unpackedLen, min, max, stream);
 
   coeffs.referenceValue = CalculateReferenceValue(min);
+
   // TODO: voidaanko tehdä grib_apissa ja vain paljastaa funktiokutsu fmigribille?
+
   coeffs.binaryScaleFactor = static_cast<double> (simple_packing::get_binary_scale_fact(max, min, static_cast<long> (coeffs.bitsPerValue)));
   coeffs.decimalScaleFactor = static_cast<double> (simple_packing::get_decimal_scale_fact(max, min, static_cast<long> (coeffs.bitsPerValue), static_cast<long> (coeffs.binaryScaleFactor)));
 
@@ -1479,30 +1423,26 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
             
   long packedLen = ((BitsPerValue()*unpackedLen)+7)/8;
 
-  unsigned char* d_packed = 0;
-  CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_packed), packedLen * sizeof(unsigned char)));
+  unsigned char* packed = 0;
+  CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**> (&packed), packedLen * sizeof(unsigned char)));
+  
+#ifdef DEBUG
+  std::cout << "grib packing type: " << PackingType() << std::endl;
+#endif
 
   if (PackingType() == "grid_simple")
   {
-    simple_packing::Pack(d_arr, d_packed, 0, unpackedLen, coeffs, stream);
+    simple_packing::Pack(arr, packed, 0, unpackedLen, coeffs, stream);
+  }
+  else if (PackingType() == "grid_jpeg")
+  {
+    jpeg_packing::Pack(arr, packed, 0, unpackedLen, coeffs, stream);
   }
 
-  unsigned char* packed = 0;
-
-  CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**> (&packed), packedLen * sizeof(unsigned char)));
-  CUDA_CHECK(cudaMemcpyAsync(packed, d_packed, packedLen * sizeof(unsigned char), cudaMemcpyDeviceToHost, stream));
-
   CUDA_CHECK(cudaStreamSynchronize(stream));
-
   PackedValues(packed, unpackedLen, 0, 0);
 
   CUDA_CHECK(cudaFreeHost(packed));
-  CUDA_CHECK(cudaFree(d_packed));
-
-  if (isHostMemory)
-  {
-    CUDA_CHECK(cudaFree(d_arr));
-  }
   
   return true;
 }

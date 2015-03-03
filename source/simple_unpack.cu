@@ -131,40 +131,20 @@ void UnpackSimpleKernel(double* d_u, const unsigned char* d_p, const int* d_b, s
 bool NFmiGribPacking::simple_packing::Unpack(double* arr, const unsigned char* packed, const int* d_bitmap, size_t unpackedLen, NFmiGribPacking::packing_coefficients coeffs, cudaStream_t& stream)
 {
 
-	bool isHostMemory;
-
-	cudaPointerAttributes attributes;
-	cudaError_t err = cudaPointerGetAttributes(&attributes, arr);
+	bool isHostMemory = IsHostPointer(arr);
 
 	double* d_arr = 0;
 
-	if (err == cudaErrorInvalidValue && arr)
+	if (isHostMemory)
 	{
-		std::cerr << "CudaUnpack: Host memory was allocated with malloc" << std::endl;
-		isHostMemory = true;
-		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_arr), unpackedLen * sizeof(double)));
-	}
-	else if (err == cudaSuccess)
-	{
-	  if (attributes.memoryType == cudaMemoryTypeHost)
-	  {
-		  isHostMemory = true;
-		  CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_arr), unpackedLen * sizeof(double)));
-	  }
-	  else
-	  {
-		  isHostMemory = false;
-		  d_arr = arr;
-	  }
+		CUDA_CHECK(cudaMalloc(&d_arr, unpackedLen * sizeof(double)));
+		CUDA_CHECK(cudaMemcpyAsync(d_arr, arr, unpackedLen * sizeof(double), cudaMemcpyHostToDevice, stream));
 	}
 	else
 	{
-		std::cerr << "NFmiGribMessage::CudaUnpack Error " << static_cast<int> (err) << " (" << cudaGetErrorString(err) << ") while checking pointer attributes" << std::endl;
-		exit(1);
+		d_arr = arr;
 	}
-
-	// 1. Copy packed data to device
-
+	
 	size_t packedLen = ((coeffs.bitsPerValue*unpackedLen)+7)/8;
 
 	unsigned char* d_packed = 0;
@@ -179,7 +159,6 @@ bool NFmiGribPacking::simple_packing::Unpack(double* arr, const unsigned char* p
 	if (isHostMemory)
 	{
 		CUDA_CHECK(cudaMemcpyAsync(arr, d_arr, sizeof(double) * unpackedLen, cudaMemcpyDeviceToHost, stream));
-    	CUDA_CHECK(cudaDeviceSynchronize());
     	CUDA_CHECK(cudaFree(d_arr));
 	}
 	

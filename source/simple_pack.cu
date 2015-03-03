@@ -254,13 +254,43 @@ void PackSimpleKernel(const double* d_u, unsigned char* d_p, const int* d_b, siz
 	}
 }
 
-bool NFmiGribPacking::simple_packing::Pack(const double* d_arr, unsigned char* d_packed, const int* d_bitmap, size_t unpackedLength, NFmiGribPacking::packing_coefficients coeffs, cudaStream_t& stream)
+bool NFmiGribPacking::simple_packing::Pack(double* arr, unsigned char* packed, const int* d_bitmap, size_t unpackedLen, NFmiGribPacking::packing_coefficients coeffs, cudaStream_t& stream)
 {
-	
-	int blockSize = 512;
-	int gridSize = unpackedLength / blockSize + (unpackedLength % blockSize == 0 ? 0 : 1);
 
-	PackSimpleKernel <<< gridSize, blockSize, 0, stream >>> (d_arr, d_packed, d_bitmap, unpackedLength, coeffs);
+	// 1. Check pointer type
+
+	bool isHostMemory = IsHostPointer(arr);
+
+	double* d_arr = 0;
+
+	if (!isHostMemory)
+	{
+		d_arr = arr;
+	}
+
+	// 2. Copy unpacked data to device if needed
+
+	if (isHostMemory)
+	{
+    	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_arr), unpackedLen * sizeof(double)));
+    	CUDA_CHECK(cudaMemcpyAsync(d_arr, reinterpret_cast<void*> (arr), unpackedLen * sizeof(double), cudaMemcpyHostToDevice, stream));
+    	CUDA_CHECK(cudaStreamSynchronize(stream));
+	}
+
+	unsigned char* d_packed = 0;
+
+	long packedLen = ((coeffs.bitsPerValue*unpackedLen)+7)/8;
+	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_packed), packedLen * sizeof(unsigned char)));
+
+	int blockSize = 512;
+	int gridSize = unpackedLen / blockSize + (unpackedLen % blockSize == 0 ? 0 : 1);
+
+	PackSimpleKernel <<< gridSize, blockSize, 0, stream >>> (d_arr, d_packed, d_bitmap, unpackedLen, coeffs);
+
+	CUDA_CHECK(cudaMemcpyAsync(packed, d_packed, packedLen * sizeof(unsigned char), cudaMemcpyDeviceToHost, stream));
+  	CUDA_CHECK(cudaStreamSynchronize(stream));
+
+	CUDA_CHECK(cudaFree(d_packed));
 
 	return true;
 
