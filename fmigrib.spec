@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 14.11.18
+Version: 15.3.9
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
@@ -31,7 +31,8 @@ rm -rf $RPM_BUILD_ROOT
 make %{_smp_mflags} 
 
 %install
-%makeinstall
+mkdir -p $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
 
 %post
 umask 007
@@ -46,7 +47,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,0644)
-%{_libdir}/lib%{LIBNAME}.so.*
+%{_libdir}/lib%{LIBNAME}.so*
 
 %files devel
 %defattr(-,root,root,0644)
@@ -54,6 +55,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Mon Mar  9 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.3.9-1.fmi
+- Packing and unpacking of simple packing and jpeg packing moved from himan to fmigrib
 * Tue Nov 18 2014 Mikko Partio <mikko.partio@fmi.fi> - 14.11.18-1.fmi
 - Add support for writing packed data
 * Thu Oct  9 2014 Mikko Partio <mikko.partio@fmi.fi> - 14.10.9-1.fmi

@@ -84,9 +84,6 @@ void MinMax(double* d, size_t unpackedLen, double& min, double& max, cudaStream_
 
 };
 
-#endif  /* HAVE_CUDA */
-#endif	/* NFMIGRIBPACKING_H */
-
 inline
 __host__ __device__
 double NFmiGribPacking::ToPower(double value, double power)
@@ -107,3 +104,7 @@ double NFmiGribPacking::ToPower(double value, double power)
 
   return divisor;
 }
+
+#endif  /* HAVE_CUDA */
+#endif	/* NFMIGRIBPACKING_H */
+

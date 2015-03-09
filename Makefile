@@ -24,18 +24,23 @@ clean:
 
 rpm:    clean
 	mkdir -p $(rpmsourcedir) ; \
-	if [ -a $(LIB)-lib.spec ]; \
+	if [ -a $(LIB).spec ]; \
         then \
           tar -C ../ --exclude .svn \
-                   -cf $(rpmsourcedir)/$(LIB)-lib.tar $(LIB)-lib ; \
-          gzip -f $(rpmsourcedir)/$(LIB)-lib.tar ; \
-          rpmbuild -ta $(rpmsourcedir)/$(LIB)-lib.tar.gz ; \
+                   -cf $(rpmsourcedir)/lib$(LIB).tar $(LIB) ; \
+          gzip -f $(rpmsourcedir)/lib$(LIB).tar ; \
+          rpmbuild -ta $(rpmsourcedir)/lib$(LIB).tar.gz ; \
         else \
           echo $(rpmerr); \
         fi;
 
 install:
-	mkdir -p $(DESTDIR)/$(INSTALL_TARGET)
+	mkdir -p $(DESTDIR)/$(INSTALL_TARGET) $(DESTDIR)/usr/include
 	if [ -f "build/release/lib$(LIB).so" ]; then \
 		$(INSTALL_DATA) build/release/lib$(LIB).so $(DESTDIR)/$(INSTALL_TARGET); \
+		$(INSTALL_DATA) build/release/lib$(LIB).a $(DESTDIR)/$(INSTALL_TARGET); \
+		$(INSTALL_DATA) include/NFmiGribPacking.h $(DESTDIR)/usr/include; \
+		$(INSTALL_DATA) include/NFmiGrib.h $(DESTDIR)/usr/include; \
+		$(INSTALL_DATA) include/NFmiGribMessage.h $(DESTDIR)/usr/include; \
 	fi;
+

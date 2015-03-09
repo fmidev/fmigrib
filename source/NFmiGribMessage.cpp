@@ -7,6 +7,7 @@
 
 #include "NFmiGribMessage.h"
 #include <stdexcept>
+#include <iostream>
 #include <boost/lexical_cast.hpp>
 #include "NFmiGribPacking.h"
 
@@ -1451,18 +1452,6 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 bool NFmiGribMessage::CudaUnpack(double* arr, size_t len)
 {
 #ifndef HAVE_CUDA
-	std::cerr << "CUDA support disabled at compile time" << std::endl;
-	return false;
-#else
-#ifndef GRIB_READ_PACKED_DATA
-  std::cerr << "grib_api does not support reading of packed data" << std::endl;
-  return false;
-#endif
-#endif
-
-bool NFmiGribMessage::CudaPack(double* arr, size_t len)
-{
-#ifndef HAVE_CUDA
   std::cerr << "CUDA support disabled at compile time" << std::endl;
   return false;
 #else
@@ -1471,8 +1460,20 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t len)
   return false;
 #endif
 #endif
+}
+
+bool NFmiGribMessage::CudaPack(double* arr, size_t len)
+{
+#ifndef HAVE_CUDA
+  std::cerr << "CUDA support disabled at compile time" << std::endl;
+  return false;
+#else
+#ifndef GRIB_WRITE_PACKED_DATA
+  std::cerr << "grib_api does not support writing of packed data" << std::endl;
+  return false;
+#endif
+#endif
 
 }
 
-}
 #endif

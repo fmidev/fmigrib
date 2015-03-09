@@ -36,7 +36,11 @@ if have_cuda:
 	        obj='obj/cu_'+ s.replace(".cu","")
 		objects += env.SharedObject(obj, file)
 
-#lib = env.SharedLibrary(directory = 'lib', target = 'fmigrib', source = objects)
 lib = env.StaticLibrary(directory = 'lib', target = 'fmigrib', source = objects)
 
 env.Install(dir = '/usr/lib64', source = lib)
+
+lib = env.SharedLibrary(directory = 'lib', target = 'fmigrib', source = objects)
+
+env.Install(dir = '/usr/lib64', source = lib)
+

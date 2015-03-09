@@ -175,8 +175,8 @@ env.Append(NVCCDEFINES=['HAVE_CUDA'])
 
 env.Append(NVCCFLAGS = ['-m64'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-fPIC'])
-env.Append(NVCCFLAGS = ['-Xcompiler','-Wall']) # This producers lots of warnings from cuda system libraries
-env.Append(NVCCFLAGS = ['-arch=compute_20','-code=sm_20'])
+env.Append(NVCCFLAGS = ['-Xcompiler','-Wall'])
+env.Append(NVCCFLAGS = ['-arch=compute_35','-code=sm_35'])
 
 if IS_RHEL and OS_VERSION >= 7.0:
 	env.Append(NVCCFLAGS = ['-std=c++11'])
