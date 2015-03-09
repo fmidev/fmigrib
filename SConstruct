@@ -107,6 +107,9 @@ if IS_RHEL and OS_VERSION < 7.0:
 
 		env.Append(LIBS=env.File(libfile))
 
+if have_cuda:
+	env.Append(LIBS=env.File(cuda_toolkit_path + '/lib64/libcudart_static.a'))
+
 # CFLAGS
 
 # "Normal" flags
@@ -182,7 +185,6 @@ if IS_RHEL and OS_VERSION >= 7.0:
 	env.Append(NVCCFLAGS = ['-std=c++11'])
 
 env.Append(NVCCPATH = ['./include'])
-env.Append(NVCCPATH = [workspace + '/himan-plugins/include']) # cuda-helper
 
 # Other
 
