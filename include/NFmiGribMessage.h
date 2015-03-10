@@ -39,6 +39,8 @@ class NFmiGribMessage {
 
     NFmiGribMessage();
     ~NFmiGribMessage();
+	
+	NFmiGribMessage(const NFmiGribMessage& other);
 
     bool Read(grib_handle *h);
 
@@ -122,22 +124,22 @@ class NFmiGribMessage {
     void Table2Version(long theVersion);
 
     // long DataType() const;
-    long PerturbationNumber() { return itsPerturbationNumber; }
+    long PerturbationNumber() const { return itsPerturbationNumber; }
 
     long NormalizedGridType(unsigned int targetEdition = 1) const;
     long NormalizedLevelType(unsigned int targetEdition = 1) const;
 
     long LocalDefinitionNumber() const;
-    long DerivedForecast() { return itsDerivedForecast; }
-    long TypeOfEnsembleForecast() { return itsTypeOfEnsembleForecast; }
-    long NumberOfForecastsInTheEnsemble() { return itsNumberOfForecastsInTheEnsemble; }
-    long ClusterIdentifier() { return itsClusterIdentifier; }
+    long DerivedForecast() const { return itsDerivedForecast; }
+    long TypeOfEnsembleForecast() const { return itsTypeOfEnsembleForecast; }
+    long NumberOfForecastsInTheEnsemble() const { return itsNumberOfForecastsInTheEnsemble; }
+    long ClusterIdentifier() const { return itsClusterIdentifier; }
 
-    long ForecastProbabilityNumber() { return itsForecastProbabilityNumber; }
-    long ProbabilityType() { return itsProbabilityType; }
-    long PercentileValue() { return itsPercentileValue; }
-    long NumberOfTimeRange() { return itsNumberOfTimeRange; }
-    long TypeOfTimeIncrement() { return itsTypeOfTimeIncrement; }
+    long ForecastProbabilityNumber() const { return itsForecastProbabilityNumber; }
+    long ProbabilityType() const { return itsProbabilityType; }
+    long PercentileValue() const { return itsPercentileValue; }
+    long NumberOfTimeRange() const { return itsNumberOfTimeRange; }
+    long TypeOfTimeIncrement() const { return itsTypeOfTimeIncrement; }
 
     long StartStep() const;
     void StartStep(long theStartStep);

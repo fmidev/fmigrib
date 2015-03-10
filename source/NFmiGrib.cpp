@@ -70,6 +70,11 @@ bool NFmiGrib::NextMessage() {
   }
 }
 
+std::unique_ptr<NFmiGribMessage> NFmiGrib::CloneMessage()
+{
+	return std::unique_ptr<NFmiGribMessage> (new NFmiGribMessage(*m));
+}
+
 int NFmiGrib::MessageCount() {
 
   if (itsMessageCount == INVALID_INT_VALUE)

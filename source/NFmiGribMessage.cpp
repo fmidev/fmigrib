@@ -49,9 +49,15 @@ NFmiGribMessage::NFmiGribMessage()
 
 NFmiGribMessage::~NFmiGribMessage() {
 
- // if (itsHandle)
-    //grib_handle_delete(itsHandle);
+  if (itsHandle)
+    grib_handle_delete(itsHandle);
 
+}
+
+NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(0)
+{
+  Clear();
+  itsHandle = grib_handle_clone(other.itsHandle);
 }
 
 bool NFmiGribMessage::Read(grib_handle *h) {
@@ -111,14 +117,13 @@ bool NFmiGribMessage::Read(grib_handle *h) {
     itsTypeOfTimeIncrement = t;
 
   // Grib values
-/*
+
   if (itsHandle)
-  {std::cout << "grib_Handle_delete\n";
+  {
     grib_handle_delete(itsHandle);
   }
+
   itsHandle = grib_handle_clone(h); // have to clone handle since data values are not returned until called
-*/
-  itsHandle = h;
   
   return true;
 }

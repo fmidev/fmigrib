@@ -32,7 +32,7 @@ class NFmiGrib {
     bool WriteMessage(const std::string &theFileName);
 
     NFmiGribMessage& Message() const { return *m; }
-
+    std::unique_ptr<NFmiGribMessage> CloneMessage();
   private:
 
     grib_handle *h;
