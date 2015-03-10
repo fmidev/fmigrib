@@ -15,8 +15,8 @@
 
 #include <grib_api.h>
 #include <string>
-#include <boost/bimap.hpp>
 #include <vector>
+#include <cassert>
 
 #ifdef HAVE_CUDA
 #if defined __GNUC__
@@ -329,9 +329,6 @@ class NFmiGribMessage {
 
     mutable long itsEdition; //<! Cache this key since it's used quite a lot
     mutable grib_handle *itsHandle;
-
-    boost::bimap<long,long> itsGridTypeMap;
-    boost::bimap<long,long> itsLevelTypeMap;
 
     mutable size_t itsPackedValuesLength;
 };

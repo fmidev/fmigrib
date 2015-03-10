@@ -10,19 +10,20 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include "NFmiGribPacking.h"
+#include <boost/bimap.hpp>
 
 const long INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
-NFmiGribMessage::NFmiGribMessage() 
-	: itsHandle(0) {
+boost::bimap<long,long> itsGridTypeMap;
+boost::bimap<long,long> itsLevelTypeMap;
 
-  Clear();
+typedef boost::bimap<long,long>::value_type element;
 
-  typedef boost::bimap<long,long>::value_type element;
-
+void InitMaps()
+{
   // GRIB1 <--> GRIB2
 
   itsGridTypeMap.insert(element(0,0)); // ll
@@ -45,6 +46,12 @@ NFmiGribMessage::NFmiGribMessage()
   itsLevelTypeMap.insert(element(109,105)); // hybrid
   itsLevelTypeMap.insert(element(111,106)); // depth below land surface
 
+}
+
+NFmiGribMessage::NFmiGribMessage() 
+	: itsHandle(0) {
+
+  Clear();
 }
 
 NFmiGribMessage::~NFmiGribMessage() {
@@ -412,6 +419,8 @@ void NFmiGribMessage::Clear() {
   itsPackedValuesLength = INVALID_INT_VALUE;
 
   itsEdition = INVALID_INT_VALUE;
+
+  InitMaps();
 }
 
 double NFmiGribMessage::X0() const {
