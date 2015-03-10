@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.3.9
+Version: 15.3.10
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
@@ -55,6 +55,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Tue Mar 10 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.3.10-1.fmi
+- Add support for cloning NFmiGribMessage
 * Mon Mar  9 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.3.9-1.fmi
 - Packing and unpacking of simple packing and jpeg packing moved from himan to fmigrib
 * Tue Nov 18 2014 Mikko Partio <mikko.partio@fmi.fi> - 14.11.18-1.fmi
