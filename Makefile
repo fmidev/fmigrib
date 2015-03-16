@@ -18,7 +18,7 @@ all release:
 debug: 
 	scons $(SCONS_FLAGS) --debug-build
 test:
-	scons $(SCONS_FLAGS) --debug-build --test-build
+	cd tests && make
 clean:
 	scons -c ; scons --debug-build -c ; rm -f *~ source/*~ include/*~
 
