@@ -61,7 +61,10 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingWithMallocGrib1)
 	init("file.grib");
 
 	size_t N = reader.Message().ValuesLength();
+	BOOST_REQUIRE(N == 840480);
+
 	double* arr = reinterpret_cast<double*> (malloc(sizeof(double) * N));
+	BOOST_REQUIRE(arr);
 
 	reader.Message().CudaUnpack(arr, N);
 

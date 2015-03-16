@@ -15,6 +15,7 @@ INSTALL_TARGET = /usr/lib64
 
 all release: 
 	scons $(SCONS_FLAGS)
+	sh run.sh build/release
 debug: 
 	scons $(SCONS_FLAGS) --debug-build
 	sh run.sh build/debug
