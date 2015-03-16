@@ -117,6 +117,7 @@ BOOST_AUTO_TEST_CASE(simplePackGrib2)
 
 }
 
+/*
 BOOST_AUTO_TEST_CASE(jpegPackGrib2)
 {
 
@@ -147,6 +148,7 @@ BOOST_AUTO_TEST_CASE(jpegPackGrib2)
 	delete [] arr;
 
 }
+*/
 
 #else
 BOOST_AUTO_TEST_CASE(dummy)
