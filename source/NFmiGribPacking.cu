@@ -13,6 +13,9 @@ bool NFmiGribPacking::IsHostPointer(const double* ptr)
 		std::cerr << "CudaPack: Host memory was allocated with malloc" << std::endl;
 #endif
 		ret = true;
+
+		// Clear error buffer
+		cudaGetLastError();
 	}
 	else if (err == cudaSuccess)
 	{

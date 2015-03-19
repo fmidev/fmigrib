@@ -88,28 +88,25 @@ env.Append(LIBPATH = librarypaths)
 # Libraries
 
 env.Append(LIBS = [ 'dl', 'rt'])
-#env.Append(LIBS = [ 'fmigrib', 'dl', 'rt', 'pthread'])
 
-env.Append(LIBS=env.File('../build/release/libfmigrib.a'))
+if not DEBUG:
+	env.Append(LIBS=env.File('../build/release/libfmigrib.a'))
+
+else:
+	env.Append(LIBS=env.File('../build/debug/libfmigrib.a'))
+
 env.Append(LIBS=['grib_api', 'pthread'])
 
 if have_cuda:
 	env.Append(LIBS = ['cudart'])
 
 if have_comprimato:
-	env.Append(LIBS = ['cmpto_j2k_dec'])
-	env.Append(LIBS = ['cmpto_j2k_enc'])
+	env.Append(LIBS = ['cmpto_j2k_dec','cmpto_j2k_enc'])
 
 if IS_RHEL and OS_VERSION < 7.0:
-	boost_libraries = [ 'boost_program_options', 'boost_filesystem', 'boost_system', 'boost_regex', 'boost_iostreams', 'boost_thread', 'boost_unit_test_framework' ]
-
-	for lib in boost_libraries:
-		libfile = '/usr/lib64/lib' + lib + '.a'
-
-		if not os.path.isfile(libfile):
-			libfile = '/usr/lib64/lib' + lib + '-mt.a'
-
-		env.Append(LIBS=env.File(libfile))
+	env.Append(LIBS=env.File('/usr/lib64/libboost_unit_test_framework.a'))
+else:
+	env.Append(LIBS = ['boost_unit_test_framework']
 
 # CFLAGS
 
