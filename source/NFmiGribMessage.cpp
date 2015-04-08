@@ -64,7 +64,8 @@ NFmiGribMessage::~NFmiGribMessage() {
 NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(0)
 {
   Clear();
-  itsHandle = grib_handle_clone(other.itsHandle);
+  if (other.itsHandle)
+    itsHandle = grib_handle_clone(other.itsHandle);
 }
 
 bool NFmiGribMessage::Read(grib_handle *h) {
@@ -1166,7 +1167,7 @@ bool NFmiGribMessage::PackedValues(unsigned char* data, size_t unpacked_len, int
 
   GRIB_CHECK(grib_set_packed_values(itsHandle, data, unpacked_len, bitmap, bitmap_len), 0);
 #else
-#warning GRIB_WRITE_PACKED_DATA not defined -- writing of packed data with fmigrib is not supported
+//#warning GRIB_WRITE_PACKED_DATA not defined -- writing of packed data with fmigrib is not supported
   throw std::runtime_error("This version on NFmiGrib is not compiled with support for writing of packed data");
 #endif
 
@@ -1307,6 +1308,131 @@ long NFmiGribMessage::Type() const
   return GetLongKey("type");
 }
 
+long NFmiGribMessage::ForecastType() const
+{
+  long forecastType = 1; // deterministic
+
+  if (Edition() == 1)
+  {
+    if (KeyExists("localDefinitionNumber"))
+    {
+	  long definitionNumber = GetLongKey("localDefinitionNumber");
+	  // EC uses local definition number in Grib1
+      // http://old.ecmwf.int/publications/manuals/d/gribapi/fm92/grib1/show/local/
+  
+      switch (definitionNumber)
+      {
+        case 0:
+          // no local definition --> deterministic
+          forecastType = 1;
+          break;
+
+        case 1:
+          // MARS labeling or ensemble forecast data
+        {
+          long definitionType = Type();
+
+          switch (definitionType)
+          {
+            case 9:
+              // deterministic forecast
+              forecastType = 1;
+              break;		
+          
+	        case 10:
+              // cf -- control forecast
+              forecastType = 4;
+              break;
+            case 11:
+              // pf -- perturbed forecast
+              forecastType = 3;
+              break;
+            default:
+              break;
+          }
+	      break;
+        }
+        default:
+          break;
+      }
+    }
+  }
+  else
+  {
+    long typeOfGeneratingProcess = TypeOfGeneratingProcess();
+
+    switch (typeOfGeneratingProcess)
+    {
+      case 0:
+        // Analysis
+       forecastType = 2;
+       break;
+
+      case 2:
+        // deterministic
+        forecastType = 1;
+        break;
+
+      case 4:
+        // eps
+      {
+        long typeOfEnsemble = TypeOfEnsembleForecast();
+
+        switch (typeOfEnsemble)
+        {
+          case 0:
+          case 1:
+            // control forecast
+            forecastType = 4;
+            break;
+
+          case 2:
+          case 3:
+          case 192:
+            // perturbed forecast
+            forecastType = 3;
+            break;
+
+          default:
+            break;
+        }
+        break;
+      }
+
+	  default:
+	    break;
+    }  
+  }
+  
+  return forecastType;
+}
+
+void NFmiGribMessage::ForecastType(long theForecastType)
+{
+	// todo
+}
+	
+double NFmiGribMessage::ForecastTypeValue() const
+{
+  long forecastType = ForecastType();
+  
+  if (forecastType == 1 || forecastType == 2 || forecastType == 4)
+  {
+    return static_cast<double> (INVALID_INT_VALUE);
+  }
+  
+  assert(forecastType == 3);
+  
+  return static_cast<double> (PerturbationNumber());
+  
+}
+
+void NFmiGribMessage::ForecastTypeValue(double theForecastTypeValue)
+{
+	// todo
+}
+
+#ifdef GRIB_WRITE_PACKED_DATA
 double NFmiGribMessage::CalculateReferenceValue(double minimumValue)
 {
   CreateHandle();
@@ -1314,6 +1440,7 @@ double NFmiGribMessage::CalculateReferenceValue(double minimumValue)
   GRIB_CHECK(grib_get_reference_value(itsHandle, minimumValue, &ref), 0);
   return ref;
 }
+#endif
 
 #if defined HAVE_CUDA && defined GRIB_READ_PACKED_DATA
 

@@ -295,6 +295,12 @@ class NFmiGribMessage {
 
     double CalculateReferenceValue(double minimumValue);
     
+    long ForecastType() const;
+    void ForecastType(long theForecastType);
+	
+    double ForecastTypeValue() const;
+    void ForecastTypeValue(double theForecastTypeValue);
+	
   private:
     void Clear();
 
