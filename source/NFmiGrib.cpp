@@ -10,7 +10,7 @@ NFmiGrib::NFmiGrib() :
   itsMessageCount(INVALID_INT_VALUE),
   itsCurrentMessage(0)
 {
-  h = grib_handle_new_from_samples(NULL,"GRIB1");
+  h = grib_handle_new_from_samples(NULL,"GRIB2");
   assert(h);
   m.Read(h);
 }
