@@ -16,7 +16,7 @@
 #include <grib_api.h>
 #include <string>
 #include <vector>
-#include <cassert>
+#include <boost/bimap.hpp>
 
 #ifdef HAVE_CUDA
 #if defined __GNUC__
@@ -124,22 +124,13 @@ class NFmiGribMessage {
     void Table2Version(long theVersion);
 
     // long DataType() const;
-    long PerturbationNumber() const { return itsPerturbationNumber; }
+    long PerturbationNumber() const;
+	void PerturbationNumber(long thePerturbationNumber);
 
     long NormalizedGridType(unsigned int targetEdition = 1) const;
     long NormalizedLevelType(unsigned int targetEdition = 1) const;
 
     long LocalDefinitionNumber() const;
-    long DerivedForecast() const { return itsDerivedForecast; }
-    long TypeOfEnsembleForecast() const { return itsTypeOfEnsembleForecast; }
-    long NumberOfForecastsInTheEnsemble() const { return itsNumberOfForecastsInTheEnsemble; }
-    long ClusterIdentifier() const { return itsClusterIdentifier; }
-
-    long ForecastProbabilityNumber() const { return itsForecastProbabilityNumber; }
-    long ProbabilityType() const { return itsProbabilityType; }
-    long PercentileValue() const { return itsPercentileValue; }
-    long NumberOfTimeRange() const { return itsNumberOfTimeRange; }
-    long TypeOfTimeIncrement() const { return itsTypeOfTimeIncrement; }
 
     long StartStep() const;
     void StartStep(long theStartStep);
@@ -300,55 +291,29 @@ class NFmiGribMessage {
 	
     double ForecastTypeValue() const;
     void ForecastTypeValue(double theForecastTypeValue);
+
+    long GetLongKey(const std::string& keyName) const;
+    void SetLongKey(const std::string& keyName, long value);
+
+    double GetDoubleKey(const std::string& keyName) const;
+    void SetDoubleKey(const std::string& keyName, double value);
+
+    std::string GetStringKey(const std::string& keyName) const;
 	
   private:
     void Clear();
-
-    /**
-     * @brief Create a grib handle if one does not exist already
-     *
-     * This function needs to be called before anything is accessed from grib,
-     * because it is not guaranteed that we have a grib handle when instance is
-     * created and accessing a non-initialized handle will cause segfault.
-     */
-
-    void CreateHandle() const;
-    long GetLongKey(const std::string& keyName) const;
-    void SetLongKey(const std::string& keyName, long value);
-    double GetDoubleKey(const std::string& keyName) const;
-    void SetDoubleKey(const std::string& keyName, double value);
+    void InitMaps();
+	  
     size_t GetSizeTKey(const std::string& keyName) const;
-    std::string GetStringKey(const std::string& keyName) const;
-
-    long itsTotalLength;
-
-    long itsPerturbationNumber;
-    long itsTypeOfEnsembleForecast;
-    long itsDerivedForecast;
-    long itsNumberOfForecastsInTheEnsemble;
-    long itsClusterIdentifier;
-    long itsForecastProbabilityNumber;
-    long itsProbabilityType;
-    long itsPercentileValue;
-    long itsNumberOfTimeRange;
-    long itsTypeOfTimeIncrement;
 
     mutable long itsEdition; //<! Cache this key since it's used quite a lot
-    mutable grib_handle *itsHandle;
+    grib_handle *itsHandle;
 
     mutable size_t itsPackedValuesLength;
+
+	boost::bimap<long,long> itsGridTypeMap;
+	boost::bimap<long,long> itsLevelTypeMap;
+
 };
-
-inline
-void NFmiGribMessage::CreateHandle() const
-{
-    if (itsHandle)
-    {
-        return;
-    }
-
-    itsHandle = grib_handle_new_from_samples(NULL,"GRIB2");
-    assert(itsHandle);
-}
 
 #endif /* NFMIGRIBMESSAGE_H_ */

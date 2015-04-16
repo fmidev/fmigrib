@@ -10,18 +10,9 @@ NFmiGrib::NFmiGrib() :
   itsMessageCount(INVALID_INT_VALUE),
   itsCurrentMessage(0)
 {
-  m = std::unique_ptr<NFmiGribMessage> (new NFmiGribMessage());
-}
-
-NFmiGrib::NFmiGrib(const std::string &theFileName) :
-  h(0),
-  f(0),
-  itsMessageCount(INVALID_INT_VALUE),
-  itsCurrentMessage(0)
-{
-
-  m = std::unique_ptr<NFmiGribMessage> (new NFmiGribMessage());
-  Open(theFileName);
+  h = grib_handle_new_from_samples(NULL,"GRIB1");
+  assert(h);
+  m.Read(h);
 }
 
 NFmiGrib::~NFmiGrib() {
@@ -41,6 +32,7 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   if (f)
   {
     fclose(f);
+	f = 0;
   }
     
   // Open with 'rb', although in linux it equals to 'r'
@@ -57,22 +49,23 @@ bool NFmiGrib::NextMessage() {
 
   int err;
 
-  if (h)
+  if (h) {
+    // this invalidates itaHandle @ m
     grib_handle_delete(h);
+    h = 0;
+  }
+  
+  assert(!h);
   
   if ((h = grib_handle_new_from_file(0,f,&err)) != NULL) {
     itsCurrentMessage++;
+    assert(h);
 
-    return m->Read(h);
+    return m.Read(h);
   }
-  else {
-    return false;
-  }
-}
-
-std::unique_ptr<NFmiGribMessage> NFmiGrib::CloneMessage()
-{
-	return std::unique_ptr<NFmiGribMessage> (new NFmiGribMessage(*m));
+  
+  return false;
+ 
 }
 
 int NFmiGrib::MessageCount() {

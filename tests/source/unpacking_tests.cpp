@@ -1,8 +1,11 @@
 #define BOOST_TEST_MAIN
+#define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
 
-#define BOOST_TEST_MODULE grib_packing
+#define BOOST_TEST_MODULE grib_unpacking
+
+#include <iostream>
 
 #ifdef HAVE_CUDA
 #ifdef __GNUC__

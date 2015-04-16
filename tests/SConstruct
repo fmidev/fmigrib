@@ -103,10 +103,7 @@ if have_cuda:
 if have_comprimato:
 	env.Append(LIBS = ['cmpto_j2k_dec','cmpto_j2k_enc'])
 
-if IS_RHEL and OS_VERSION < 7.0:
-	env.Append(LIBS=env.File('/usr/lib64/libboost_unit_test_framework.a'))
-else:
-	env.Append(LIBS = ['boost_unit_test_framework']
+env.Append(LIBS = ['boost_unit_test_framework'])
 
 # CFLAGS
 

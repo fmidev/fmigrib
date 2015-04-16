@@ -10,22 +10,21 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include "NFmiGribPacking.h"
-#include <boost/bimap.hpp>
+#include <cassert>
 
 const long INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
-boost::bimap<long,long> itsGridTypeMap;
-boost::bimap<long,long> itsLevelTypeMap;
-
 typedef boost::bimap<long,long>::value_type element;
 
-void InitMaps()
-{
-  // GRIB1 <--> GRIB2
+void NFmiGribMessage::InitMaps()
+{  
+  if (itsGridTypeMap.size()) return;
 
+  // GRIB1 <--> GRIB2
+	
   itsGridTypeMap.insert(element(0,0)); // ll
   itsGridTypeMap.insert(element(10,1)); // rll
   itsGridTypeMap.insert(element(20,2)); // stretched ll
@@ -52,88 +51,42 @@ NFmiGribMessage::NFmiGribMessage()
 	: itsHandle(0) {
 
   Clear();
+  InitMaps();
 }
 
-NFmiGribMessage::~NFmiGribMessage() {
+NFmiGribMessage::~NFmiGribMessage() {}
 
-  if (itsHandle)
-    grib_handle_delete(itsHandle);
-
-}
-
-NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(0)
+NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) 
+	: itsHandle(0)
 {
   Clear();
+  InitMaps();
+
   if (other.itsHandle)
     itsHandle = grib_handle_clone(other.itsHandle);
 }
 
 bool NFmiGribMessage::Read(grib_handle *h) {
-
-  long t = 0;
-
+  itsHandle = h;
   Clear();
-
-  // Edition-specific keys
-  
-  if (grib_get_long(h, "perturbationNumber", &t) == GRIB_SUCCESS)
-    itsPerturbationNumber = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "typeOfEnsembleForecast", &t) == GRIB_SUCCESS)
-    itsTypeOfEnsembleForecast = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "derivedForecast", &t) == GRIB_SUCCESS)
-    itsDerivedForecast = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "numberOfForecastsInTheEnsemble", &t) == GRIB_SUCCESS)
-    itsNumberOfForecastsInTheEnsemble = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "clusterIdentifier", &t) == GRIB_SUCCESS)
-    itsClusterIdentifier = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "forecastProbabilityNumber", &t) == GRIB_SUCCESS)
-    itsForecastProbabilityNumber = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "probabilityType", &t) == GRIB_SUCCESS)
-    itsProbabilityType = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "percentileValue", &t) == GRIB_SUCCESS)
-    itsPercentileValue = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "numberOfTimeRange", &t) == GRIB_SUCCESS)
-    itsNumberOfTimeRange = t;
-
-  t = 0;
-
-  if (grib_get_long(h, "typeOfTimeIncrement", &t) == GRIB_SUCCESS)
-    itsTypeOfTimeIncrement = t;
-
-  // Grib values
-
-  if (itsHandle)
-  {
-    grib_handle_delete(itsHandle);
-  }
-
-  itsHandle = grib_handle_clone(h); // have to clone handle since data values are not returned until called
   
   return true;
+}
+
+void NFmiGribMessage::Clear()
+{
+  itsPackedValuesLength = INVALID_INT_VALUE;
+  itsEdition = INVALID_INT_VALUE;	
+}
+
+void NFmiGribMessage::PerturbationNumber(long thePerturbationNumber)
+{
+  SetLongKey("perturbationNumber",thePerturbationNumber);
+}
+
+long NFmiGribMessage::PerturbationNumber() const
+{
+  return GetLongKey("perturbationNumber");
 }
 
 long NFmiGribMessage::LocalDefinitionNumber() const
@@ -203,7 +156,7 @@ long NFmiGribMessage::DataType() const
 double *NFmiGribMessage::Values() {
 
   // Set missing value to kFloatMissing
-  CreateHandle();
+  assert(itsHandle);
   if (Bitmap()) {
     SetDoubleKey("missingValue",kFloatMissing);
   }
@@ -217,7 +170,7 @@ double *NFmiGribMessage::Values() {
 
 void NFmiGribMessage::Values(const double* theValues, long theValuesLength) {
 
-  CreateHandle();
+  assert(itsHandle);
   if (Bitmap()) {
     SetDoubleKey("missingValue",kFloatMissing);
   }
@@ -395,33 +348,6 @@ void NFmiGribMessage::LevelValue(long theLevelValue) {
   else
     SetLongKey("level",theLevelValue);
     
-}
-
-/*
- * Clear()
- *
- * This function is every time a new grib message is read. It
- * initializes all grib message specific variables.
- */
-
-void NFmiGribMessage::Clear() {
- 
-  itsPerturbationNumber = INVALID_INT_VALUE;
-  itsTypeOfEnsembleForecast = INVALID_INT_VALUE;
-  itsDerivedForecast = INVALID_INT_VALUE;
-  itsNumberOfForecastsInTheEnsemble = INVALID_INT_VALUE;
-  itsClusterIdentifier = INVALID_INT_VALUE;
-  itsForecastProbabilityNumber = INVALID_INT_VALUE;
-  itsProbabilityType = INVALID_INT_VALUE;
-  itsPercentileValue = INVALID_INT_VALUE;
-  itsNumberOfTimeRange = INVALID_INT_VALUE;
-  itsTypeOfTimeIncrement = INVALID_INT_VALUE;
-
-  itsPackedValuesLength = INVALID_INT_VALUE;
-
-  itsEdition = INVALID_INT_VALUE;
-
-  InitMaps();
 }
 
 double NFmiGribMessage::X0() const {
@@ -862,7 +788,7 @@ void NFmiGribMessage::UVRelativeToGrid(bool theRelativity)
   }
   else
   {
-    CreateHandle();
+    assert(itsHandle);
     long r = ResolutionAndComponentFlags();
 
 	// http://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit-in-c-c
@@ -893,7 +819,7 @@ void NFmiGribMessage::ResolutionAndComponentFlags(long theResolutionAndComponent
 void NFmiGribMessage::PackingType(const std::string& thePackingType)
 {
   // Should probably check edition -- v2 has more packing types
-  CreateHandle();
+  assert(itsHandle);
   size_t len = thePackingType.length();
   GRIB_CHECK(grib_set_string(itsHandle, "packingType", thePackingType.c_str(), &len), 0);
 
@@ -1062,7 +988,7 @@ void NFmiGribMessage::NV(long theNV)
 
 std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t level)
 {
-  CreateHandle();
+  assert(itsHandle);
   double* pv = static_cast<double *> (malloc(theNumberOfCoordinates*sizeof(double)));
   GRIB_CHECK(grib_get_double_array(itsHandle,"pv",pv,&theNumberOfCoordinates),0);
   std::vector<double> ret;
@@ -1093,7 +1019,7 @@ void NFmiGribMessage::PV(const std::vector<double>& theAB, size_t abLen)
 
 bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   // Assume we have required directory structure in place
-  CreateHandle();
+  assert(itsHandle);
   std::string mode = "w";
 
   if (appendToFile)
@@ -1134,7 +1060,7 @@ size_t NFmiGribMessage::BytesLength(const std::string& key) const
 
 bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
 {
-  CreateHandle();
+  assert(itsHandle);
   size_t length = BytesLength(key);
   
   GRIB_CHECK(grib_get_bytes(itsHandle,key.c_str(),data, &length),0);
@@ -1145,7 +1071,7 @@ bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
 bool NFmiGribMessage::PackedValues(unsigned char* data) const
 {
 #ifdef GRIB_READ_PACKED_DATA
-  CreateHandle();
+  assert(itsHandle);
   size_t dataLength;
 
   GRIB_CHECK(grib_get_packed_values(itsHandle,data,&dataLength),0);
@@ -1163,7 +1089,7 @@ bool NFmiGribMessage::PackedValues(unsigned char* data) const
 bool NFmiGribMessage::PackedValues(unsigned char* data, size_t unpacked_len, int* bitmap, size_t bitmap_len)
 {
 #ifdef GRIB_WRITE_PACKED_DATA
-  CreateHandle();
+  assert(itsHandle);
 
   GRIB_CHECK(grib_set_packed_values(itsHandle, data, unpacked_len, bitmap, bitmap_len), 0);
 #else
@@ -1182,7 +1108,7 @@ long NFmiGribMessage::BinaryScaleFactor() const
 void NFmiGribMessage::BinaryScaleFactor(long theFactor)
 {
 #ifdef GRIB_WRITE_PACKED_DATA
-  CreateHandle();
+  assert(itsHandle);
   GRIB_CHECK(grib_set_long_internal(itsHandle, "binaryScaleFactor", theFactor), 0);
 #endif
 }
@@ -1196,7 +1122,7 @@ long NFmiGribMessage::DecimalScaleFactor() const
 void NFmiGribMessage::DecimalScaleFactor(long theFactor)
 {
 #ifdef GRIB_WRITE_PACKED_DATA
-  CreateHandle();
+  assert(itsHandle);
   GRIB_CHECK(grib_set_long_internal(itsHandle, "decimalScaleFactor", theFactor), 0);
 #endif
 }
@@ -1209,7 +1135,7 @@ double NFmiGribMessage::ReferenceValue() const
 void NFmiGribMessage::ReferenceValue(double theValue)
 {
 #ifdef GRIB_WRITE_PACKED_DATA
-  CreateHandle();
+  assert(itsHandle);
   GRIB_CHECK(grib_set_double_internal(itsHandle,"referenceValue",theValue), 0);
 #endif
 }
@@ -1222,7 +1148,7 @@ long NFmiGribMessage::Section4Length() const
 bool NFmiGribMessage::KeyExists(const std::string& theKey) const
 {
   int i;
-  CreateHandle();
+  assert(itsHandle);
   
   i = grib_is_defined(itsHandle, theKey.c_str());
   return (i == 0 ? false: true);
@@ -1230,9 +1156,8 @@ bool NFmiGribMessage::KeyExists(const std::string& theKey) const
 
 long NFmiGribMessage::GetLongKey(const std::string& keyName) const
 {
+  assert(itsHandle);
   long l;
-  
-  CreateHandle();
   
   int err = grib_get_long(itsHandle,keyName.c_str(),&l);
 
@@ -1246,7 +1171,7 @@ long NFmiGribMessage::GetLongKey(const std::string& keyName) const
 
 void NFmiGribMessage::SetLongKey(const std::string& keyName, long value)
 {
-  CreateHandle();
+  assert(itsHandle);
   
   int err = grib_set_long(itsHandle,keyName.c_str(),value);
   
@@ -1260,7 +1185,7 @@ double NFmiGribMessage::GetDoubleKey(const std::string& keyName) const
 {
   double d;
   
-  CreateHandle();
+  assert(itsHandle);
   
   int err = grib_get_double(itsHandle,keyName.c_str(),&d);
   
@@ -1274,7 +1199,7 @@ double NFmiGribMessage::GetDoubleKey(const std::string& keyName) const
 
 void NFmiGribMessage::SetDoubleKey(const std::string& keyName, double value)
 {
-  CreateHandle();
+  assert(itsHandle);
   
   GRIB_CHECK(grib_set_double(itsHandle,keyName.c_str(),value), 0);
 }
@@ -1283,7 +1208,7 @@ size_t NFmiGribMessage::GetSizeTKey(const std::string& keyName) const
 {
   size_t s;
   
-  CreateHandle();
+  assert(itsHandle);
   
   GRIB_CHECK(grib_get_size(itsHandle,keyName.c_str(),&s), 0);
 
@@ -1295,7 +1220,7 @@ std::string NFmiGribMessage::GetStringKey(const std::string& keyName) const
   size_t len = 1024;
   char s[len];
   
-  CreateHandle();
+  assert(itsHandle);
 
   GRIB_CHECK(grib_get_string(itsHandle,keyName.c_str(), s, &len), 0);
 
@@ -1376,7 +1301,7 @@ long NFmiGribMessage::ForecastType() const
       case 4:
         // eps
       {
-        long typeOfEnsemble = TypeOfEnsembleForecast();
+        long typeOfEnsemble = GetLongKey("typeOfEnsembleForecast");
 
         switch (typeOfEnsemble)
         {
@@ -1435,7 +1360,7 @@ void NFmiGribMessage::ForecastTypeValue(double theForecastTypeValue)
 #ifdef GRIB_WRITE_PACKED_DATA
 double NFmiGribMessage::CalculateReferenceValue(double minimumValue)
 {
-  CreateHandle();
+  assert(itsHandle);
   double ref = 0;
   GRIB_CHECK(grib_get_reference_value(itsHandle, minimumValue, &ref), 0);
   return ref;
@@ -1458,7 +1383,7 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
   using namespace NFmiGribPacking;
 
   assert(unpackedLen == ValuesLength());
-  CreateHandle();
+  assert(itsHandle)();
  
   // 1. Get packed values from grib
 
@@ -1534,7 +1459,7 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen)
 bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& stream)
 {
   using namespace NFmiGribPacking;
-  CreateHandle();
+  assert(itsHandle)();
 
   // 1. No bitmap support for now
 

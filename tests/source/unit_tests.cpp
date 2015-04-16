@@ -1,5 +1,5 @@
 #define BOOST_TEST_MAIN
-//#define  BOOST_TEST_DYN_LINK
+#define  BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
 #define BOOST_TEST_MODULE NFmiGrib
@@ -43,7 +43,6 @@ BOOST_AUTO_TEST_CASE(localDefinitionNumber)
 	init2();
 
 	BOOST_REQUIRE(reader.Message().LocalDefinitionNumber() == 0);
-
 }
 
 BOOST_AUTO_TEST_CASE(productDefinitionTemplateNumber)

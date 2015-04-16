@@ -1,5 +1,3 @@
-LIB = fmigrib
-
 SCONS_FLAGS=-j 4
 
 # How to install
@@ -21,21 +19,3 @@ debug:
 	sh run.sh build/debug
 clean:
 	scons -c ; scons --debug-build -c ; rm -f *~ source/*~ include/*~
-
-rpm:    clean
-	mkdir -p $(rpmsourcedir) ; \
-	if [ -a $(LIB)-lib.spec ]; \
-        then \
-          tar -C ../ --exclude .svn \
-                   -cf $(rpmsourcedir)/$(LIB)-lib.tar $(LIB)-lib ; \
-          gzip -f $(rpmsourcedir)/$(LIB)-lib.tar ; \
-          rpmbuild -ta $(rpmsourcedir)/$(LIB)-lib.tar.gz ; \
-        else \
-          echo $(rpmerr); \
-        fi;
-
-install:
-	mkdir -p $(DESTDIR)/$(INSTALL_TARGET)
-	if [ -f "build/release/lib$(LIB).so" ]; then \
-		$(INSTALL_DATA) build/release/lib$(LIB).so $(DESTDIR)/$(INSTALL_TARGET); \
-	fi;

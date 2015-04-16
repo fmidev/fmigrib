@@ -18,7 +18,6 @@ class NFmiGrib {
 
   public:
     NFmiGrib();
-    NFmiGrib(const std::string &theFileName);
     ~NFmiGrib();
 
     bool Open(const std::string &theFileName);
@@ -31,8 +30,8 @@ class NFmiGrib {
     void MultiGribSupport(bool theMultiGribSupport);
     bool WriteMessage(const std::string &theFileName);
 
-    NFmiGribMessage& Message() const { return *m; }
-    std::unique_ptr<NFmiGribMessage> CloneMessage();
+    NFmiGribMessage& Message() { return m; }
+
   private:
 
     grib_handle *h;
@@ -41,7 +40,7 @@ class NFmiGrib {
     int itsMessageCount;
     int itsCurrentMessage;
 
-    std::unique_ptr<NFmiGribMessage> m;
+    NFmiGribMessage m;
 
 }; 
 
