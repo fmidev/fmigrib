@@ -1383,7 +1383,7 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
   using namespace NFmiGribPacking;
 
   assert(unpackedLen == ValuesLength());
-  assert(itsHandle)();
+  assert(itsHandle);
  
   // 1. Get packed values from grib
 
@@ -1459,7 +1459,7 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen)
 bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& stream)
 {
   using namespace NFmiGribPacking;
-  assert(itsHandle)();
+  assert(itsHandle);
 
   // 1. No bitmap support for now
 

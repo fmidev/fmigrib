@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.4.8
+Version: 15.4.16
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
@@ -9,7 +9,7 @@ URL: http://www.fmi.fi
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}
-BuildRequires: grib_api-devel >= 1.12.3-3
+BuildRequires: grib_api-devel >= 1.13.0-1
 BuildRequires: boost-devel >= 1.54
 
 %description
@@ -55,6 +55,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Thu Apr 16 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.4.16-1.fmi
+- Simplifies internal structure
 * Wed Apr  8 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.4.8-1.fmi
 - Reworked ForecastType logic
 * Tue Mar 10 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.3.10-1.fmi

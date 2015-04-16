@@ -96,16 +96,16 @@ libraries = []
 
 env.Append(LIBS = libraries)
 
-if IS_RHEL and OS_VERSION < 7.0:
-	boost_libraries = [ 'boost_program_options', 'boost_filesystem', 'boost_system', 'boost_regex', 'boost_iostreams', 'boost_thread' ]
-
-	for lib in boost_libraries:
-		libfile = '/usr/lib64/lib' + lib + '.a'
-
-		if not os.path.isfile(libfile):
-			libfile = '/usr/lib64/lib' + lib + '-mt.a'
-
-		env.Append(LIBS=env.File(libfile))
+#if IS_RHEL and OS_VERSION < 7.0:
+#	boost_libraries = [ 'boost_program_options', 'boost_filesystem', 'boost_system', 'boost_regex', 'boost_iostreams', 'boost_thread' ]
+#
+#	for lib in boost_libraries:
+#		libfile = '/usr/lib64/lib' + lib + '.a'
+#
+#		if not os.path.isfile(libfile):
+#			libfile = '/usr/lib64/lib' + lib + '-mt.a'
+#
+#		env.Append(LIBS=env.File(libfile))
 
 if have_cuda:
 	env.Append(LIBS=env.File(cuda_toolkit_path + '/lib64/libcudart_static.a'))
@@ -162,7 +162,7 @@ env.Append(CCFLAGS = cflags_normal)
 
 # Linker flags
 
-env.Append(LINKFLAGS = ['-rdynamic','-Wl,--as-needed'])
+env.Append(LINKFLAGS = ['-rdynamic'])
 
 # Defines
 
@@ -206,14 +206,6 @@ if DEBUG:
 	env.Append(NVCCDEFINES = ['DEBUG'])
 
 	build_dir = 'build/debug'
-
-if TEST:
-	build_dir = 'build/debug'
-
-	env['IMPLICIT_COMMAND_DEPENDENCIES'] = 0
-	env.Append(LIBS = ['fmigrib', 'boost_unit_test_framework'])
-	SConscript('SConscript_test', exports = ['env'], variant_dir=build_dir, duplicate=1)
-#	sys.exit(0)
 
 SConscript('SConscript', exports = ['env'], variant_dir=build_dir, duplicate=0)
 Clean('.', build_dir)
