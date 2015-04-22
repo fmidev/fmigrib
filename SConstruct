@@ -6,7 +6,7 @@ import platform
 import sys
 
 OS_NAME = platform.linux_distribution()[0]
-OS_VERSION = float(platform.linux_distribution()[1])
+OS_VERSION = float('.'.join(platform.linux_distribution()[1].split('.')[:2]))
 
 IS_RHEL = False
 
