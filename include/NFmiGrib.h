@@ -11,6 +11,7 @@
 #include <grib_api.h>
 #include "NFmiGribMessage.h"
 #include <memory>
+#include <fstream>
 
 const int INVALID_INT_VALUE = -999;
 
@@ -33,6 +34,9 @@ class NFmiGrib {
     NFmiGribMessage& Message() { return m; }
 
   private:
+
+    bool gzip;
+    std::ifstream ifs;
 
     grib_handle *h;
     FILE *f;

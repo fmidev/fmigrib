@@ -2,9 +2,15 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/stream.hpp>
+
 const float kFloatMissing = 32700;
 
 NFmiGrib::NFmiGrib() :
+  gzip(false),
   h(0),
   f(0),
   itsMessageCount(INVALID_INT_VALUE),
@@ -16,7 +22,6 @@ NFmiGrib::NFmiGrib() :
 }
 
 NFmiGrib::~NFmiGrib() {
-
   if (h)
   {
     grib_handle_delete(h);
@@ -25,9 +30,26 @@ NFmiGrib::~NFmiGrib() {
   {
     fclose(f);
   }
+  h=NULL;
 }
 
 bool NFmiGrib::Open(const std::string &theFileName) {
+
+/*
+ * Check if input file is gzip packed
+ */
+
+//-----------------------------------------------------------
+  if (theFileName.rfind("grib.gz") != std::string::npos)
+  {
+    // set packed mode
+    gzip = true;
+    
+    // Open input file into input stream
+    ifs.open(theFileName.c_str(), std::ifstream::binary);
+    return true;
+  }
+//-----------------------------------------------------------
 
   if (f)
   {
@@ -47,6 +69,36 @@ bool NFmiGrib::Open(const std::string &theFileName) {
 
 bool NFmiGrib::NextMessage() {
 
+/* 
+ * Read data through filtering streambuf if gzip packed.
+ */
+
+//------------------------------------------------------------------------------
+  if (gzip)
+  {
+    //stringstream serves as sink for the input filter
+    std::stringstream str_buffer;
+    
+    //create input filter
+    boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+    in.push(boost::iostreams::gzip_decompressor());
+    in.push(ifs);
+
+    //copy data to stringbuffer
+    size_t size = boost::iostreams::copy(in,str_buffer);
+
+    //create grib_message from stringbuffer
+    if ((h = grib_handle_new_from_message_copy(0,str_buffer.str().c_str(),size*sizeof(char))) != NULL) {
+      itsCurrentMessage++;
+      assert(h);
+
+      return m.Read(h);
+    }
+    
+    return false;
+  }
+//-----------------------------------------------------------------------------
+
   int err;
 
   if (h) {
@@ -60,10 +112,9 @@ bool NFmiGrib::NextMessage() {
   if ((h = grib_handle_new_from_file(0,f,&err)) != NULL) {
     itsCurrentMessage++;
     assert(h);
-
     return m.Read(h);
   }
-  
+
   return false;
  
 }
