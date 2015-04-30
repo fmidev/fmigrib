@@ -35,8 +35,11 @@ class NFmiGrib {
 
   private:
 
-    bool gzip;
+    enum class file_compression { none, gzip, bzip };
+    file_compression ifs_compression;
+    file_compression ofs_compression;
     std::ifstream ifs;
+    std::ofstream ofs;
 
     grib_handle *h;
     FILE *f;

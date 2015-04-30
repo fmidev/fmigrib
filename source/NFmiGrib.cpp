@@ -10,7 +10,8 @@
 const float kFloatMissing = 32700;
 
 NFmiGrib::NFmiGrib() :
-  gzip(false),
+  ifs_compression(file_compression::none),
+  ofs_compression(file_compression::none),
   h(0),
   f(0),
   itsMessageCount(INVALID_INT_VALUE),
@@ -30,7 +31,6 @@ NFmiGrib::~NFmiGrib() {
   {
     fclose(f);
   }
-  h=NULL;
 }
 
 bool NFmiGrib::Open(const std::string &theFileName) {
@@ -43,7 +43,7 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   if (theFileName.rfind("grib.gz") != std::string::npos)
   {
     // set packed mode
-    gzip = true;
+    ifs_compression = file_compression::gzip;
     
     // Open input file into input stream
     ifs.open(theFileName.c_str(), std::ifstream::binary);
@@ -74,7 +74,7 @@ bool NFmiGrib::NextMessage() {
  */
 
 //------------------------------------------------------------------------------
-  if (gzip)
+  if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip)
   {
     //stringstream serves as sink for the input filter
     std::stringstream str_buffer;
