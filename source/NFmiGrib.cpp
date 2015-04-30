@@ -5,6 +5,7 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/stream.hpp>
 
 const float kFloatMissing = 32700;
@@ -31,6 +32,14 @@ NFmiGrib::~NFmiGrib() {
   {
     fclose(f);
   }
+  if (ifs.is_open())
+  {
+    ifs.close();
+  }
+  if (ofs.is_open())
+  {
+    ofs.close();
+  }
 }
 
 bool NFmiGrib::Open(const std::string &theFileName) {
@@ -40,6 +49,11 @@ bool NFmiGrib::Open(const std::string &theFileName) {
  */
 
 //-----------------------------------------------------------
+  if (ifs.is_open())
+  {
+    ifs.close();
+  }
+
   if (theFileName.rfind("grib.gz") != std::string::npos)
   {
     // set packed mode
@@ -47,7 +61,9 @@ bool NFmiGrib::Open(const std::string &theFileName) {
     
     // Open input file into input stream
     ifs.open(theFileName.c_str(), std::ifstream::binary);
-    return true;
+
+    // return true if file opened succesfully
+    return (ifs.basic_ios::rdstate() == std::ios_base::goodbit);
   }
 //-----------------------------------------------------------
 
@@ -74,14 +90,27 @@ bool NFmiGrib::NextMessage() {
  */
 
 //------------------------------------------------------------------------------
-  if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip)
+  if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip2)
   {
     //stringstream serves as sink for the input filter
     std::stringstream str_buffer;
     
     //create input filter
     boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
-    in.push(boost::iostreams::gzip_decompressor());
+
+    //select filter according to file compression
+    switch (ifs_compression)
+    {
+      case file_compression::gzip: 
+        in.push(boost::iostreams::gzip_decompressor());
+        break;
+      case file_compression::bzip2:
+        in.push(boost::iostreams::bzip2_decompressor());
+        break;
+      case file_compression::none:
+        break;
+    }
+
     in.push(ifs);
 
     //copy data to stringbuffer

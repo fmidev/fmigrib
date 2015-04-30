@@ -35,7 +35,7 @@ class NFmiGrib {
 
   private:
 
-    enum class file_compression { none, gzip, bzip };
+    enum class file_compression { none, gzip, bzip2 };
     file_compression ifs_compression;
     file_compression ofs_compression;
     std::ifstream ifs;
