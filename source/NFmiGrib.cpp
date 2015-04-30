@@ -63,7 +63,7 @@ bool NFmiGrib::Open(const std::string &theFileName) {
     ifs.open(theFileName.c_str(), std::ifstream::binary);
 
     // return true if file opened succesfully
-    return (ifs.std::iostream::basic_ios::rdstate() == std::ios_base::goodbit);
+    return (ifs.good());
   }
 //-----------------------------------------------------------
 
