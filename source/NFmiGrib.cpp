@@ -203,7 +203,7 @@ bool NFmiGrib::WriteMessage(const std::string &theFileName) {
     std::string str_bfr(static_cast<const char*>(buffer),bfr_size);
     std::stringstream outdata(str_bfr);
 
-    std::ofstream ofs(theFileName.c_str(), std::ofstream::out);
+    ofs.open(theFileName.c_str(), std::ofstream::out);
     boost::iostreams::filtering_streambuf<boost::iostreams::input> out;
     switch (ofs_compression)
     {
