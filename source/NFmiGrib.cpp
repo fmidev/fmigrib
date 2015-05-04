@@ -54,13 +54,13 @@ bool NFmiGrib::Open(const std::string &theFileName) {
     ifs.close();
   }
 
-  if (theFileName.rfind("grib.gz") != std::string::npos)
+  if (theFileName.rfind("grib.gz") != std::string::npos || theFileName.rfind("grib2.gz") != std::string::npos)
   {
     // set packed mode
     ifs_compression = file_compression::gzip;
   }
 
-  if (theFileName.rfind("grib.bz2") != std::string::npos)
+  if (theFileName.rfind("grib.bz2") != std::string::npos || theFileName.rfind("grib2.bz2") != std::string::npos)
   {
     ifs_compression = file_compression::bzip2;
   }
@@ -181,12 +181,12 @@ bool NFmiGrib::WriteMessage(const std::string &theFileName) {
   // Assume we have required directory structure in place
 
   // determine compression type for out file
-  if (theFileName.rfind("grib.gz") != std::string::npos)
+  if (theFileName.rfind("grib.gz") != std::string::npos || theFileName.rfind("grib2.gz") != std::string::npos)
   {
     ofs_compression = file_compression::gzip;
   }
 
-  if (theFileName.rfind("grib.bz2") != std::string::npos)
+  if (theFileName.rfind("grib.bz2") != std::string::npos || theFileName.rfind("grib2.bz2") != std::string::npos)
   {
     ofs_compression = file_compression::bzip2;
   }
