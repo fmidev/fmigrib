@@ -58,7 +58,15 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   {
     // set packed mode
     ifs_compression = file_compression::gzip;
-    
+  }
+
+  if (theFileName.rfind("grib.bz2") != std::string::npos)
+  {
+    ifs_compression = file_compression::bzip2;
+  }
+
+  if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip2)
+  {
     // Open input file into input stream
     ifs.open(theFileName.c_str(), std::ifstream::binary);
 
@@ -171,6 +179,48 @@ void NFmiGrib::MultiGribSupport(bool theMultiGribSupport) {
 
 bool NFmiGrib::WriteMessage(const std::string &theFileName) {
   // Assume we have required directory structure in place
+
+  // determine compression type for out file
+  if (theFileName.rfind("grib.gz") != std::string::npos)
+  {
+    ofs_compression = file_compression::gzip;
+  }
+
+  if (theFileName.rfind("grib.bz2") != std::string::npos)
+  {
+    ofs_compression = file_compression::bzip2;
+  }
+
+  // write compressed output
+  if (ofs_compression == file_compression::gzip || ofs_compression == file_compression::bzip2)
+  {
+    const void* buffer;
+    size_t bfr_size;
+        
+    GRIB_CHECK(grib_get_message(h,&buffer,&bfr_size), 0);
+
+    // copy data to stringstream as source for filtering ofstream
+    std::string str_bfr(static_cast<const char*>(buffer),bfr_size);
+    std::stringstream outdata(str_bfr);
+
+    std::ofstream ofs(theFileName.c_str(), std::ofstream::out);
+    boost::iostreams::filtering_streambuf<boost::iostreams::input> out;
+    switch (ofs_compression)
+    {
+      case file_compression::gzip:
+        out.push(boost::iostreams::gzip_compressor());
+        break;
+      case file_compression::bzip2:
+        out.push(boost::iostreams::bzip2_compressor());
+        break;
+      case file_compression::none:
+        break;
+    }
+    out.push(outdata);
+    boost::iostreams::copy(out, ofs);
+
+    return true;
+  }
 
   GRIB_CHECK(grib_write_message(h, theFileName.c_str(), "w"), 0);
 
