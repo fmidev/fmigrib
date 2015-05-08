@@ -103,7 +103,7 @@ if have_cuda:
 if have_comprimato:
 	env.Append(LIBS = ['cmpto_j2k_dec','cmpto_j2k_enc'])
 
-env.Append(LIBS = ['boost_unit_test_framework', 'boost_iostreams'])
+env.Append(LIBS = ['boost_unit_test_framework', 'boost_iostreams', 'boost_filesystem', 'boost_system'])
 
 # CFLAGS
 

@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <boost/filesystem/path.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
@@ -54,12 +55,16 @@ bool NFmiGrib::Open(const std::string &theFileName) {
     ifs.close();
   }
 
-  if (theFileName.rfind("grib.gz") != std::string::npos || theFileName.rfind("grib2.gz") != std::string::npos)
+  boost::filesystem::path p (theFileName);
+
+  std::string ext = p.extension().string();
+
+  if (ext == ".gz")
   {
     // set packed mode
     ifs_compression = file_compression::gzip;
   }
-  else if (theFileName.rfind("grib.bz2") != std::string::npos || theFileName.rfind("grib2.bz2") != std::string::npos)
+  else if (ext == ".bz2")
   {
     ifs_compression = file_compression::bzip2;
   }
@@ -95,6 +100,14 @@ bool NFmiGrib::Open(const std::string &theFileName) {
 }
 
 bool NFmiGrib::NextMessage() {
+
+  if (h) {
+    // this invalidates itaHandle @ m
+    grib_handle_delete(h);
+    h = 0;
+  }
+
+  assert(!h);
 
 /* 
  * Read data through filtering streambuf if gzip packed.
@@ -140,14 +153,6 @@ bool NFmiGrib::NextMessage() {
 //-----------------------------------------------------------------------------
 
   int err;
-
-  if (h) {
-    // this invalidates itaHandle @ m
-    grib_handle_delete(h);
-    h = 0;
-  }
-  
-  assert(!h);
   
   if ((h = grib_handle_new_from_file(0,f,&err)) != NULL) {
     itsCurrentMessage++;
@@ -183,15 +188,22 @@ void NFmiGrib::MultiGribSupport(bool theMultiGribSupport) {
 bool NFmiGrib::WriteMessage(const std::string &theFileName) {
   // Assume we have required directory structure in place
 
+  boost::filesystem::path p (theFileName);
+
+  std::string ext = p.extension().string();
+
   // determine compression type for out file
-  if (theFileName.rfind("grib.gz") != std::string::npos || theFileName.rfind("grib2.gz") != std::string::npos)
+  if (ext == ".gz")
   {
     ofs_compression = file_compression::gzip;
   }
-
-  if (theFileName.rfind("grib.bz2") != std::string::npos || theFileName.rfind("grib2.bz2") != std::string::npos)
+  else if (ext == ".bz2")
   {
     ofs_compression = file_compression::bzip2;
+  }
+  else
+  {
+    ofs_compression = file_compression::none;
   }
 
   // write compressed output
