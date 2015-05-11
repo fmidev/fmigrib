@@ -116,6 +116,12 @@ bool NFmiGrib::NextMessage() {
 //------------------------------------------------------------------------------
   if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip2)
   {
+
+    if (!ifs.is_open())
+    {
+      return false;
+    }
+
     //stringstream serves as sink for the input filter
     std::stringstream str_buffer;
     
@@ -139,6 +145,8 @@ bool NFmiGrib::NextMessage() {
 
     //copy data to stringbuffer
     size_t size = boost::iostreams::copy(in,str_buffer);
+
+    ifs.close();
 
     //create grib_message from stringbuffer
     if ((h = grib_handle_new_from_message_copy(0,str_buffer.str().c_str(),size*sizeof(char))) != NULL) {
