@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.5.7
+Version: 15.5.12
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
@@ -55,6 +55,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Tue May 12 2015 Andreas Tack <andreas.tack@fmi.fi> - 15.5.12-1.fmi
+- bugfix for compression features
 * Thu May  7 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.5.7-1.fmi
 - gz and bzip2 compression features added
 * Thu Apr 16 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.4.16-1.fmi
