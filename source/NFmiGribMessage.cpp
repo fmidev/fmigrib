@@ -11,6 +11,14 @@
 #include <boost/lexical_cast.hpp>
 #include "NFmiGribPacking.h"
 #include <cassert>
+#include <fstream>
+
+#include <boost/filesystem/path.hpp>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
+#include <boost/iostreams/stream.hpp>
 
 const long INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
@@ -1025,6 +1033,61 @@ bool NFmiGribMessage::Write(const std::string &theFileName, bool appendToFile) {
   if (appendToFile)
     mode = "a";
 
+  // write compressed output if file extension is .gz or .bz2
+  //--------------------------------------------------------------------------------------------
+  boost::filesystem::path p (theFileName);
+  std::string ext = p.extension().string();
+
+  enum class file_compression { none, gzip, bzip2 };
+  file_compression ofs_compression;
+
+  // determine compression type for out file
+  if (ext == ".gz")
+  {
+    ofs_compression = file_compression::gzip;
+  }
+  else if (ext == ".bz2")
+  {
+    ofs_compression = file_compression::bzip2;
+  }
+  else
+  {
+    ofs_compression = file_compression::none;
+  }
+
+  if (ofs_compression == file_compression::gzip || ofs_compression == file_compression::bzip2)
+  {
+    const void* buffer;
+    size_t bfr_size;
+    std::ofstream ofs;
+
+    GRIB_CHECK(grib_get_message(itsHandle,&buffer,&bfr_size), 0);
+
+    // copy data to stringstream as source for filtering ofstream
+    std::string str_bfr(static_cast<const char*>(buffer),bfr_size);
+    std::stringstream outdata(str_bfr);
+
+    ofs.open(theFileName.c_str(), std::ofstream::out);
+    boost::iostreams::filtering_streambuf<boost::iostreams::input> out;
+    switch (ofs_compression)
+    {
+      case file_compression::gzip:
+        out.push(boost::iostreams::gzip_compressor());
+        break;
+      case file_compression::bzip2:
+        out.push(boost::iostreams::bzip2_compressor());
+        break;
+      case file_compression::none:
+        break;
+    }
+    out.push(outdata);
+    boost::iostreams::copy(out, ofs);
+
+    return true;
+  }
+  //--------------------------------------------------------------------------------------------
+
+  // if no file compression use grib_api function
   GRIB_CHECK(grib_write_message(itsHandle, theFileName.c_str(), mode.c_str()), 0);
 
   return true;

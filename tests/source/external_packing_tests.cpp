@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(readAndWriteGzip)
 
 	double ref = reader.Message().ReferenceValue();
 
-	reader.WriteMessage("test.grib.gz");
+	reader.Message().Write("test.grib.gz");
 	
 	init("test.grib.gz");
 
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(readAndWriteBzip2)
 
 	double ref = reader.Message().ReferenceValue();
 
-	reader.WriteMessage("test.grib2.bz2");
+	reader.Message().Write("test.grib2.bz2");
 	
 	init("test.grib2.bz2");
 
