@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.5.12
+Version: 15.5.18
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
@@ -55,6 +55,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Mon May 18 2015 Andreas Tack <andreas.tack@fmi.fi> - 15.5.18-1.fmi
+- add compression feature to NFmiGribMessage
 * Tue May 12 2015 Andreas Tack <andreas.tack@fmi.fi> - 15.5.12-1.fmi
 - bugfix for compression features
 * Thu May  7 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.5.7-1.fmi
