@@ -174,6 +174,12 @@ bool NFmiGrib::NextMessage() {
 
 int NFmiGrib::MessageCount() {
 
+  if (ifs_compression != file_compression::none)
+  {
+    // No multi message support for compressed files at this point
+    return 1;
+  }
+
   if (itsMessageCount == INVALID_INT_VALUE)
   {
     GRIB_CHECK(grib_count_in_file(0, f, &itsMessageCount), 0);
@@ -199,6 +205,8 @@ bool NFmiGrib::WriteMessage(const std::string &theFileName) {
   boost::filesystem::path p (theFileName);
 
   std::string ext = p.extension().string();
+
+  std::cout << ext << std::endl;
 
   // determine compression type for out file
   if (ext == ".gz")
