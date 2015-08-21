@@ -197,6 +197,9 @@ class NFmiGribMessage {
 
     long NumberOfMissing() const;
 
+    double MissingValue() const;
+    void MissingValue(double missingValue);
+
     bool UVRelativeToGrid() const;
     void UVRelativeToGrid(bool theRelativity);
 

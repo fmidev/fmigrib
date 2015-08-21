@@ -1,16 +1,17 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.5.18
+Version: 15.8.21
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
 URL: http://www.fmi.fi
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
-Provides: %{LIBNAME}
+Provides: %{LIBNAME}.so
 BuildRequires: grib_api-devel >= 1.13.0-1
 BuildRequires: boost-devel >= 1.54
+Provides: lib%{LIBNAME}.so
 
 %description
 FMI grib library
@@ -55,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Fri Aug 21 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.8.21-1.fmi
+- Add functions to get and set grib missing value
 * Mon May 18 2015 Andreas Tack <andreas.tack@fmi.fi> - 15.5.18-1.fmi
 - add compression feature to NFmiGribMessage
 * Tue May 12 2015 Andreas Tack <andreas.tack@fmi.fi> - 15.5.12-1.fmi
