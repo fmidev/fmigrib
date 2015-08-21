@@ -168,7 +168,7 @@ double *NFmiGribMessage::Values() {
   if (Bitmap()) {
     double missingValue = GetDoubleKey("missingValue");
 
-    if (missingValue == -9999) SetDoubleKey("missingValue", kFloatMissing);
+    if (missingValue == 9999) SetDoubleKey("missingValue", kFloatMissing);
   }
   size_t values_len = ValuesLength();
   double* vals = static_cast<double*> (malloc(values_len*sizeof(double)));
@@ -184,7 +184,7 @@ void NFmiGribMessage::Values(const double* theValues, long theValuesLength) {
   if (Bitmap()) {
     double missingValue = GetDoubleKey("missingValue");
 
-    if (missingValue == -9999) SetDoubleKey("missingValue",kFloatMissing);
+    if (missingValue == 9999) SetDoubleKey("missingValue",kFloatMissing);
   }
 
   if (Edition() == 2) {
