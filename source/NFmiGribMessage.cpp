@@ -32,7 +32,7 @@ void NFmiGribMessage::InitMaps()
   if (itsGridTypeMap.size()) return;
 
   // GRIB1 <--> GRIB2
-	
+  
   itsGridTypeMap.insert(element(0,0)); // ll
   itsGridTypeMap.insert(element(10,1)); // rll
   itsGridTypeMap.insert(element(20,2)); // stretched ll
@@ -56,7 +56,7 @@ void NFmiGribMessage::InitMaps()
 }
 
 NFmiGribMessage::NFmiGribMessage() 
-	: itsHandle(0) {
+  : itsHandle(0) {
 
   Clear();
   InitMaps();
@@ -65,7 +65,7 @@ NFmiGribMessage::NFmiGribMessage()
 NFmiGribMessage::~NFmiGribMessage() {}
 
 NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) 
-	: itsHandle(0)
+  : itsHandle(0)
 {
   Clear();
   InitMaps();
@@ -84,7 +84,7 @@ bool NFmiGribMessage::Read(grib_handle *h) {
 void NFmiGribMessage::Clear()
 {
   itsPackedValuesLength = INVALID_INT_VALUE;
-  itsEdition = INVALID_INT_VALUE;	
+  itsEdition = INVALID_INT_VALUE;  
 }
 
 void NFmiGribMessage::PerturbationNumber(long thePerturbationNumber)
@@ -355,7 +355,7 @@ void NFmiGribMessage::LevelValue(long theLevelValue) {
   if (Edition() == 2)
   {
     SetLongKey("scaleFactorOfFirstFixedSurface", 0);
-	SetLongKey("scaledValueOfFirstFixedSurface",theLevelValue);
+  SetLongKey("scaledValueOfFirstFixedSurface",theLevelValue);
   }
   else
     SetLongKey("level",theLevelValue);
@@ -614,7 +614,7 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
         default:
           timeRangeIndicator = 1; // default to hour
           break;
-	
+  
     }
   }
   else {
@@ -635,10 +635,10 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
   
   switch (unitOfTimeRange)
   {
-	case 0: // minute
+  case 0: // minute
     case 1: // hour
-	  break;
-		
+    break;
+    
     case 10: // 3 hours
       multiplier = 3;
       break;
@@ -811,18 +811,18 @@ void NFmiGribMessage::UVRelativeToGrid(bool theRelativity)
     assert(itsHandle);
     long r = ResolutionAndComponentFlags();
 
-	// http://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit-in-c-c
+  // http://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit-in-c-c
 
     if (theRelativity)
     {
       r |= 1 << 3;
-	}
-	else
-	{
+  }
+  else
+  {
       r &= ~(1 << 3);
-	}
-		
-	ResolutionAndComponentFlags(r);
+  }
+    
+  ResolutionAndComponentFlags(r);
   }
 }
 
@@ -964,7 +964,7 @@ void NFmiGribMessage::LengthOfTimeRange(long theLength)
 
 long NFmiGribMessage::TimeRangeIndicator() const
 {
-  return GetLongKey("timeRangeIndicator");	
+  return GetLongKey("timeRangeIndicator");  
 }
 
 void NFmiGribMessage::TimeRangeIndicator(long theTimeRangeIndicator)
@@ -996,7 +996,7 @@ void NFmiGribMessage::P2(long theP2)
 
 long NFmiGribMessage::NV() const
 {
-  return GetLongKey("NV");	
+  return GetLongKey("NV");  
 }
 
 void NFmiGribMessage::NV(long theNV)
@@ -1238,7 +1238,7 @@ long NFmiGribMessage::GetLongKey(const std::string& keyName) const
 
   if (err != 0)
   {
-	  l = INVALID_INT_VALUE;
+    l = INVALID_INT_VALUE;
   }
   
   return l;
@@ -1252,7 +1252,7 @@ void NFmiGribMessage::SetLongKey(const std::string& keyName, long value)
   
   if (err != 0)
   {
-	  throw err;
+    throw err;
   }
 }
 
@@ -1266,7 +1266,7 @@ double NFmiGribMessage::GetDoubleKey(const std::string& keyName) const
   
   if (err != 0)
   {
-	  d = static_cast<double> (INVALID_INT_VALUE);
+    d = static_cast<double> (INVALID_INT_VALUE);
   }
 
   return d;
@@ -1304,7 +1304,7 @@ std::string NFmiGribMessage::GetStringKey(const std::string& keyName) const
 
 long NFmiGribMessage::Type() const
 {
-  // http://old.ecmwf.int/publications/manuals/d/gribapi/mars/att=type/	
+  // http://old.ecmwf.int/publications/manuals/d/gribapi/mars/att=type/  
   return GetLongKey("type");
 }
 
@@ -1316,8 +1316,8 @@ long NFmiGribMessage::ForecastType() const
   {
     if (KeyExists("localDefinitionNumber"))
     {
-	  long definitionNumber = GetLongKey("localDefinitionNumber");
-	  // EC uses local definition number in Grib1
+    long definitionNumber = GetLongKey("localDefinitionNumber");
+    // EC uses local definition number in Grib1
       // http://old.ecmwf.int/publications/manuals/d/gribapi/fm92/grib1/show/local/
   
       switch (definitionNumber)
@@ -1337,9 +1337,9 @@ long NFmiGribMessage::ForecastType() const
             case 9:
               // deterministic forecast
               forecastType = 1;
-              break;		
+              break;    
           
-	        case 10:
+          case 10:
               // cf -- control forecast
               forecastType = 4;
               break;
@@ -1350,7 +1350,7 @@ long NFmiGribMessage::ForecastType() const
             default:
               break;
           }
-	      break;
+        break;
         }
         default:
           break;
@@ -1399,8 +1399,8 @@ long NFmiGribMessage::ForecastType() const
         break;
       }
 
-	  default:
-	    break;
+    default:
+      break;
     }  
   }
   
@@ -1409,9 +1409,9 @@ long NFmiGribMessage::ForecastType() const
 
 void NFmiGribMessage::ForecastType(long theForecastType)
 {
-	// todo
+  // todo
 }
-	
+  
 double NFmiGribMessage::ForecastTypeValue() const
 {
   long forecastType = ForecastType();
@@ -1429,7 +1429,7 @@ double NFmiGribMessage::ForecastTypeValue() const
 
 void NFmiGribMessage::ForecastTypeValue(double theForecastTypeValue)
 {
-	// todo
+  // todo
 }
 
 #ifdef GRIB_WRITE_PACKED_DATA
@@ -1459,6 +1459,7 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 
   assert(unpackedLen == ValuesLength());
   assert(itsHandle);
+  assert(arr);
  
   // 1. Get packed values from grib
 
@@ -1468,57 +1469,60 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
   PackedValues(packed);
 
   // 2. If bitmap is present, unpack it and copy to cuda device
-	
+  
   int* d_bitmap = 0;
 
   if (Bitmap())
   {
-		size_t bitmap_len = BytesLength("bitmap");
-		assert(bitmap_len == unpackedLen);
-		
-		size_t bitmap_size = static_cast<size_t> (ceil(static_cast<double> (bitmap_len)/8));
+    size_t bitmap_len = BytesLength("bitmap");
+    assert(bitmap_len == unpackedLen);
+    
+    size_t bitmap_size = static_cast<size_t> (ceil(static_cast<double> (bitmap_len)/8));
+    //CUDA_CHECK(cudaMemcpyAsync(d_bitmap, bitmap, bitmapLength * sizeof(int), cudaMemcpyHostToDevice, *stream));
 
-		//CUDA_CHECK(cudaMemcpyAsync(d_bitmap, bitmap, bitmapLength * sizeof(int), cudaMemcpyHostToDevice, *stream));
+    unsigned char* bitmap = new unsigned char[bitmap_size];
 
-		unsigned char* bitmap = new unsigned char[bitmap_size];
+    Bytes("bitmap", bitmap);
 
-		Bytes("bitmap", bitmap);
+    int* unpacked_bitmap = 0;
+    
+    CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**> (&unpacked_bitmap), bitmap_len * sizeof(int)));
 
-		int* unpacked_bitmap = 0;
-		
-		CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**> (&unpacked_bitmap), bitmap_len * sizeof(int)));
+    UnpackBitmap(bitmap, unpacked_bitmap, bitmap_size, bitmap_len);
+    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_bitmap), bitmap_len * sizeof(int)));
+    CUDA_CHECK(cudaMemcpyAsync(d_bitmap, unpacked_bitmap, bitmap_len * sizeof(int), cudaMemcpyHostToDevice, stream));
 
-		UnpackBitmap(bitmap, unpacked_bitmap, bitmap_size, bitmap_len);
+    CUDA_CHECK(cudaStreamSynchronize(stream));
+  }
 
-		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_bitmap), bitmap_len * sizeof(int)));
-		CUDA_CHECK(cudaMemcpyAsync(d_bitmap, bitmap, bitmap_len * sizeof(int), cudaMemcpyHostToDevice, stream));
-		CUDA_CHECK(cudaStreamSynchronize(stream));
-	}
+  // 3. Set up coefficients
 
-	// 3. Set up coefficients
-
-	packing_coefficients coeffs;
-	coeffs.bitsPerValue = static_cast<int> (BitsPerValue());
-	coeffs.binaryScaleFactor = ToPower(static_cast<double>(BinaryScaleFactor()),2);
-	coeffs.decimalScaleFactor = ToPower(-static_cast<double>(DecimalScaleFactor()), 10);
-	coeffs.referenceValue = ReferenceValue();
-	
+  packing_coefficients coeffs;
+  coeffs.bitsPerValue = static_cast<int> (BitsPerValue());
+  coeffs.binaryScaleFactor = ToPower(static_cast<double>(BinaryScaleFactor()),2);
+  coeffs.decimalScaleFactor = ToPower(-static_cast<double>(DecimalScaleFactor()), 10);
+  coeffs.referenceValue = ReferenceValue();
+  
 #ifdef DEBUG
   std::cout << "grib packing type: " << PackingType() << std::endl;
 #endif
 
-	if (PackingType() == "grid_simple")
-	{
-		simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, coeffs, stream);
-	}
+  if (PackingType() == "grid_simple")
+  {
+    simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, coeffs, stream);
+  }
   else if (PackingType() == "grid_jpeg")
   {
     jpeg_packing::Unpack(arr, packed, d_bitmap, unpackedLen, coeffs, stream);
   }
+  else {
+    CUDA_CHECK(cudaFreeHost(packed));
+    return false;
+  }
 
   CUDA_CHECK(cudaFreeHost(packed));
   
-	return true;
+  return true;
 
 }
 
