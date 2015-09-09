@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.9.2
+Version: 15.9.9
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
@@ -56,6 +56,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Wed Sep  9 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.9-1.fmi
+- Fix to cuda unpack when memory was free'd before read
+* Thu Sep  3 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.3-1.fmi
+- Fix to cuda unpack with bitmap
 * Wed Sep  2 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.2-1.fmi
 - grib_api 1.14
 * Fri Aug 21 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.8.21-1.fmi
