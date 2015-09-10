@@ -179,7 +179,8 @@ env.Append(NVCCDEFINES=['HAVE_CUDA'])
 env.Append(NVCCFLAGS = ['-m64'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-fPIC'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-Wall'])
-env.Append(NVCCFLAGS = ['-arch=compute_35','-code=sm_35'])
+env.Append(NVCCFLAGS = ['-gencode=arch=compute_35,code=sm_35'])
+env.Append(NVCCFLAGS = ['-gencode=arch=compute_52,code=sm_52'])
 
 if IS_RHEL and OS_VERSION >= 7.0:
 	env.Append(NVCCFLAGS = ['-std=c++11'])
