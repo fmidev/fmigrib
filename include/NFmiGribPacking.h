@@ -27,7 +27,9 @@
 
 void CheckCudaError(cudaError_t errarg, const char* file, const int line);
 
+#ifndef CUDA_CHECK
 #define CUDA_CHECK(errarg)	 CheckCudaError(errarg, __FILE__, __LINE__)
+#endif
 
 inline
 void CheckCudaError(cudaError_t errarg, const char* file, const int line)
