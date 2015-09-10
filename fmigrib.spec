@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.9.9
+Version: 15.9.10
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Thu Sep 10 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.10-1.fmi
+- Bugfix for static grids
 * Wed Sep  9 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.9-1.fmi
 - Fix to cuda unpack when memory was free'd before read
 * Thu Sep  3 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.3-1.fmi
