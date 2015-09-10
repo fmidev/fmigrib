@@ -81,7 +81,7 @@ __host__ __device__
 double ToPower(double value, double power);
 bool IsHostPointer(const double* ptr);
 void MinMax(double* d, size_t unpackedLen, double& min, double& max, cudaStream_t& stream);
-
+void Fill(double* arr, size_t len, double fillValue);
 };
 
 inline

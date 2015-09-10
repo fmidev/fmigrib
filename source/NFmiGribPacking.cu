@@ -1,5 +1,14 @@
 #include "NFmiGribPacking.h"
 
+#include <thrust/device_ptr.h>
+#include <thrust/fill.h>
+
+void NFmiGribPacking::Fill(double* arr, size_t len, double fillValue)
+{
+	// TODO: use streams
+	thrust::device_ptr<double> ptr = thrust::device_pointer_cast(arr);
+	thrust::fill(ptr, ptr + len, fillValue);
+}
 bool NFmiGribPacking::IsHostPointer(const double* ptr)
 {
 	cudaPointerAttributes attributes;

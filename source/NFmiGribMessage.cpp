@@ -1460,15 +1460,37 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
   assert(unpackedLen == ValuesLength());
   assert(itsHandle);
   assert(arr);
- 
-  // 1. Get packed values from grib
+
+  // 1. Set up coefficients
+
+  packing_coefficients coeffs;
+  coeffs.bitsPerValue = static_cast<int> (BitsPerValue());
+  coeffs.binaryScaleFactor = ToPower(static_cast<double>(BinaryScaleFactor()),2);
+  coeffs.decimalScaleFactor = ToPower(-static_cast<double>(DecimalScaleFactor()), 10);
+  coeffs.referenceValue = ReferenceValue();
+
+  // Special case when bits per value is zero which means we have a constant grid
+  if (coeffs.bitsPerValue == 0)
+  {
+    if (NFmiGribPacking::IsHostPointer(arr))
+    {
+      std::fill(arr, arr + unpackedLen, coeffs.referenceValue);
+    }
+    else
+    {
+      NFmiGribPacking::Fill(arr, unpackedLen, coeffs.referenceValue);
+    }
+    return true;
+  }
+
+  // 2. Get packed values from grib
 
   unsigned char* packed = 0;
   size_t packedLen = PackedValuesLength();
   CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**> (&packed), packedLen * sizeof(unsigned char)));
   PackedValues(packed);
 
-  // 2. If bitmap is present, unpack it and copy to cuda device
+  // 3. If bitmap is present, unpack it and copy to cuda device
   
   int* d_bitmap = 0;
 
@@ -1495,17 +1517,7 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
     CUDA_CHECK(cudaStreamSynchronize(stream));
   }
 
-  // 3. Set up coefficients
-
-  packing_coefficients coeffs;
-  coeffs.bitsPerValue = static_cast<int> (BitsPerValue());
-  coeffs.binaryScaleFactor = ToPower(static_cast<double>(BinaryScaleFactor()),2);
-  coeffs.decimalScaleFactor = ToPower(-static_cast<double>(DecimalScaleFactor()), 10);
-  coeffs.referenceValue = ReferenceValue();
-  
-#ifdef DEBUG
-  std::cout << "grib packing type: " << PackingType() << std::endl;
-#endif
+  // 4. Unpack
 
   if (PackingType() == "grid_simple")
   {

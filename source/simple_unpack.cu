@@ -1,4 +1,5 @@
 #include "NFmiGribPacking.h"
+#include <cassert>
 
 const double kFloatMissing = 32700.;
 
@@ -146,6 +147,7 @@ bool NFmiGribPacking::simple_packing::Unpack(double* arr, const unsigned char* p
 	}
 	
 	size_t packedLen = ((coeffs.bitsPerValue*unpackedLen)+7)/8;
+	assert(packedLen > 0);
 
 	unsigned char* d_packed = 0;
 	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_packed), packedLen * sizeof(unsigned char)));
