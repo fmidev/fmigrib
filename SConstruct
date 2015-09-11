@@ -196,6 +196,11 @@ if RELEASE:
 	env.Append(CPPDEFINES = ['NDEBUG'])
 	build_dir = 'build/release'
 
+	# Cuda
+	env.Append(NVCCFLAGS = ['-O2'])
+	env.Append(NVCCDEFINES = ['NDEBUG'])
+
+
 if DEBUG:
 	env.Append(CCFLAGS = ['-g','-O0'])
 	env.Append(CCFLAGS = cflags_extra)
