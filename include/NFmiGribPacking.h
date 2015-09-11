@@ -65,7 +65,7 @@ struct packing_coefficients
 
 namespace simple_packing
 {
-bool Unpack(double* d_arr, const unsigned char* d_packed, const int* d_bitmap, size_t unpackedLen, packing_coefficients coeffs, cudaStream_t& stream);
+bool Unpack(double* d_arr, const unsigned char* d_packed, const int* d_bitmap, size_t unpackedLen, size_t packedLen, packing_coefficients coeffs, cudaStream_t& stream);
 bool Pack(double* d_arr, unsigned char* d_packed, const int* d_bitmap, size_t unpackedLength, packing_coefficients coeffs, cudaStream_t& stream);
 long get_decimal_scale_fact(double max, double min, long bpval,long binary_scale);
 long get_binary_scale_fact(double max, double min, long bpval);
@@ -73,7 +73,7 @@ long get_binary_scale_fact(double max, double min, long bpval);
 
 namespace jpeg_packing
 {
-bool Unpack(double* d_arr, const unsigned char* d_packed, const int* d_bitmap, size_t unpackedLen, packing_coefficients coeffs, cudaStream_t& stream);
+bool Unpack(double* d_arr, const unsigned char* d_packed, const int* d_bitmap, size_t unpackedLen, size_t packedLen, packing_coefficients coeffs, cudaStream_t& stream);
 bool Pack(double* d_arr, unsigned char* d_packed, const int* d_bitmap, size_t unpackedLength, packing_coefficients coeffs, cudaStream_t& stream);
 }
 

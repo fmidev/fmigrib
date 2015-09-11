@@ -129,7 +129,7 @@ void UnpackSimpleKernel(double* d_u, const unsigned char* d_p, const int* d_b, s
 	}
 }
 
-bool NFmiGribPacking::simple_packing::Unpack(double* arr, const unsigned char* packed, const int* d_bitmap, size_t unpackedLen, NFmiGribPacking::packing_coefficients coeffs, cudaStream_t& stream)
+bool NFmiGribPacking::simple_packing::Unpack(double* arr, const unsigned char* packed, const int* d_bitmap, size_t unpackedLen, size_t packedLen, NFmiGribPacking::packing_coefficients coeffs, cudaStream_t& stream)
 {
 
 	bool isHostMemory = IsHostPointer(arr);
@@ -146,8 +146,9 @@ bool NFmiGribPacking::simple_packing::Unpack(double* arr, const unsigned char* p
 		d_arr = arr;
 	}
 	
-	size_t packedLen = ((coeffs.bitsPerValue*unpackedLen)+7)/8;
 	assert(packedLen > 0);
+	assert(d_arr);
+	assert(packed);
 
 	unsigned char* d_packed = 0;
 	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&d_packed), packedLen * sizeof(unsigned char)));

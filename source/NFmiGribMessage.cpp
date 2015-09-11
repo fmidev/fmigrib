@@ -1515,17 +1515,19 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
     CUDA_CHECK(cudaMemcpyAsync(d_bitmap, unpacked_bitmap, bitmap_len * sizeof(int), cudaMemcpyHostToDevice, stream));
 
     CUDA_CHECK(cudaStreamSynchronize(stream));
+	
+    delete [] bitmap;
   }
 
   // 4. Unpack
 
   if (PackingType() == "grid_simple")
   {
-    simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, coeffs, stream);
+    simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
   }
   else if (PackingType() == "grid_jpeg")
   {
-    jpeg_packing::Unpack(arr, packed, d_bitmap, unpackedLen, coeffs, stream);
+    jpeg_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
   }
   else {
     CUDA_CHECK(cudaFreeHost(packed));
