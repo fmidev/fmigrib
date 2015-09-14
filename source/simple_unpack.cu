@@ -165,6 +165,8 @@ bool NFmiGribPacking::simple_packing::Unpack(double* arr, const unsigned char* p
     	CUDA_CHECK(cudaFree(d_arr));
 	}
 	
+	CUDA_CHECK(cudaFree(d_packed));
+
 	return true;
 
 }

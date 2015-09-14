@@ -1534,6 +1534,11 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
     return false;
   }
 
+  if (d_bitmap)
+  {
+	  CUDA_CHECK(cudaFree(d_bitmap));
+  }
+
   CUDA_CHECK(cudaStreamSynchronize(stream));
   CUDA_CHECK(cudaFreeHost(packed));
   
