@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.9.10
+Version: 15.9.14
 Release: 1%{dist}.fmi
 License: FMI
 Group: Development/Tools
@@ -56,6 +56,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Mon Sep 14 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.14-1.fmi
+- Two cuda device memory leaks fixed
+* Fri Sep 11 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.11-1.fmi
+- Fix to cuda unpack with bitmap
 * Thu Sep 10 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.10-1.fmi
 - Bugfix for static grids
 * Wed Sep  9 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.9-1.fmi
