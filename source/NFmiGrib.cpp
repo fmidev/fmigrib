@@ -14,6 +14,8 @@ const float kFloatMissing = 32700;
 NFmiGrib::NFmiGrib() :
   ifs_compression(file_compression::none),
   ofs_compression(file_compression::none),
+  message_start(0),
+  message_end(0),
   h(0),
   f(0),
   itsMessageCount(INVALID_INT_VALUE),
@@ -78,8 +80,41 @@ bool NFmiGrib::Open(const std::string &theFileName) {
     // Open input file into input stream
     ifs.open(theFileName.c_str(), std::ifstream::binary);
 
+    if (!ifs.is_open())
+    {
+      return false;
+    }
+
+    //stringstream serves as sink for the input filter
+    std::stringstream str_buffer;
+
+    //create input filter
+    boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
+
+    //select filter according to file compression
+    switch (ifs_compression)
+    {
+      case file_compression::gzip:
+        in.push(boost::iostreams::gzip_decompressor());
+        break;
+      case file_compression::bzip2:
+        in.push(boost::iostreams::bzip2_decompressor());
+        break;
+      case file_compression::none:
+        break;
+    }
+
+    in.push(ifs);
+
+    //copy data to stringbuffer
+    boost::iostreams::copy(in,str_buffer);
+    
+    ifile = str_buffer.str();    
+
+    ifs.close();
+
     // return true if file opened succesfully
-    return (ifs.good());
+    return true;
   }
 //-----------------------------------------------------------
 
@@ -116,40 +151,12 @@ bool NFmiGrib::NextMessage() {
 //------------------------------------------------------------------------------
   if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip2)
   {
-
-    if (!ifs.is_open())
-    {
-      return false;
-    }
-
-    //stringstream serves as sink for the input filter
-    std::stringstream str_buffer;
-    
-    //create input filter
-    boost::iostreams::filtering_streambuf<boost::iostreams::input> in;
-
-    //select filter according to file compression
-    switch (ifs_compression)
-    {
-      case file_compression::gzip: 
-        in.push(boost::iostreams::gzip_decompressor());
-        break;
-      case file_compression::bzip2:
-        in.push(boost::iostreams::bzip2_decompressor());
-        break;
-      case file_compression::none:
-        break;
-    }
-
-    in.push(ifs);
-
-    //copy data to stringbuffer
-    size_t size = boost::iostreams::copy(in,str_buffer);
-
-    ifs.close();
+    message_start = ifile.find("GRIB",message_end); //find next grib message after previous message ended
+    message_end = ifile.find("7777",message_end) + 4; //find end of next grib message
+    size_t message_length = message_end - message_start;
 
     //create grib_message from stringbuffer
-    if ((h = grib_handle_new_from_message_copy(0,str_buffer.str().c_str(),size*sizeof(char))) != NULL) {
+    if ((h = grib_handle_new_from_message_copy(0,(ifile.substr(message_start,message_length)).c_str(),message_length*sizeof(char))) != NULL) {
       itsCurrentMessage++;
       assert(h);
 
@@ -176,8 +183,17 @@ int NFmiGrib::MessageCount() {
 
   if (ifs_compression != file_compression::none)
   {
-    // No multi message support for compressed files at this point
-    return 1;
+    size_t index = -1;
+    itsMessageCount = -1;
+
+    do
+    {
+      index = ifile.find("GRIB",index+1);
+      ++itsMessageCount;
+    }
+    while (index < std::string::npos);
+
+    return itsMessageCount;
   }
 
   if (itsMessageCount == INVALID_INT_VALUE)

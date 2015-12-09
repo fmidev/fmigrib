@@ -41,6 +41,11 @@ class NFmiGrib {
     std::ifstream ifs;
     std::ofstream ofs;
 
+    //string serves as sink for the input filter
+    std::string ifile;
+    size_t message_start;
+    size_t message_end;
+
     grib_handle *h;
     FILE *f;
 
