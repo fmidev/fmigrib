@@ -222,8 +222,6 @@ bool NFmiGrib::WriteMessage(const std::string &theFileName) {
 
   std::string ext = p.extension().string();
 
-  std::cout << ext << std::endl;
-
   // determine compression type for out file
   if (ext == ".gz")
   {
