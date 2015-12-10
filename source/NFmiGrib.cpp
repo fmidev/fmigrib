@@ -110,6 +110,8 @@ bool NFmiGrib::Open(const std::string &theFileName) {
     boost::iostreams::copy(in,str_buffer);
     
     ifile = str_buffer.str();    
+    message_start = 0;
+    message_end=0;
 
     ifs.close();
 
@@ -154,6 +156,8 @@ bool NFmiGrib::NextMessage() {
     message_start = ifile.find("GRIB",message_end); //find next grib message after previous message ended
     message_end = ifile.find("7777",message_end) + 4; //find end of next grib message
     size_t message_length = message_end - message_start;
+    std::cout << message_start << std::endl;
+    std::cout << message_end << std::endl;
 
     //create grib_message from stringbuffer
     if ((h = grib_handle_new_from_message_copy(0,(ifile.substr(message_start,message_length)).c_str(),message_length*sizeof(char))) != NULL) {
