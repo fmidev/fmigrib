@@ -154,7 +154,10 @@ bool NFmiGrib::NextMessage() {
   if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip2)
   {
     message_start = ifile.find("GRIB",message_end); //find next grib message after previous message ended
-    message_end = ifile.find("7777",message_end) + 4; //find end of next grib message
+    message_end = ifile.find("GRIB",message_start + 1); //find end of next grib message
+
+    if (message_end == std::string::npos) message_end = ifile.size();
+
     size_t message_length = message_end - message_start;
 
     if (message_start == std::string::npos) return false;
