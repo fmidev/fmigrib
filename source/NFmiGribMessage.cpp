@@ -71,7 +71,7 @@ NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other)
   InitMaps();
 
   if (other.itsHandle)
-    itsHandle = grib_handle_clone(other.itsHandle);
+    itsHandle = other.CopyHandle();
 }
 
 bool NFmiGribMessage::Read(grib_handle *h) {
@@ -1430,6 +1430,11 @@ double NFmiGribMessage::ForecastTypeValue() const
 void NFmiGribMessage::ForecastTypeValue(double theForecastTypeValue)
 {
   // todo
+}
+
+grib_handle* NFmiGribMessage::CopyHandle() const
+{
+  return grib_handle_clone(itsHandle);
 }
 
 #ifdef GRIB_WRITE_PACKED_DATA

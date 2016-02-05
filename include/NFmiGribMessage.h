@@ -302,13 +302,14 @@ class NFmiGribMessage {
     void SetDoubleKey(const std::string& keyName, double value);
 
     std::string GetStringKey(const std::string& keyName) const;
-    grib_handle *itsHandle;	
+    grib_handle* CopyHandle() const;
 
   private:
     void Clear();
     void InitMaps();
 	  
     size_t GetSizeTKey(const std::string& keyName) const;
+    grib_handle *itsHandle;
 
     mutable long itsEdition; //<! Cache this key since it's used quite a lot
 
