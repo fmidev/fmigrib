@@ -1,6 +1,7 @@
 #include "NFmiGrib.h"
 #include <stdexcept>
 #include <iostream>
+//#include <bitset> //Needed for reading message length from grib message
 
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
@@ -159,6 +160,18 @@ bool NFmiGrib::NextMessage() {
     if (message_end == std::string::npos) message_end = ifile.size();
 
     size_t message_length = message_end - message_start;
+
+    // TODO Read message length from message itself. Careful, this is coded differently in Grib1 and Grib2. For Grib2 could be done like this.
+    /* 
+    std::string bitstring;
+    for(int i=0;i<8;++i)
+    {
+       std::bitset<8> bitstream (ifile[message_start+8+i]);
+       bitstring.append(bitstream.to_string());
+    }
+    std::bitset<64> bitstream (bitstring);
+    message_length = bitstream.to_ullong();
+    */
 
     if (message_start == std::string::npos) return false;
 
