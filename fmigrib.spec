@@ -1,8 +1,8 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 15.9.14
-Release: 1%{dist}.fmi
+Version: 16.2.12
+Release: 1.el7.fmi
 License: FMI
 Group: Development/Tools
 URL: http://www.fmi.fi
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Fri Feb 12 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.2.12-1.fmi
+- Fix end step for grib2 accumulation parameters
 * Mon Sep 14 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.14-1.fmi
 - Two cuda device memory leaks fixed
 * Fri Sep 11 2015 Mikko Partio <mikko.partio@fmi.fi> - 15.9.11-1.fmi

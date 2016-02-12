@@ -619,7 +619,7 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
   }
   else {
     if  (ProductDefinitionTemplateNumber() == 8) {
-      step = EndStep();
+      step = LengthOfTimeRange(); // This used to be EndStep(), but that didn't work for ICON (because grib_api return end step in wrong unit!)
     }
     else {
       step = ForecastTime();
