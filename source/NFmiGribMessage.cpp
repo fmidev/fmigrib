@@ -1327,6 +1327,7 @@ long NFmiGribMessage::ForecastType() const
           break;
 
         case 1:
+        case 30:
           // MARS labeling or ensemble forecast data
         {
           long definitionType = Type();
