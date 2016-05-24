@@ -1304,7 +1304,9 @@ std::string NFmiGribMessage::GetStringKey(const std::string& keyName) const
 long NFmiGribMessage::Type() const
 {
   // http://old.ecmwf.int/publications/manuals/d/gribapi/mars/att=type/  
-  return GetLongKey("type");
+
+  // NOTE: This is for ECMWF EPS, for other providers the key might be something else!
+  return GetLongKey("marsType");
 }
 
 long NFmiGribMessage::ForecastType() const
