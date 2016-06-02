@@ -1378,19 +1378,17 @@ long NFmiGribMessage::ForecastType() const
       case 4:
         // eps
       {
-        long typeOfEnsemble = GetLongKey("typeOfEnsembleForecast");
+        // http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table1-4.shtml
+        long typeOfData = GetLongKey("typeOfProcessedData");
 
-        switch (typeOfEnsemble)
+        switch (typeOfData)
         {
-          case 0:
-          case 1:
+          case 3:
             // control forecast
             forecastType = 4;
             break;
 
-          case 2:
-          case 3:
-          case 192:
+          case 4:
             // perturbed forecast
             forecastType = 3;
             break;
