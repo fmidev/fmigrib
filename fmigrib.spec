@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 16.5.24
+Version: 16.6.2
 Release: 1.el7.fmi
 License: FMI
 Group: Development/Tools
@@ -9,7 +9,7 @@ URL: http://www.fmi.fi
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}.so
-BuildRequires: grib_api-devel >= 1.14.0
+BuildRequires: grib_api-devel >= 1.15.0
 BuildRequires: boost-devel >= 1.55
 Provides: lib%{LIBNAME}.so
 
@@ -56,6 +56,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Thu Jun  2 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.6.2-1.fmi
+- New release
+* Wed Jun  1 2016 Mikko Aalto <mikko.aalto@fmi.fi> - 16.6.1-1.fmi
+- grib_api 1.15
 * Tue May 24 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.5.24-1.fmi
 - EPS fixes
 * Tue Feb 23 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.2.23-1.fmi
