@@ -1481,7 +1481,18 @@ void NFmiGribMessage::ForecastType(long theForecastType)
   
 long NFmiGribMessage::ForecastTypeValue() const
 {
-  return PerturbationNumber();
+  // Return perturbation number only if data is an ensemble
+  // For example ECMWF 06/18 data comes from BC suite
+  // which has:
+  //  perturbationNumber = 0;
+  //  numberOfForecastsInEnsemble = 0;
+
+  if (ForecastType() > 2)
+  {
+    return PerturbationNumber();
+  }
+  
+  return INVALID_INT_VALUE;
 }
 
 void NFmiGribMessage::ForecastTypeValue(long theForecastTypeValue)
