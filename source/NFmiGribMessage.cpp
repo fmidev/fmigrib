@@ -1309,6 +1309,15 @@ long NFmiGribMessage::Type() const
   return GetLongKey("marsType");
 }
 
+void NFmiGribMessage::Type(long theType)
+{
+  if (Edition() == 1)
+  {
+    SetLongKey("marsType", theType);
+  }
+}
+
+
 long NFmiGribMessage::ForecastType() const
 {
   long forecastType = 1; // deterministic
@@ -1317,8 +1326,8 @@ long NFmiGribMessage::ForecastType() const
   {
     if (KeyExists("localDefinitionNumber"))
     {
-    long definitionNumber = GetLongKey("localDefinitionNumber");
-    // EC uses local definition number in Grib1
+      long definitionNumber = GetLongKey("localDefinitionNumber");
+      // EC uses local definition number in Grib1
       // http://old.ecmwf.int/publications/manuals/d/gribapi/fm92/grib1/show/local/
   
       switch (definitionNumber)
@@ -1403,33 +1412,83 @@ long NFmiGribMessage::ForecastType() const
       break;
     }  
   }
-  
+
   return forecastType;
 }
 
 void NFmiGribMessage::ForecastType(long theForecastType)
 {
-  // todo
+  if (Edition() == 1)
+  {
+    if (theForecastType == 1 || theForecastType == 2)
+    {
+      // deterministic or analysis
+      // grib1 has no standard key to specify these, and
+      // localDefinitionNumber is generally not used
+
+      return;
+    }
+
+    // Note! Commands below will fail if local definition tables
+    // have not been created for grib_api!
+ 
+    // Mimic ECMWF localDefinitionNumbers
+    // https://github.com/erdc-cm/grib_api/blob/master/definitions/grib1/localDefinitionNumber.98.table
+    SetLongKey("setLocalDefinition", 1);
+    SetLongKey("localDefinitionNumber", 1);
+
+    if (theForecastType == 4)
+    {
+      Type(10); // control forecast
+    }
+    else
+    {
+      Type(11); // perturbation
+    }
+  }
+  else
+  {
+    if (theForecastType == 1 || theForecastType == 2)
+    {
+      ProductDefinitionTemplateNumber(0);
+      if (theForecastType == 1)
+      { 
+        TypeOfGeneratingProcess(2); // forecast
+      }
+      else
+      {
+        TypeOfGeneratingProcess(0); // analysis
+      }
+    }
+    else
+    {
+      // http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table4-3.shtml
+      TypeOfGeneratingProcess(4); // EPS
+      // http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table4-0.shtml
+      ProductDefinitionTemplateNumber(1);
+
+      if (theForecastType == 4)
+      {
+        SetLongKey("typeOfProcessedData", 3); // control
+      }
+      else
+      {
+        SetLongKey("typeOfProcessedData", 4); // perturbation
+      }
+    }
+  } 
 }
   
-double NFmiGribMessage::ForecastTypeValue() const
+long NFmiGribMessage::ForecastTypeValue() const
 {
-  long forecastType = ForecastType();
-  
-  if (forecastType == 1 || forecastType == 2 || forecastType == 4)
-  {
-    return static_cast<double> (INVALID_INT_VALUE);
-  }
-  
-  assert(forecastType == 3);
-  
-  return static_cast<double> (PerturbationNumber());
-  
+  return PerturbationNumber();
 }
 
-void NFmiGribMessage::ForecastTypeValue(double theForecastTypeValue)
+void NFmiGribMessage::ForecastTypeValue(long theForecastTypeValue)
 {
-  // todo
+  if (Edition() == 1) return;
+
+  PerturbationNumber(theForecastTypeValue);
 }
 
 grib_handle* NFmiGribMessage::CopyHandle() const

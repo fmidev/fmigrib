@@ -8,18 +8,12 @@
 #include <iostream>
 
 #ifdef HAVE_CUDA
-#ifdef __GNUC__
-#if __GNUC_MINOR__ > 5
 #pragma GCC diagnostic push
-#endif
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-#endif
 
 #include <cuda_runtime.h>
 
-#if defined __GNUC__&& __GNUC_MINOR__ > 5
 #pragma GCC diagnostic pop
-#endif // __GNUC__
 
 #include <cuda_runtime.h>
 
@@ -32,6 +26,19 @@ const std::string grib2 = "file.grib2";
 const double kFloatMissing = 32700.;
 
 NFmiGrib reader;
+
+bool checkForDevice()
+{
+	int deviceCount;
+	cudaError_t cudaResultCode = cudaGetDeviceCount(&deviceCount);
+
+	if (cudaResultCode == cudaErrorNoDevice || cudaResultCode != cudaSuccess) 
+	{
+        	return false;
+	}
+
+	return (deviceCount > 0);
+}
 
 void init(const std::string& fileName)
 {
@@ -60,6 +67,7 @@ double mean(double* arr, size_t N)
 
 BOOST_AUTO_TEST_CASE(simplePackGrib1)
 {
+	if (!checkForDevice()) return;
 
 	init("file.grib");
 
@@ -91,6 +99,7 @@ BOOST_AUTO_TEST_CASE(simplePackGrib1)
 
 BOOST_AUTO_TEST_CASE(simplePackGrib2)
 {
+	if (!checkForDevice()) return;
 
 	init("file.grib2");
 

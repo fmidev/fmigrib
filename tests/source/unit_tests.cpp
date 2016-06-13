@@ -9,6 +9,7 @@
 
 const std::string grib1 = "file.grib";
 const std::string grib2 = "file.grib2";
+const std::string ens = "ens.grib2";
 
 NFmiGrib reader;
 
@@ -26,6 +27,17 @@ void init1()
 void init2()
 {
 	bool open = reader.Open(grib2);
+
+	BOOST_REQUIRE(open);
+
+	bool next = reader.NextMessage();
+
+	BOOST_REQUIRE(next);
+}
+
+void initens()
+{
+	bool open = reader.Open(ens);
 
 	BOOST_REQUIRE(open);
 
@@ -975,3 +987,34 @@ BOOST_AUTO_TEST_CASE(keyExists)
 	BOOST_REQUIRE(reader.Message().KeyExists("edition"));
 
 }
+
+BOOST_AUTO_TEST_CASE(forecastType)
+{
+	init1();
+
+	BOOST_REQUIRE(reader.Message().PerturbationNumber() == -999);
+	BOOST_REQUIRE(reader.Message().ForecastType() == 1);
+	BOOST_REQUIRE(reader.Message().ForecastTypeValue() == -999);
+
+	reader.Message().ForecastType(2);
+	BOOST_REQUIRE(reader.Message().ForecastType() == 1); // "analysis" is not set to grib1!
+
+	init2();
+
+	reader.Message().ForecastType(2);
+	BOOST_REQUIRE(reader.Message().ForecastType() == 1); // "analysis" is set to grib2!
+
+	reader.Message().ForecastType(4);
+	BOOST_REQUIRE(reader.Message().ForecastType() == 4);
+
+	reader.Message().ForecastTypeValue(50);
+	BOOST_REQUIRE(reader.Message().ForecastTypeValue() == 50);
+
+	initens();
+
+	BOOST_REQUIRE(reader.Message().ForecastType() == 4);
+	BOOST_REQUIRE(reader.Message().PerturbationNumber() == 0);
+	BOOST_REQUIRE(reader.Message().ForecastTypeValue() == 0);
+}
+
+

@@ -12,6 +12,10 @@ else
 	path=$1
 fi
 
+# this is needed if cuda tests are run in an environment
+# where libs are present but device not
+export BOOST_TEST_CATCH_SYSTEM_ERRORS="no"
+
 if [ $? -eq 0 ]; then
 	for i in $(find $path -maxdepth 1 -type f -executable); do 
 		$i --build_info --log_level=test_suite --show_progress

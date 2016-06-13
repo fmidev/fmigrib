@@ -33,6 +33,18 @@ const double kFloatMissing = 32700.;
 
 NFmiGrib reader;
 
+bool checkForDevice()
+{
+	int deviceCount;
+	cudaError_t cudaResultCode = cudaGetDeviceCount(&deviceCount);
+	if (cudaResultCode != cudaSuccess)
+	{
+		return false;
+	}
+
+	return (deviceCount > 0);
+}
+
 void init(const std::string& fileName)
 {
 	BOOST_REQUIRE(reader.Open(fileName));
@@ -60,6 +72,7 @@ double mean(double* arr, size_t N)
 
 BOOST_AUTO_TEST_CASE(simpleUnpackingWithMallocGrib1)
 {
+	if (!checkForDevice()) return;
 
 	init("file.grib");
 
@@ -79,6 +92,7 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingWithMallocGrib1)
 
 BOOST_AUTO_TEST_CASE(simpleUnpackingGrib1)
 {
+	if (!checkForDevice()) return;
 
 	init("file.grib");
 
@@ -106,6 +120,7 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingGrib1)
 
 BOOST_AUTO_TEST_CASE(simpleUnpackingGrib2)
 {
+	if (!checkForDevice()) return;
 
 	init("file.grib2");
 
@@ -135,6 +150,8 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingGrib2)
 
 BOOST_AUTO_TEST_CASE(simpleUnpackingDevicePointerGrib1)
 {
+	if (!checkForDevice()) return;
+
 	init("file.grib");
 
 	double* d_arr = 0;
@@ -158,6 +175,7 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingDevicePointerGrib1)
 
 BOOST_AUTO_TEST_CASE(simpleUnpackingDevicePointerGrib2)
 {
+	if (!checkForDevice()) return;
 
 	init("file.grib2");
 
@@ -183,6 +201,7 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingDevicePointerGrib2)
 
 BOOST_AUTO_TEST_CASE(simpleUnpackingWithStreamGrib1)
 {
+	if (!checkForDevice()) return;
 
 	init("file.grib");
 
@@ -214,6 +233,7 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingWithStreamGrib1)
 
 BOOST_AUTO_TEST_CASE(jpegUnpackingGrib2)
 {
+	if (!checkForDevice()) return;
 
 	init("file_jpeg.grib2");
 

@@ -278,8 +278,9 @@ class NFmiGribMessage {
     long NormalizedStep(bool endStep, bool flatten) const;
 
     long Type() const;
+    void Type(long theType);
 
-	bool CudaUnpack(double* arr, size_t len);
+    bool CudaUnpack(double* arr, size_t len);
     bool CudaPack(double* arr, size_t len);
 
 #ifdef HAVE_CUDA
@@ -292,8 +293,8 @@ class NFmiGribMessage {
     long ForecastType() const;
     void ForecastType(long theForecastType);
 	
-    double ForecastTypeValue() const;
-    void ForecastTypeValue(double theForecastTypeValue);
+    long ForecastTypeValue() const;
+    void ForecastTypeValue(long theForecastTypeValue);
 
     long GetLongKey(const std::string& keyName) const;
     void SetLongKey(const std::string& keyName, long value);
