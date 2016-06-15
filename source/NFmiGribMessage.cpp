@@ -620,7 +620,7 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const {
   else {
     step = ForecastTime();
 
-    if  (ProductDefinitionTemplateNumber() == 8) {
+    if  (KeyExists("lengthOfTimeRange")) {
       step += LengthOfTimeRange(); 
     } 
   }
