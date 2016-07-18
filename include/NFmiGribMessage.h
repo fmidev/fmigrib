@@ -255,6 +255,9 @@ class NFmiGribMessage {
     // grib_api version > 1.10.4
     bool KeyExists(const std::string& theKey) const;
 
+    std::vector<int> PL() const;
+    void PL(const std::vector<int> thePL);
+
     /**
      * @brief Normalizing unitOfTimeRange to GRIB 1 values
      */
@@ -303,6 +306,7 @@ class NFmiGribMessage {
     void SetDoubleKey(const std::string& keyName, double value);
 
     std::string GetStringKey(const std::string& keyName) const;
+
     grib_handle* CopyHandle() const;
 
   private:

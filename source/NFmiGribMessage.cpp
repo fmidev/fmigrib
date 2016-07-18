@@ -296,10 +296,12 @@ long NFmiGribMessage::GridType() const {
 }
 
 void NFmiGribMessage::GridType(long theGridType) {
-  if (Edition() == 1)
+  if (Edition() == 1) {
     SetLongKey("dataRepresentationType",theGridType);
-  else
+  }
+  else {
     SetLongKey("gridDefinitionTemplateNumber",theGridType);
+  }
 }
 
 double NFmiGribMessage::GridOrientation() const {
@@ -1199,6 +1201,42 @@ void NFmiGribMessage::DecimalScaleFactor(long theFactor)
   assert(itsHandle);
   GRIB_CHECK(grib_set_long_internal(itsHandle, "decimalScaleFactor", theFactor), 0);
 #endif
+}
+
+void NFmiGribMessage::PL(const std::vector<int> thePL)
+{
+  SetLongKey("PLPresent", 1);
+  size_t len = thePL.size();
+  double* vals = new double[len];
+  
+  for (size_t i = 0; i < thePL.size(); i++)
+  {
+    vals[i] = static_cast<double> (thePL[i]);
+  }
+  
+  GRIB_CHECK(grib_set_double_array(itsHandle,"pl",vals,len),0);
+
+  delete [] vals;
+}
+
+std::vector<int> NFmiGribMessage::PL() const
+{
+  size_t len = GetSizeTKey("pl");
+  
+  double* vals = new double[len];
+
+  GRIB_CHECK(grib_get_double_array(itsHandle,"pl",vals,&len),0);
+
+  std::vector<int> ret;
+  
+  for (size_t i = 0; i < len; i++)
+  {
+	  ret.push_back(static_cast<int> (vals[i]));
+  }
+  
+  delete [] vals;
+ 
+  return  ret;
 }
 
 double NFmiGribMessage::ReferenceValue() const
