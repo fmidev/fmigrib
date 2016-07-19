@@ -1002,7 +1002,7 @@ BOOST_AUTO_TEST_CASE(forecastType)
 	init2();
 
 	reader.Message().ForecastType(2);
-	BOOST_REQUIRE(reader.Message().ForecastType() == 1); // "analysis" is set to grib2!
+	BOOST_REQUIRE(reader.Message().ForecastType() == 2); // "analysis" is set to grib2!
 
 	reader.Message().ForecastType(4);
 	BOOST_REQUIRE(reader.Message().ForecastType() == 4);

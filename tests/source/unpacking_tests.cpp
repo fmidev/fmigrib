@@ -8,6 +8,7 @@
 #include <iostream>
 
 #ifdef HAVE_CUDA
+
 #ifdef __GNUC__
 #if __GNUC_MINOR__ > 5
 #pragma GCC diagnostic push
@@ -231,6 +232,8 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingWithStreamGrib1)
 	delete [] arr;
 }
 
+#ifdef HAVE_COMPRIMATO
+
 BOOST_AUTO_TEST_CASE(jpegUnpackingGrib2)
 {
 	if (!checkForDevice()) return;
@@ -262,6 +265,8 @@ BOOST_AUTO_TEST_CASE(jpegUnpackingGrib2)
 	BOOST_REQUIRE(cudaSuccess == cudaFreeHost(arr2));
 
 }
+
+#endif
 
 #else
 BOOST_AUTO_TEST_CASE(dummy)
