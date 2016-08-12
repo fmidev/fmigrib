@@ -22,8 +22,8 @@ class NFmiGrib {
     ~NFmiGrib();
 
     bool Open(const std::string &theFileName);
-    bool Read();
 
+    bool Message(const std::map<std::string, long> &theKeyValue);
     bool NextMessage();
     int MessageCount();
     int CurrentMessageIndex();
@@ -47,6 +47,7 @@ class NFmiGrib {
     size_t message_end;
 
     grib_handle *h;
+    grib_index  *index;
     FILE *f;
 
     int itsMessageCount;

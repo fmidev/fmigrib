@@ -18,6 +18,7 @@ NFmiGrib::NFmiGrib() :
   message_start(0),
   message_end(0),
   h(0),
+  index(0),
   f(0),
   itsMessageCount(INVALID_INT_VALUE),
   itsCurrentMessage(0)
@@ -31,6 +32,10 @@ NFmiGrib::~NFmiGrib() {
   if (h)
   {
     grib_handle_delete(h);
+  }
+  if (index)
+  {
+    grib_index_delete(index);
   }
   if (f)
   {
@@ -61,6 +66,20 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   boost::filesystem::path p (theFileName);
 
   std::string ext = p.extension().string();
+
+  if (ext == ".idx")
+  {
+    int ret = 0;
+    index = grib_index_read(0, theFileName.c_str(), &ret);
+    if (ret == 0)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
 
   if (ext == ".gz")
   {
@@ -136,6 +155,22 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   
   return true;
 }
+
+bool NFmiGrib::Message(const std::map<std::string, long> &theKeyValue) {
+
+  assert(index);
+  int ret=0;
+
+  for ( auto p : theKeyValue)
+  {
+    grib_index_select_long(index,(p.first).c_str(),p.second);
+  }
+
+  h = grib_handle_new_from_index(index,&ret);
+
+  assert(h);
+  return m.Read(h);
+  }
 
 bool NFmiGrib::NextMessage() {
 
