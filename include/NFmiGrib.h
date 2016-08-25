@@ -11,6 +11,7 @@
 #include <grib_api.h>
 #include "NFmiGribMessage.h"
 #include <memory>
+#include <vector>
 #include <fstream>
 
 const int INVALID_INT_VALUE = -999;
@@ -22,6 +23,8 @@ class NFmiGrib {
     ~NFmiGrib();
 
     bool Open(const std::string &theFileName);
+    bool BuildIndex(const std::string &theFileName, const std::vector<std::string> &theKeys);
+    bool AddFileToIndex(const std::string &theFileName);
 
     bool Message(const std::map<std::string, long> &theKeyValue);
     bool NextMessage();
@@ -30,6 +33,7 @@ class NFmiGrib {
 
     void MultiGribSupport(bool theMultiGribSupport);
     bool WriteMessage(const std::string &theFileName);
+    bool WriteIndex(const std::string &theFileName);
 
     NFmiGribMessage& Message() { return m; }
 

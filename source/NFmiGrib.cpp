@@ -156,6 +156,31 @@ bool NFmiGrib::Open(const std::string &theFileName) {
   return true;
 }
 
+bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::vector<std::string> &theKeys)
+{
+  std::string keyString;
+  int err = 0;
+
+  for(auto key : theKeys)
+  {
+    keyString.append(key);
+    keyString.append(",");
+  }
+
+  index = grib_index_new(0,keyString.c_str(),&err); 
+  GRIB_CHECK(grib_index_add_file(index, theFileName.c_str()),0);
+
+  return true;
+}
+
+bool NFmiGrib::AddFileToIndex(const std::string &theFileName)
+{
+  assert(index);
+  GRIB_CHECK(grib_index_add_file(index, theFileName.c_str()),0);
+
+  return true;
+}
+
 bool NFmiGrib::Message(const std::map<std::string, long> &theKeyValue) {
 
   assert(index);
@@ -326,3 +351,11 @@ bool NFmiGrib::WriteMessage(const std::string &theFileName) {
 
   return true;
 }
+
+bool NFmiGrib::WriteIndex(const std::string &theFileName) {
+
+  GRIB_CHECK(grib_index_write(index,theFileName.c_str()),0);
+
+  return true;
+}
+
