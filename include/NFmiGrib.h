@@ -24,7 +24,11 @@ class NFmiGrib {
 
     bool Open(const std::string &theFileName);
     bool BuildIndex(const std::string &theFileName, const std::vector<std::string> &theKeys);
+    bool BuildIndex(const std::string &theFileName, const std::string &theKeys);
+
     bool AddFileToIndex(const std::string &theFileName);
+
+    std::vector<long> GetIndexValues(const std::string &theKey);
 
     bool Message(const std::map<std::string, long> &theKeyValue);
     bool NextMessage();
