@@ -52,7 +52,7 @@ void NFmiGribMessage::InitMaps()
   itsLevelTypeMap.insert(element(105,103)); // specified height above ground
   itsLevelTypeMap.insert(element(109,105)); // hybrid
   itsLevelTypeMap.insert(element(111,106)); // depth below land surface
-
+  itsLevelTypeMap.insert(element(246,246)); // max thetae 
 }
 
 NFmiGribMessage::NFmiGribMessage() 
@@ -342,27 +342,67 @@ long NFmiGribMessage::LevelType() const {
 
 void NFmiGribMessage::LevelType(long theLevelType) {
   if (Edition() == 2)
+  {
     SetLongKey("typeOfFirstFixedSurface",theLevelType);
-
+  }
   else
+  {
     SetLongKey("indicatorOfTypeOfLevel",theLevelType);
-
+  }
 }
 
 long NFmiGribMessage::LevelValue() const {
-  return GetLongKey("level");
+  switch (NormalizedLevelType(1))
+  {
+    case 106: // height layer
+      return GetLongKey("topLevel");
+    default:
+      return GetLongKey("level");
+  }
 }
 
-void NFmiGribMessage::LevelValue(long theLevelValue) {
+void NFmiGribMessage::LevelValue(long theLevelValue, long theScaleFactor) {
   if (Edition() == 2)
   {
-    SetLongKey("scaleFactorOfFirstFixedSurface", 0);
-  SetLongKey("scaledValueOfFirstFixedSurface",theLevelValue);
+    SetLongKey("scaleFactorOfFirstFixedSurface",theScaleFactor);
+    SetLongKey("scaledValueOfFirstFixedSurface",theLevelValue);
   }
   else
-    SetLongKey("level",theLevelValue);
-    
+  {
+    switch (LevelType())
+    {
+      case 106: // height layer
+        SetLongKey("topLevel", theLevelValue);
+        break;
+      default:
+        SetLongKey("level",theLevelValue);
+        break;
+    }
+  } 
 }
+
+long NFmiGribMessage::LevelValue2() const {
+  if (Edition() == 2)
+  {
+    return GetLongKey("scaledValueOfFirstFixedSurface");
+  }
+  else 
+  {
+    return GetLongKey("bottomLevel");
+  }
+}
+
+void NFmiGribMessage::LevelValue2(long theLevelValue2, long theScaleFactor) {
+  if (Edition() == 2)
+  {
+    SetLongKey("scaleFactorOfSecondFixedSurface",theScaleFactor); 
+    SetLongKey("scaledValueOfSecondFixedSurface",theLevelValue2);
+  }
+  else {
+    SetLongKey("bottomLevel",theLevelValue2);
+  }
+}
+
 
 double NFmiGribMessage::X0() const {
   return GetDoubleKey("longitudeOfFirstGridPointInDegrees");
