@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 16.8.15
+Version: 16.9.8
 Release: 1.el7.fmi
 License: FMI
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Thu Sep  8 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.9.8-1.fmi
+- More support reading grib index files
 * Mon Aug 15 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.8.15-1.fmi
 - Support reading grib index files
 * Mon Jun 13 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.6.13-2.fmi
