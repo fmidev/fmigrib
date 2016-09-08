@@ -166,7 +166,10 @@ class NFmiGribMessage {
     std::string PackingType() const;
 
     long LevelValue() const;
-    void LevelValue(long theLevelValue);
+    void LevelValue(long theLevelValue, long theScaleFactor = 0);
+
+    long LevelValue2() const;
+    void LevelValue2(long theLevelValue2, long theScaleFactor = 0);
 
     long LevelType() const;
     void LevelType(long theLevelType);
