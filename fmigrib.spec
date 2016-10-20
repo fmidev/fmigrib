@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 16.9.8
+Version: 16.10.20
 Release: 1.el7.fmi
 License: FMI
 Group: Development/Tools
@@ -9,7 +9,7 @@ URL: http://www.fmi.fi
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}.so
-BuildRequires: grib_api-devel >= 1.15.0
+BuildRequires: eccodes-devel
 BuildRequires: boost-devel >= 1.55
 Provides: lib%{LIBNAME}.so
 
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Thu Oct 20 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.10.20-1.fmi
+- Replacing grib_api with eccodes
 * Thu Sep  8 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.9.8-1.fmi
 - More support reading grib index files
 * Mon Aug 15 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.8.15-1.fmi
