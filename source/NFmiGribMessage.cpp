@@ -1171,6 +1171,12 @@ long NFmiGribMessage::ForecastType() const
 					forecastType = 1;
 					break;
 
+				case 15:
+					// ECMWF seasonal forecast, only ensemble?
+					// http://apps.ecmwf.int/codes/grib/format/grib1/local/15/
+					// No CF, only PF
+					forecastType = 3;
+					break;
 				case 1:
 				case 30:
 					// MARS labeling or ensemble forecast data
