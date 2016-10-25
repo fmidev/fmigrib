@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 16.10.20
+Version: 16.10.25
 Release: 1.el7.fmi
 License: FMI
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Tue Oct 25 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.10.25-1.fmi
+- Support ECMWF seasonal forecast
 * Thu Oct 20 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.10.20-1.fmi
 - Replacing grib_api with eccodes
 * Thu Sep  8 2016 Mikko Partio <mikko.partio@fmi.fi> - 16.9.8-1.fmi
