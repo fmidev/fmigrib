@@ -1,9 +1,6 @@
 /*
  * NFmiGribMessage.h
  *
- * Created on: Oct 16, 2012
- * Author: partio
- *
  * One NFmiGribMessage equals to one grib message.
  * All the setter functions modify in-memory structures,
  * the changes are are materialized only when the message
@@ -13,10 +10,10 @@
 #ifndef NFMIGRIBMESSAGE_H_
 #define NFMIGRIBMESSAGE_H_
 
+#include <boost/bimap.hpp>
 #include <grib_api.h>
 #include <string>
 #include <vector>
-#include <boost/bimap.hpp>
 
 #ifdef HAVE_CUDA
 #if defined __GNUC__
@@ -33,299 +30,288 @@
 #endif
 #endif
 
-class NFmiGribMessage {
+class NFmiGribMessage
+{
+   public:
+	NFmiGribMessage();
+	~NFmiGribMessage();
 
-  public:
-
-    NFmiGribMessage();
-    ~NFmiGribMessage();
-	
 	NFmiGribMessage(const NFmiGribMessage& other);
 
-    bool Read(grib_handle *h);
+	bool Read(grib_handle* h);
 
-    long SizeX() const;
-    long SizeY() const;
-    //long SizeZ();
+	long SizeX() const;
+	long SizeY() const;
 
-    void SizeX(long theXSize);
-    void SizeY(long theYSize);
-    //void SizeZ();
+	void SizeX(long theXSize);
+	void SizeY(long theYSize);
 
-    double X0() const;
-    double Y0() const;
+	double X0() const;
+	double Y0() const;
 
-    void X0(double theX0);
-    void Y0(double theY0);
+	void X0(double theX0);
+	void Y0(double theY0);
 
-    double X1() const;
-    double Y1() const;
+	double X1() const;
+	double Y1() const;
 
-    void X1(double theX1);
-    void Y1(double theY1);
+	void X1(double theX1);
+	void Y1(double theY1);
 
-    double SouthPoleX() const;
-    void SouthPoleX(double theLongitude);
+	double SouthPoleX() const;
+	void SouthPoleX(double theLongitude);
 
-    double SouthPoleY() const;
-    void SouthPoleY(double theLatitude);
+	double SouthPoleY() const;
+	void SouthPoleY(double theLatitude);
 
-    double *Values() ;
-    void Values(const double* theValues, long theValuesLength);
+	double* Values();
+	void Values(const double* theValues, long theValuesLength);
 
-    size_t ValuesLength() const;
+	size_t ValuesLength() const;
 
-    long DataDate() const;
-    void DataDate(long theDate);
+	long DataDate() const;
+	void DataDate(long theDate);
 
-    long DataTime() const;
-    void DataTime(long theTime);
+	long DataTime() const;
+	void DataTime(long theTime);
 
-    long ForecastTime() const;
-    void ForecastTime(long theTime);
+	long ForecastTime() const;
+	void ForecastTime(long theTime);
 
-    std::string ParameterUnit() const;
-    long ParameterNumber() const;
-    long ParameterDiscipline() const;
-    long ParameterCategory() const;
+	std::string ParameterUnit() const;
+	long ParameterNumber() const;
+	long ParameterDiscipline() const;
+	long ParameterCategory() const;
 
-    void ParameterNumber(long theNumber);
-    void ParameterDiscipline(long theDiscipline);
-    void ParameterCategory(long theCategory);
+	void ParameterNumber(long theNumber);
+	void ParameterDiscipline(long theDiscipline);
+	void ParameterCategory(long theCategory);
 
-    std::string ParameterName() const;
+	std::string ParameterName() const;
 
-    long GridType() const;
-    void GridType(long theGridType);
-/*
-    double XResolution() const;
-    double YResolution() const;
-*/
-    long Edition() const;
-    void Edition(long theEdition);
+	long GridType() const;
+	void GridType(long theGridType);
 
-    double GridOrientation() const;
-    void GridOrientation(double theGridOrientation);
+	long Edition() const;
+	void Edition(long theEdition);
 
-    long Centre() const;
-    void Centre(long theCentre);
+	double GridOrientation() const;
+	void GridOrientation(double theGridOrientation);
 
-    long Year() const;
-    long Month() const;
-    long Day() const;
-    long Hour() const;
-    long Minute() const;
-    long Second() const;
+	long Centre() const;
+	void Centre(long theCentre);
 
-    long Process() const;
-    void Process(long theProcess);
+	long Year() const;
+	long Month() const;
+	long Day() const;
+	long Hour() const;
+	long Minute() const;
+	long Second() const;
 
-    long Table2Version() const;
-    void Table2Version(long theVersion);
+	long Process() const;
+	void Process(long theProcess);
 
-    // long DataType() const;
-    long PerturbationNumber() const;
+	long Table2Version() const;
+	void Table2Version(long theVersion);
+
+	long PerturbationNumber() const;
 	void PerturbationNumber(long thePerturbationNumber);
 
-    long NormalizedGridType(unsigned int targetEdition = 1) const;
-    long NormalizedLevelType(unsigned int targetEdition = 1) const;
+	long NormalizedGridType(unsigned int targetEdition = 1) const;
+	long NormalizedLevelType(unsigned int targetEdition = 1) const;
 
-    long LocalDefinitionNumber() const;
+	long LocalDefinitionNumber() const;
 
-    long StartStep() const;
-    void StartStep(long theStartStep);
+	long StartStep() const;
+	void StartStep(long theStartStep);
 
-    long EndStep() const;
-    void EndStep(long theEndStep);
+	long EndStep() const;
+	void EndStep(long theEndStep);
 
-    long StepUnits() const;
-    void StepUnits(long theUnits);
+	long StepUnits() const;
+	void StepUnits(long theUnits);
 
-    long StepRange() const;
-    void StepRange(long theRange);
+	long StepRange() const;
+	void StepRange(long theRange);
 
-    long TimeRangeIndicator() const;
-    void TimeRangeIndicator(long theTimeRangeIndicator);
+	long TimeRangeIndicator() const;
+	void TimeRangeIndicator(long theTimeRangeIndicator);
 
-    bool Write(const std::string& theOutputFile, bool appendToFile = false);
+	bool Write(const std::string& theOutputFile, bool appendToFile = false);
 
-    void Year(const std::string& theYear);
-    void Month(const std::string& theMonth);
-    void Day(const std::string& theDay);
-    void Hour(const std::string& theHour);
-    void Minute(const std::string& theMinute);
-    void Second(const std::string& theSecond);
+	void Year(const std::string& theYear);
+	void Month(const std::string& theMonth);
+	void Day(const std::string& theDay);
+	void Hour(const std::string& theHour);
+	void Minute(const std::string& theMinute);
+	void Second(const std::string& theSecond);
 
-    bool Bitmap() const;
-    void Bitmap(bool theBitmap);
+	bool Bitmap() const;
+	void Bitmap(bool theBitmap);
 
-    long BitsPerValue() const;
-    void BitsPerValue(long theBitsPerValue);
+	long BitsPerValue() const;
+	void BitsPerValue(long theBitsPerValue);
 
-    void PackingType(const std::string& thePackingType);
-    std::string PackingType() const;
+	void PackingType(const std::string& thePackingType);
+	std::string PackingType() const;
 
-    long LevelValue() const;
-    void LevelValue(long theLevelValue, long theScaleFactor = 0);
+	long LevelValue() const;
+	void LevelValue(long theLevelValue, long theScaleFactor = 0);
 
-    long LevelValue2() const;
-    void LevelValue2(long theLevelValue2, long theScaleFactor = 0);
+	long LevelValue2() const;
+	void LevelValue2(long theLevelValue2, long theScaleFactor = 0);
 
-    long LevelType() const;
-    void LevelType(long theLevelType);
+	long LevelType() const;
+	void LevelType(long theLevelType);
 
-    bool IScansNegatively() const;
-    bool JScansPositively() const;
+	bool IScansNegatively() const;
+	bool JScansPositively() const;
 
-    void IScansNegatively(bool theNegativeIScan);
-    void JScansPositively(bool thePositiveJScan);
+	void IScansNegatively(bool theNegativeIScan);
+	void JScansPositively(bool thePositiveJScan);
 
-    double iDirectionIncrement() const;
-    void iDirectionIncrement(double theIncrement);
+	double iDirectionIncrement() const;
+	void iDirectionIncrement(double theIncrement);
 
-    double jDirectionIncrement() const;
-    void jDirectionIncrement(double theIncrement);
+	double jDirectionIncrement() const;
+	void jDirectionIncrement(double theIncrement);
 
-    long TypeOfGeneratingProcess() const;
-    void TypeOfGeneratingProcess(long theProcess);
+	long TypeOfGeneratingProcess() const;
+	void TypeOfGeneratingProcess(long theProcess);
 
-    void XLengthInMeters(double theLength);
-    void YLengthInMeters(double theLength);
+	void XLengthInMeters(double theLength);
+	void YLengthInMeters(double theLength);
 
-    double XLengthInMeters() const;
-    double YLengthInMeters() const;
+	double XLengthInMeters() const;
+	double YLengthInMeters() const;
 
-    long GridTypeToAnotherEdition(long gridType, long edition) const;
-    long LevelTypeToAnotherEdition(long levelType, long edition) const;
+	long GridTypeToAnotherEdition(long gridType, long edition) const;
+	long LevelTypeToAnotherEdition(long levelType, long edition) const;
 
-    long NumberOfMissing() const;
+	long NumberOfMissing() const;
 
-    double MissingValue() const;
-    void MissingValue(double missingValue);
+	double MissingValue() const;
+	void MissingValue(double missingValue);
 
-    bool UVRelativeToGrid() const;
-    void UVRelativeToGrid(bool theRelativity);
+	bool UVRelativeToGrid() const;
+	void UVRelativeToGrid(bool theRelativity);
 
-    long UnitOfTimeRange() const;
-    void UnitOfTimeRange(long theUnit);
-/*
-    long UnitForTimeRange() const;
-    void UnitForTimeRange(long theUnit);
-*/
-    long LengthOfTimeRange() const;
-    void LengthOfTimeRange(long theLength);
+	long UnitOfTimeRange() const;
+	void UnitOfTimeRange(long theUnit);
 
-    long P1() const;
-    void P1(long theP1);
+	long LengthOfTimeRange() const;
+	void LengthOfTimeRange(long theLength);
 
-    long P2() const;
-    void P2(long theP2);
+	long P1() const;
+	void P1(long theP1);
 
-    long ResolutionAndComponentFlags() const;
-    void ResolutionAndComponentFlags(long theResolutionAndComponentFlags);
+	long P2() const;
+	void P2(long theP2);
 
-    long NV() const;
-    void NV(long theNV);
+	long ResolutionAndComponentFlags() const;
+	void ResolutionAndComponentFlags(long theResolutionAndComponentFlags);
 
-    std::vector<double> PV(size_t theNumberOfCoordinates, size_t level);
-    void PV(const std::vector<double>& theAB, size_t abLen);
- 
-    size_t PackedValuesLength() const;
+	long NV() const;
+	void NV(long theNV);
 
-    bool PackedValues(unsigned char* data) const;
-    bool PackedValues(unsigned char* data, size_t unpacked_len, int* bitmap, size_t bitmap_len);
+	std::vector<double> PV(size_t theNumberOfCoordinates, size_t level);
+	void PV(const std::vector<double>& theAB, size_t abLen);
 
-    long BinaryScaleFactor() const;
-    void BinaryScaleFactor(long theFactor);
+	size_t PackedValuesLength() const;
 
-    long DecimalScaleFactor() const;
-    void DecimalScaleFactor(long theFactor);
+	bool PackedValues(unsigned char* data) const;
+	bool PackedValues(unsigned char* data, size_t unpacked_len, int* bitmap, size_t bitmap_len);
 
-    double ReferenceValue() const;
-    void ReferenceValue(double theValue);
+	long BinaryScaleFactor() const;
+	void BinaryScaleFactor(long theFactor);
 
-    long Section4Length() const;
+	long DecimalScaleFactor() const;
+	void DecimalScaleFactor(long theFactor);
 
-    size_t BytesLength(const std::string& key) const;
-    bool Bytes(const std::string& key, unsigned char* data) const;
+	double ReferenceValue() const;
+	void ReferenceValue(double theValue);
 
-    long ProductDefinitionTemplateNumber() const;
-    void ProductDefinitionTemplateNumber(long theNumber);
+	long Section4Length() const;
 
-    long TypeOfStatisticalProcessing() const;
-    void TypeOfStatisticalProcessing(long theType);
+	size_t BytesLength(const std::string& key) const;
+	bool Bytes(const std::string& key, unsigned char* data) const;
 
-    // grib_api version > 1.10.4
-    bool KeyExists(const std::string& theKey) const;
+	long ProductDefinitionTemplateNumber() const;
+	void ProductDefinitionTemplateNumber(long theNumber);
 
-    std::vector<int> PL() const;
-    void PL(const std::vector<int> thePL);
+	long TypeOfStatisticalProcessing() const;
+	void TypeOfStatisticalProcessing(long theType);
 
-    /**
-     * @brief Normalizing unitOfTimeRange to GRIB 1 values
-     */
+	// grib_api version > 1.10.4
+	bool KeyExists(const std::string& theKey) const;
 
-    long NormalizedUnitOfTimeRange() const;
+	std::vector<int> PL() const;
+	void PL(const std::vector<int> thePL);
 
-    /**
-     * @brief Return "flattened" value of start step or end step
-     *
-     * For example unit for time range could be 15 minutes, and time step in
-     * grib could have value 3. This function would then return value 45.
-     *
-     * Function is normalized meaning it will return values in GRIB1 style
-     * even though data is in GRIB2.
-     *
-     * @param endStep If true, return value of end step. Otherwise return value of start step.
-     * @param flatten If true, time value is flattened as described above
-     * @return Flattened time step value
-    */
+	/**
+	 * @brief Normalizing unitOfTimeRange to GRIB 1 values
+	 */
 
-    long NormalizedStep(bool endStep, bool flatten) const;
+	long NormalizedUnitOfTimeRange() const;
 
-    long Type() const;
-    void Type(long theType);
+	/**
+	 * @brief Return "flattened" value of start step or end step
+	 *
+	 * For example unit for time range could be 15 minutes, and time step in
+	 * grib could have value 3. This function would then return value 45.
+	 *
+	 * Function is normalized meaning it will return values in GRIB1 style
+	 * even though data is in GRIB2.
+	 *
+	 * @param endStep If true, return value of end step. Otherwise return value of start step.
+	 * @param flatten If true, time value is flattened as described above
+	 * @return Flattened time step value
+	*/
 
-    bool CudaUnpack(double* arr, size_t len);
-    bool CudaPack(double* arr, size_t len);
+	long NormalizedStep(bool endStep, bool flatten) const;
+
+	long Type() const;
+	void Type(long theType);
+
+	bool CudaUnpack(double* arr, size_t len);
+	bool CudaPack(double* arr, size_t len);
 
 #ifdef HAVE_CUDA
-    bool CudaUnpack(double* arr, size_t len, cudaStream_t& stream);
-    bool CudaPack(double* arr, size_t len, cudaStream_t& stream);
+	bool CudaUnpack(double* arr, size_t len, cudaStream_t& stream);
+	bool CudaPack(double* arr, size_t len, cudaStream_t& stream);
 #endif
 
-    double CalculateReferenceValue(double minimumValue);
-    
-    long ForecastType() const;
-    void ForecastType(long theForecastType);
-	
-    long ForecastTypeValue() const;
-    void ForecastTypeValue(long theForecastTypeValue);
+	double CalculateReferenceValue(double minimumValue);
 
-    long GetLongKey(const std::string& keyName) const;
-    void SetLongKey(const std::string& keyName, long value);
+	long ForecastType() const;
+	void ForecastType(long theForecastType);
 
-    double GetDoubleKey(const std::string& keyName) const;
-    void SetDoubleKey(const std::string& keyName, double value);
+	long ForecastTypeValue() const;
+	void ForecastTypeValue(long theForecastTypeValue);
 
-    std::string GetStringKey(const std::string& keyName) const;
+	long GetLongKey(const std::string& keyName) const;
+	void SetLongKey(const std::string& keyName, long value);
 
-    grib_handle* CopyHandle() const;
+	double GetDoubleKey(const std::string& keyName) const;
+	void SetDoubleKey(const std::string& keyName, double value);
 
-  private:
-    void Clear();
-    void InitMaps();
-	  
-    size_t GetSizeTKey(const std::string& keyName) const;
-    grib_handle *itsHandle;
+	std::string GetStringKey(const std::string& keyName) const;
 
-    mutable long itsEdition; //<! Cache this key since it's used quite a lot
+	grib_handle* CopyHandle() const;
 
-    mutable size_t itsPackedValuesLength;
+   private:
+	void Clear();
+	void InitMaps();
 
-	boost::bimap<long,long> itsGridTypeMap;
-	boost::bimap<long,long> itsLevelTypeMap;
+	size_t GetSizeTKey(const std::string& keyName) const;
+	grib_handle* itsHandle;
 
+	mutable long itsEdition;  //<! Cache this key since it's used quite a lot
+
+	mutable size_t itsPackedValuesLength;
+
+	boost::bimap<long, long> itsGridTypeMap;
+	boost::bimap<long, long> itsLevelTypeMap;
 };
 
 #endif /* NFMIGRIBMESSAGE_H_ */

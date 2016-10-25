@@ -5,7 +5,6 @@
 
 void NFmiGribPacking::Fill(double* arr, size_t len, double fillValue)
 {
-	// TODO: use streams
 	thrust::device_ptr<double> ptr = thrust::device_pointer_cast(arr);
 	thrust::fill(ptr, ptr + len, fillValue);
 }
@@ -39,15 +38,15 @@ bool NFmiGribPacking::IsHostPointer(const double* ptr)
 	}
 	else
 	{
-		std::cerr << "simple_packing::Pack Error " << static_cast<int> (err) << " (" << cudaGetErrorString(err) << ") while checking pointer attributes" << std::endl;
+		std::cerr << "simple_packing::Pack Error " << static_cast<int>(err) << " (" << cudaGetErrorString(err)
+		          << ") while checking pointer attributes" << std::endl;
 		exit(1);
 	}
 
 	return ret;
 }
 
-__host__ __device__
-void MinMax_(double* d, size_t unpackedLen, double& min, double& max)
+__host__ __device__ void MinMax_(double* d, size_t unpackedLen, double& min, double& max)
 {
 	min = 1e38;
 	max = -1e38;
@@ -63,8 +62,7 @@ void MinMax_(double* d, size_t unpackedLen, double& min, double& max)
 	}
 }
 
-__global__
-void MinMaxKernel(double* d, size_t unpackedLen, double& min, double& max)
+__global__ void MinMaxKernel(double* d, size_t unpackedLen, double& min, double& max)
 {
 	MinMax_(d, unpackedLen, min, max);
 }
@@ -81,8 +79,8 @@ void NFmiGribPacking::MinMax(double* d, size_t unpackedLen, double& min, double&
 		double* d_max = 0;
 		CUDA_CHECK(cudaMalloc(&d_min, sizeof(double)));
 		CUDA_CHECK(cudaMalloc(&d_max, sizeof(double)));
-		
-		MinMaxKernel<<<1, 1, 0, stream>>> (d, unpackedLen, min, max);
+
+		MinMaxKernel<<<1, 1, 0, stream>>>(d, unpackedLen, min, max);
 
 		CUDA_CHECK(cudaMemcpyAsync(&min, d_min, sizeof(double), cudaMemcpyDeviceToHost, stream));
 		CUDA_CHECK(cudaMemcpyAsync(&max, d_max, sizeof(double), cudaMemcpyDeviceToHost, stream));
