@@ -277,10 +277,26 @@ void NFmiGribMessage::GridType(long theGridType)
 	}
 }
 
-double NFmiGribMessage::GridOrientation() const { return GetDoubleKey("orientationOfTheGridInDegrees"); }
+double NFmiGribMessage::GridOrientation() const
+{
+	if (KeyExists("LoVInDegrees"))
+	{
+		return GetDoubleKey("LoVInDegrees");
+	}
+
+	return GetDoubleKey("orientationOfTheGridInDegrees");
+}
+
 void NFmiGribMessage::GridOrientation(double theOrientation)
 {
-	SetDoubleKey("orientationOfTheGridInDegrees", theOrientation);
+	if (KeyExists("LoVInDegrees"))
+	{
+		SetDoubleKey("LoVInDegrees", theOrientation);
+	}
+	else
+	{
+		SetDoubleKey("orientationOfTheGridInDegrees", theOrientation);
+	}
 }
 
 double NFmiGribMessage::iDirectionIncrement() const { return GetDoubleKey("iDirectionIncrementInDegrees"); }
