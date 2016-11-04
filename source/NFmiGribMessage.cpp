@@ -838,6 +838,21 @@ void NFmiGribMessage::NV(long theNV)
 	if (Edition() == 1) SetLongKey("NV", theNV);
 }
 
+std::vector<double> NFmiGribMessage::PV()
+{
+	assert(itsHandle);
+	size_t numCoordinates = NV();
+	double* pv = static_cast<double*>(malloc(numCoordinates * sizeof(double)));
+
+	GRIB_CHECK(grib_get_double_array(itsHandle, "pv", pv, &numCoordinates), 0);
+
+	std::vector<double> ret(numCoordinates);
+	ret.assign(pv, pv + numCoordinates);
+
+	free(pv);
+	return ret;
+}
+
 std::vector<double> NFmiGribMessage::PV(size_t theNumberOfCoordinates, size_t level)
 {
 	assert(itsHandle);
