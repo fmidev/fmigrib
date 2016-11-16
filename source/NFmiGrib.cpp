@@ -190,9 +190,9 @@ bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::string &the
 		return false;
 	}
 
+        assert(index);
 	GRIB_CHECK(grib_index_add_file(index, theFileName.c_str()), 0);
 
-	assert(index);
 	return true;
 }
 
