@@ -14,6 +14,10 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
 
+#ifdef DEBUG
+#include <boost/lexical_cast.hpp>
+#endif
+
 const float kFloatMissing = 32700;
 
 NFmiGrib::NFmiGrib()
@@ -170,7 +174,7 @@ bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::vector<std:
 		keyString.append(",");
 	}
 
-	keyString.pop_back();  // remove last comma
+	keyString = keyString.substr(0, keyString.size()-1); // keyString.pop_back();  // remove last comma
 
 	index = grib_index_new(0, keyString.c_str(), &err);
 	assert(index);
@@ -190,9 +194,9 @@ bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::string &the
 		return false;
 	}
 
+        assert(index);
 	GRIB_CHECK(grib_index_add_file(index, theFileName.c_str()), 0);
 
-	assert(index);
 	return true;
 }
 
@@ -233,6 +237,14 @@ bool NFmiGrib::Message(const std::map<std::string, long> &theKeyValue)
 
 	if (ret == GRIB_END_OF_INDEX)
 	{
+#ifdef DEBUG
+		std::string out;
+		for (auto& val : theKeyValue)
+		{
+			out += " " + val.first + "=" + boost::lexical_cast<std::string> (val.second);
+		}
+		std::cout << "Message not found from index with conditions:" + out + "\n";
+#endif
 		return false;
 	}
 	assert(h);
