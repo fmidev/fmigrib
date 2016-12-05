@@ -45,11 +45,6 @@ have_cuda = False
 if os.path.isfile(cuda_toolkit_path + '/lib64/libcudart.so'):
         have_cuda = True
 
-have_comprimato = False
-
-if os.path.isfile('/usr/lib64/libcmpto_j2k_dec.so'):
-	have_comprimato = True
-
 if os.environ.get('CC') != None:
         env['CC'] = os.environ.get('CC')
 else:
@@ -95,13 +90,10 @@ if not DEBUG:
 else:
 	env.Append(LIBS=env.File('../build/debug/libfmigrib.a'))
 
-env.Append(LIBS=['grib_api', 'pthread'])
+env.Append(LIBS=['eccodes', 'pthread'])
 
 if have_cuda:
 	env.Append(LIBS = ['cudart'])
-
-if have_comprimato:
-	env.Append(LIBS = ['cmpto_j2k_dec','cmpto_j2k_enc'])
 
 env.Append(LIBS = ['boost_unit_test_framework', 'boost_iostreams', 'boost_filesystem', 'boost_system'])
 
