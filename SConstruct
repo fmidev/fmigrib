@@ -56,11 +56,6 @@ have_cuda = False
 if os.path.isfile(cuda_toolkit_path + '/lib64/libcudart.so'):
         have_cuda = True
 
-have_comprimato = False
-
-if os.path.isfile('/usr/lib64/libcmpto_j2k_dec.so'):
-        have_comprimato = True
-
 if os.environ.get('CC') != None:
         env['CC'] = os.environ.get('CC')
 else:
@@ -170,9 +165,6 @@ env.Append(CPPDEFINES=['UNIX'])
 
 if have_cuda:
         env.Append(CPPDEFINES=['HAVE_CUDA'])
-
-if have_comprimato:
-        env.Append(CPPDEFINES=['HAVE_COMPRIMATO'])
 
 env.Append(NVCCDEFINES=['HAVE_CUDA'])
 
