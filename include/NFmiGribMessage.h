@@ -229,6 +229,8 @@ class NFmiGribMessage
 	long DecimalScaleFactor() const;
 	void DecimalScaleFactor(long theFactor);
 
+	void ChangeDecimalPrecision(long decimals);
+
 	double ReferenceValue() const;
 	void ReferenceValue(double theValue);
 

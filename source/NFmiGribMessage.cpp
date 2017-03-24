@@ -1039,6 +1039,12 @@ void NFmiGribMessage::DecimalScaleFactor(long theFactor)
 #endif
 }
 
+void NFmiGribMessage::ChangeDecimalPrecision(long decimals)
+{
+	assert(itsHandle);
+	GRIB_CHECK(grib_set_long(itsHandle, "changeDecimalPrecision", decimals), 0);
+}
+
 void NFmiGribMessage::PL(const std::vector<int> thePL)
 {
 	SetLongKey("PLPresent", 1);
@@ -1468,10 +1474,6 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 	{
 		simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
 	}
-	else if (PackingType() == "grid_jpeg")
-	{
-		jpeg_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
-	}
 	else
 	{
 		CUDA_CHECK(cudaFreeHost(packed));
@@ -1535,10 +1537,6 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 	if (PackingType() == "grid_simple")
 	{
 		simple_packing::Pack(arr, packed, 0, unpackedLen, coeffs, stream);
-	}
-	else if (PackingType() == "grid_jpeg")
-	{
-		jpeg_packing::Pack(arr, packed, 0, unpackedLen, coeffs, stream);
 	}
 
 	CUDA_CHECK(cudaStreamSynchronize(stream));
