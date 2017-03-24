@@ -63,14 +63,6 @@ long get_decimal_scale_fact(double max, double min, long bpval, long binary_scal
 long get_binary_scale_fact(double max, double min, long bpval);
 }
 
-namespace jpeg_packing
-{
-bool Unpack(double* d_arr, const unsigned char* d_packed, const int* d_bitmap, size_t unpackedLen, size_t packedLen,
-            packing_coefficients coeffs, cudaStream_t& stream);
-bool Pack(double* d_arr, unsigned char* d_packed, const int* d_bitmap, size_t unpackedLength,
-          packing_coefficients coeffs, cudaStream_t& stream);
-}
-
 void UnpackBitmap(const unsigned char* __restrict__ bitmap, int* __restrict__ unpacked, size_t len, size_t unpackedLen);
 
 __host__ __device__ double ToPower(double value, double power);

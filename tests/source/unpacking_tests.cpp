@@ -232,42 +232,6 @@ BOOST_AUTO_TEST_CASE(simpleUnpackingWithStreamGrib1)
 	delete [] arr;
 }
 
-#ifdef HAVE_COMPRIMATO
-
-BOOST_AUTO_TEST_CASE(jpegUnpackingGrib2)
-{
-	if (!checkForDevice()) return;
-
-	init("file_jpeg.grib2");
-
-	// normal way
-
-	double* arr = reader.Message().Values();
-	size_t N = reader.Message().ValuesLength();
-
-	BOOST_CHECK_CLOSE(arr[0], 216.478, 0.001);
-	BOOST_CHECK_CLOSE(mean(arr, N), 221.301, 0.001);
-
-	// cuda way
-
-	double* arr2;
-
-	BOOST_REQUIRE(cudaSuccess == cudaMallocHost(&arr2, N * sizeof(double)));
-
-	reader.Message().CudaUnpack(arr2, N);
-
-	BOOST_CHECK_CLOSE(arr2[0], 216.478, 0.001);
-
-	// comprimato watermark messes up with mean
-	//BOOST_CHECK_CLOSE(mean(arr2, N), 216.167, 0.001);
-
-	free (arr);
-	BOOST_REQUIRE(cudaSuccess == cudaFreeHost(arr2));
-
-}
-
-#endif
-
 #else
 BOOST_AUTO_TEST_CASE(dummy)
 {
