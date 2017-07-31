@@ -146,7 +146,7 @@ cflags_difficult.append('-Wctor-dtor-privacy')
 cflags = []
 
 if not IS_RHEL or (IS_RHEL and OS_VERSION >= 7.0):
-	cflags.append('-std=c++0x')
+	cflags.append('-std=c++11')
 else:
 	cflags.append('-std=c++0x')
 

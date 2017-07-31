@@ -65,6 +65,7 @@ class NFmiGribMessage
 	void SouthPoleY(double theLatitude);
 
 	double* Values();
+	void GetValues(double* values, size_t* cntValues);
 	void Values(const double* theValues, long theValuesLength);
 
 	size_t ValuesLength() const;

@@ -162,6 +162,23 @@ double* NFmiGribMessage::Values()
 	return vals;
 }
 
+void NFmiGribMessage::GetValues(double* values, size_t* cntValues) {
+	assert(itsHandle);
+	assert(values);
+	assert(cntValues);
+	
+	if (Bitmap())
+	{
+		double missingValue = GetDoubleKey("missingValue");
+		if (missingValue == 9999)
+		{
+			SetDoubleKey("missingValue", kFloatMissing);
+		}
+	}
+
+	GRIB_CHECK(grib_get_double_array(itsHandle, "values", values, cntValues), 0);
+}
+
 void NFmiGribMessage::Values(const double* theValues, long theValuesLength)
 {
 	assert(itsHandle);
