@@ -385,7 +385,7 @@ long NFmiGribMessage::LevelValue2() const
 {
 	if (Edition() == 2)
 	{
-		return GetLongKey("scaledValueOfFirstFixedSurface");
+		return GetLongKey("scaledValueOfSecondFixedSurface");
 	}
 	else
 	{
