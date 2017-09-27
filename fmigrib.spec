@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 17.7.31
+Version: 17.9.27
 Release: 1.el7.fmi
 License: MIT
 Group: Development/Tools
@@ -10,7 +10,7 @@ Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}.so
 BuildRequires: eccodes-devel
-BuildRequires: boost-devel >= 1.55
+BuildRequires: boost-devel >= 1.65
 Provides: lib%{LIBNAME}.so
 
 %description
@@ -56,6 +56,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Wed Sep 27 2017 Mikko Partio <mikko.partio@fmi.fi> - 17.9.27-1.fmi
+- Bugfixes in level handling
+* Wed Aug  2 2017 Mikko Partio <mikko.partio@fmi.fi> - 17.8.2-1.fmi
+- eccodes 2.4.0
 * Mon Jul 31 2017 Mikko Partio <mikko.partio@fmi.fi> - 17.7.31-1.fmi
 - Add function to get grib values without extra allocations
 * Thu Apr  6 2017 Mikko Partio <mikko.partio@fmi.fi> - 17.4.6-1.fmi
