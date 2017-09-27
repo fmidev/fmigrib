@@ -351,6 +351,13 @@ void NFmiGribMessage::LevelType(long theLevelType)
 
 long NFmiGribMessage::LevelValue() const
 {
+	// If we're inspecting a GRIB2 file, and we're possibly inspecting a 'height layer' level, then
+	// don't perform level type normalization.
+	if (Edition() == 2 && GetLongKey("typeOfFirstFixedSurface") == 103 && GetLongKey("typeOfSecondFixedSurface") == 103)
+	{
+		return GetLongKey("scaledValueOfFirstFixedSurface");
+	}
+
 	switch (NormalizedLevelType(1))
 	{
 		case 106:  // height layer
@@ -385,7 +392,7 @@ long NFmiGribMessage::LevelValue2() const
 {
 	if (Edition() == 2)
 	{
-		return GetLongKey("scaledValueOfFirstFixedSurface");
+		return GetLongKey("scaledValueOfSecondFixedSurface");
 	}
 	else
 	{
@@ -488,6 +495,20 @@ long NFmiGribMessage::NormalizedLevelType(unsigned int targetEdition) const
 
 long NFmiGribMessage::LevelTypeToAnotherEdition(long levelType, long targetEdition) const
 {
+	// For us GRIB2 level 103 can be 'height' or 'height layer' depending on
+	// whether LevelValue2 is missing or not.
+	if (levelType == 103 && Edition() == 2)
+	{
+		if (GetLongKey("typeOfSecondFixedSurface") == 103)
+		{
+			const long value2 = LevelValue2();
+			if (value2 != INVALID_INT_VALUE && value2 != 214748364700)
+			{
+				return 106;
+			}
+		}
+	}
+	
 	for (boost::bimap<long, long>::const_iterator iter = itsLevelTypeMap.begin(), iend = itsLevelTypeMap.end();
 	     iter != iend; ++iter)
 	{
