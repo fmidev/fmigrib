@@ -1506,10 +1506,12 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 	{
 		simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
 	}
+#if 0
 	else if (PackingType() == "grid_jpeg")
 	{
 		jpeg_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
 	}
+#endif
 	else
 	{
 		CUDA_CHECK(cudaFreeHost(packed));
@@ -1574,11 +1576,12 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 	{
 		simple_packing::Pack(arr, packed, 0, unpackedLen, coeffs, stream);
 	}
+#if 0
 	else if (PackingType() == "grid_jpeg")
 	{
 		jpeg_packing::Pack(arr, packed, 0, unpackedLen, coeffs, stream);
 	}
-
+#endif
 	CUDA_CHECK(cudaStreamSynchronize(stream));
 	PackedValues(packed, unpackedLen, 0, 0);
 
