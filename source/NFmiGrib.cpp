@@ -1,11 +1,7 @@
-/*
- * NFmiGrib.cpp
- *
-*/
-
 #include "NFmiGrib.h"
 #include <iostream>
 #include <stdexcept>
+#include <sstream>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/copy.hpp>
@@ -14,10 +10,6 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
 
-#ifdef DEBUG
-#include <boost/lexical_cast.hpp>
-#endif
-
 const float kFloatMissing = 32700;
 
 NFmiGrib::NFmiGrib()
@@ -25,23 +17,14 @@ NFmiGrib::NFmiGrib()
       ofs_compression(file_compression::none),
       message_start(0),
       message_end(0),
-      h(0),
       index(0),
       f(0),
       itsMessageCount(INVALID_INT_VALUE),
       itsCurrentMessage(0)
-{
-	h = grib_handle_new_from_samples(NULL, "GRIB2");
-	assert(h);
-	m.Read(h);
-}
+{}
 
 NFmiGrib::~NFmiGrib()
 {
-	if (h)
-	{
-		grib_handle_delete(h);
-	}
 	if (index)
 	{
 		grib_index_delete(index);
@@ -60,7 +43,7 @@ NFmiGrib::~NFmiGrib()
 	}
 }
 
-bool NFmiGrib::Open(const std::string &theFileName)
+bool NFmiGrib::Open(const std::string& theFileName)
 {
 	/*
 	 * Check if input file is gzip packed
@@ -163,7 +146,7 @@ bool NFmiGrib::Open(const std::string &theFileName)
 	return true;
 }
 
-bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::vector<std::string> &theKeys)
+bool NFmiGrib::BuildIndex(const std::string& theFileName, const std::vector<std::string>& theKeys)
 {
 	std::string keyString;
 	int err = 0;
@@ -174,7 +157,7 @@ bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::vector<std:
 		keyString.append(",");
 	}
 
-	keyString = keyString.substr(0, keyString.size()-1); // keyString.pop_back();  // remove last comma
+	keyString = keyString.substr(0, keyString.size() - 1);  // keyString.pop_back();  // remove last comma
 
 	index = grib_index_new(0, keyString.c_str(), &err);
 	assert(index);
@@ -183,7 +166,7 @@ bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::vector<std:
 	return true;
 }
 
-bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::string &theKeys)
+bool NFmiGrib::BuildIndex(const std::string& theFileName, const std::string& theKeys)
 {
 	int err = 0;
 
@@ -194,13 +177,13 @@ bool NFmiGrib::BuildIndex(const std::string &theFileName, const std::string &the
 		return false;
 	}
 
-        assert(index);
+	assert(index);
 	GRIB_CHECK(grib_index_add_file(index, theFileName.c_str()), 0);
 
 	return true;
 }
 
-bool NFmiGrib::AddFileToIndex(const std::string &theFileName)
+bool NFmiGrib::AddFileToIndex(const std::string& theFileName)
 {
 	assert(index);
 	GRIB_CHECK(grib_index_add_file(index, theFileName.c_str()), 0);
@@ -208,7 +191,7 @@ bool NFmiGrib::AddFileToIndex(const std::string &theFileName)
 	return true;
 }
 
-std::vector<long> NFmiGrib::GetIndexValues(const std::string &theKey)
+std::vector<long> NFmiGrib::GetIndexValues(const std::string& theKey)
 {
 	assert(index);
 
@@ -223,7 +206,7 @@ std::vector<long> NFmiGrib::GetIndexValues(const std::string &theKey)
 	return values;
 }
 
-bool NFmiGrib::Message(const std::map<std::string, long> &theKeyValue)
+bool NFmiGrib::Message(const std::map<std::string, long>& theKeyValue)
 {
 	assert(index);
 	int ret = 0;
@@ -233,7 +216,7 @@ bool NFmiGrib::Message(const std::map<std::string, long> &theKeyValue)
 		GRIB_CHECK(grib_index_select_long(index, (p.first).c_str(), p.second), 0);
 	}
 
-	h = grib_handle_new_from_index(index, &ret);
+	auto h = grib_handle_new_from_index(index, &ret);
 
 	if (ret == GRIB_END_OF_INDEX)
 	{
@@ -241,26 +224,19 @@ bool NFmiGrib::Message(const std::map<std::string, long> &theKeyValue)
 		std::string out;
 		for (auto& val : theKeyValue)
 		{
-			out += " " + val.first + "=" + boost::lexical_cast<std::string> (val.second);
+			out += " " + val.first + "=" + std::to_string(val.second);
 		}
 		std::cout << "Message not found from index with conditions:" + out + "\n";
 #endif
 		return false;
 	}
 	assert(h);
-	return m.Read(h);
+	return itsMessage.Read(h);
 }
 
 bool NFmiGrib::NextMessage()
 {
-	if (h)
-	{
-		// this invalidates itsHandle
-		grib_handle_delete(h);
-		h = 0;
-	}
-
-	assert(!h);
+	grib_handle* h;
 
 	/*
 	 * Read data through filtering streambuf if gzip packed.
@@ -284,7 +260,7 @@ bool NFmiGrib::NextMessage()
 			itsCurrentMessage++;
 			assert(h);
 
-			return m.Read(h);
+			return itsMessage.Read(h);
 		}
 
 		return false;
@@ -296,7 +272,7 @@ bool NFmiGrib::NextMessage()
 	{
 		itsCurrentMessage++;
 		assert(h);
-		return m.Read(h);
+		return itsMessage.Read(h);
 	}
 
 	return false;
@@ -335,67 +311,11 @@ void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
 		grib_multi_support_off(0);
 }
 
-bool NFmiGrib::WriteMessage(const std::string &theFileName)
-{
-	// Assume we have required directory structure in place
-
-	boost::filesystem::path p(theFileName);
-
-	std::string ext = p.extension().string();
-
-	// determine compression type for out file
-	if (ext == ".gz")
-	{
-		ofs_compression = file_compression::gzip;
-	}
-	else if (ext == ".bz2")
-	{
-		ofs_compression = file_compression::bzip2;
-	}
-	else
-	{
-		ofs_compression = file_compression::none;
-	}
-
-	// write compressed output
-	if (ofs_compression == file_compression::gzip || ofs_compression == file_compression::bzip2)
-	{
-		const void *buffer;
-		size_t bfr_size;
-
-		GRIB_CHECK(grib_get_message(h, &buffer, &bfr_size), 0);
-
-		// copy data to stringstream as source for filtering ofstream
-		std::string str_bfr(static_cast<const char *>(buffer), bfr_size);
-		std::stringstream outdata(str_bfr);
-
-		ofs.open(theFileName.c_str(), std::ofstream::out);
-		boost::iostreams::filtering_streambuf<boost::iostreams::input> out;
-		switch (ofs_compression)
-		{
-			case file_compression::gzip:
-				out.push(boost::iostreams::gzip_compressor());
-				break;
-			case file_compression::bzip2:
-				out.push(boost::iostreams::bzip2_compressor());
-				break;
-			case file_compression::none:
-				break;
-		}
-		out.push(outdata);
-		boost::iostreams::copy(out, ofs);
-
-		return true;
-	}
-
-	GRIB_CHECK(grib_write_message(h, theFileName.c_str(), "w"), 0);
-
-	return true;
-}
-
-bool NFmiGrib::WriteIndex(const std::string &theFileName)
+bool NFmiGrib::WriteIndex(const std::string& theFileName)
 {
 	GRIB_CHECK(grib_index_write(index, theFileName.c_str()), 0);
 
 	return true;
 }
+
+bool NFmiGrib::WriteMessage(const std::string& theFileName) { return itsMessage.Write(theFileName, false); }

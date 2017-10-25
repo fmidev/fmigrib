@@ -1,8 +1,3 @@
-/*
- * NFmiGribMessage.cpp
- *
- */
-
 #include "NFmiGribMessage.h"
 #include "NFmiGribPacking.h"
 #include <boost/lexical_cast.hpp>
@@ -18,58 +13,44 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
 
+#include "level_map.h"
+
 const long INVALID_INT_VALUE = -999;
 const float kFloatMissing = 32700;
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
-typedef boost::bimap<long, long>::value_type element;
-
-void NFmiGribMessage::InitMaps()
-{
-	if (itsGridTypeMap.size()) return;
-
-	// GRIB1 <--> GRIB2
-
-	itsGridTypeMap.insert(element(0, 0));   // ll
-	itsGridTypeMap.insert(element(10, 1));  // rll
-	itsGridTypeMap.insert(element(20, 2));  // stretched ll
-	itsGridTypeMap.insert(element(30, 3));  // stretched rll
-	itsGridTypeMap.insert(element(5, 20));  // polar stereographic
-	itsGridTypeMap.insert(element(3, 30));  // lambert conformal
-	itsGridTypeMap.insert(element(4, 40));  // gaussian ll
-
-	// GRIB1 <--> GRIB2
-
-	itsLevelTypeMap.insert(element(1, 1));      // ground
-	itsLevelTypeMap.insert(element(8, 8));      // top of atmosphere
-	itsLevelTypeMap.insert(element(100, 100));  // isobaric
-	itsLevelTypeMap.insert(element(160, 160));  // depth below sea
-	itsLevelTypeMap.insert(element(102, 101));  // mean sea
-	itsLevelTypeMap.insert(element(103, 102));  // specific altitude above mean-sea level
-	itsLevelTypeMap.insert(element(105, 103));  // specified height above ground
-	itsLevelTypeMap.insert(element(109, 105));  // hybrid
-	itsLevelTypeMap.insert(element(111, 106));  // depth below land surface
-	itsLevelTypeMap.insert(element(246, 246));  // max thetae
-}
-
 NFmiGribMessage::NFmiGribMessage() : itsHandle(0)
 {
 	Clear();
-	InitMaps();
+
+	itsHandle = grib_handle_new_from_samples(NULL, "GRIB2");
+	assert(itsHandle);
 }
 
-NFmiGribMessage::~NFmiGribMessage() {}
+NFmiGribMessage::~NFmiGribMessage()
+{
+	grib_handle_delete(itsHandle);
+	itsHandle = nullptr;
+}
+
 NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(0)
 {
 	Clear();
-	InitMaps();
 
-	if (other.itsHandle) itsHandle = other.CopyHandle();
+	if (other.itsHandle)
+	{
+		itsHandle = grib_handle_clone(other.itsHandle);
+	}
 }
 
 bool NFmiGribMessage::Read(grib_handle* h)
 {
+	if (itsHandle)
+	{
+		grib_handle_delete(itsHandle);
+	}
+
 	itsHandle = h;
 	Clear();
 
@@ -162,11 +143,12 @@ double* NFmiGribMessage::Values()
 	return vals;
 }
 
-void NFmiGribMessage::GetValues(double* values, size_t* cntValues) {
+void NFmiGribMessage::GetValues(double* values, size_t* cntValues)
+{
 	assert(itsHandle);
 	assert(values);
 	assert(cntValues);
-	
+
 	if (Bitmap())
 	{
 		double missingValue = GetDoubleKey("missingValue");
@@ -508,9 +490,8 @@ long NFmiGribMessage::LevelTypeToAnotherEdition(long levelType, long targetEditi
 			}
 		}
 	}
-	
-	for (boost::bimap<long, long>::const_iterator iter = itsLevelTypeMap.begin(), iend = itsLevelTypeMap.end();
-	     iter != iend; ++iter)
+
+	for (auto iter = levelTypeMap.begin(), iend = levelTypeMap.end(); iter != iend; ++iter)
 	{
 		// iter->left  : grib1
 		// iter->right : grib2
@@ -530,8 +511,7 @@ long NFmiGribMessage::LevelTypeToAnotherEdition(long levelType, long targetEditi
 
 long NFmiGribMessage::GridTypeToAnotherEdition(long gridType, long targetEdition) const
 {
-	for (boost::bimap<long, long>::const_iterator iter = itsGridTypeMap.begin(), iend = itsGridTypeMap.end();
-	     iter != iend; ++iter)
+	for (auto iter = gridTypeMap.begin(), iend = gridTypeMap.end(); iter != iend; ++iter)
 	{
 		// iter->left  : grib1
 		// iter->right : grib2
@@ -1411,7 +1391,6 @@ void NFmiGribMessage::ForecastTypeValue(long theForecastTypeValue)
 	PerturbationNumber(theForecastTypeValue);
 }
 
-grib_handle* NFmiGribMessage::CopyHandle() const { return grib_handle_clone(itsHandle); }
 #ifdef GRIB_WRITE_PACKED_DATA
 double NFmiGribMessage::CalculateReferenceValue(double minimumValue)
 {
