@@ -10,8 +10,8 @@
 #ifndef NFMIGRIBMESSAGE_H_
 #define NFMIGRIBMESSAGE_H_
 
-#include <boost/bimap.hpp>
 #include <grib_api.h>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -37,6 +37,18 @@ class NFmiGribMessage
 	~NFmiGribMessage();
 
 	NFmiGribMessage(const NFmiGribMessage& other);
+	NFmiGribMessage& operator=(const NFmiGribMessage& other)
+	{
+		itsHandle = 0;
+
+		Clear();
+
+		if (other.itsHandle)
+		{
+			itsHandle = grib_handle_clone(other.itsHandle);
+		}
+		return *this;
+	}
 
 	bool Read(grib_handle* h);
 
@@ -301,11 +313,8 @@ class NFmiGribMessage
 
 	std::string GetStringKey(const std::string& keyName) const;
 
-	grib_handle* CopyHandle() const;
-
    private:
 	void Clear();
-	void InitMaps();
 
 	size_t GetSizeTKey(const std::string& keyName) const;
 	grib_handle* itsHandle;
@@ -313,9 +322,6 @@ class NFmiGribMessage
 	mutable long itsEdition;  //<! Cache this key since it's used quite a lot
 
 	mutable size_t itsPackedValuesLength;
-
-	boost::bimap<long, long> itsGridTypeMap;
-	boost::bimap<long, long> itsLevelTypeMap;
 };
 
 #endif /* NFMIGRIBMESSAGE_H_ */
