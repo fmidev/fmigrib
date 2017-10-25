@@ -22,24 +22,24 @@ class NFmiGrib
 	NFmiGrib();
 	~NFmiGrib();
 
-	bool Open(const std::string &theFileName);
-	bool BuildIndex(const std::string &theFileName, const std::vector<std::string> &theKeys);
-	bool BuildIndex(const std::string &theFileName, const std::string &theKeys);
+	bool Open(const std::string& theFileName);
+	bool BuildIndex(const std::string& theFileName, const std::vector<std::string>& theKeys);
+	bool BuildIndex(const std::string& theFileName, const std::string& theKeys);
 
-	bool AddFileToIndex(const std::string &theFileName);
+	bool AddFileToIndex(const std::string& theFileName);
 
-	std::vector<long> GetIndexValues(const std::string &theKey);
+	std::vector<long> GetIndexValues(const std::string& theKey);
 
-	bool Message(const std::map<std::string, long> &theKeyValue);
+	bool Message(const std::map<std::string, long>& theKeyValue);
 	bool NextMessage();
 	int MessageCount();
 	int CurrentMessageIndex();
 
 	void MultiGribSupport(bool theMultiGribSupport);
-	bool WriteMessage(const std::string &theFileName);
-	bool WriteIndex(const std::string &theFileName);
+	bool WriteMessage(const std::string& theFileName);
+	bool WriteIndex(const std::string& theFileName);
 
-	NFmiGribMessage &Message() { return m; }
+	NFmiGribMessage& Message() { return itsMessage; }
    private:
 	enum class file_compression
 	{
@@ -57,14 +57,13 @@ class NFmiGrib
 	size_t message_start;
 	size_t message_end;
 
-	grib_handle *h;
-	grib_index *index;
-	FILE *f;
+	grib_index* index;
+	FILE* f;
 
 	int itsMessageCount;
 	int itsCurrentMessage;
 
-	NFmiGribMessage m;
+	NFmiGribMessage itsMessage;
 };
 
 #endif
