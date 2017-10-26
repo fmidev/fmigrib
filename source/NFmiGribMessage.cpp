@@ -28,13 +28,8 @@ NFmiGribMessage::NFmiGribMessage() : itsHandle(0)
 	assert(itsHandle);
 }
 
-NFmiGribMessage::~NFmiGribMessage()
-{
-	grib_handle_delete(itsHandle);
-	itsHandle = nullptr;
-}
-
-NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(0)
+NFmiGribMessage::~NFmiGribMessage() { grib_handle_delete(itsHandle); }
+NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(nullptr)
 {
 	Clear();
 
@@ -44,14 +39,14 @@ NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(0)
 	}
 }
 
-bool NFmiGribMessage::Read(grib_handle* h)
+bool NFmiGribMessage::Read(grib_handle** h)
 {
 	if (itsHandle)
 	{
 		grib_handle_delete(itsHandle);
 	}
 
-	itsHandle = h;
+	itsHandle = *h;
 	Clear();
 
 	return true;

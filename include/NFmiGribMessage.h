@@ -50,7 +50,7 @@ class NFmiGribMessage
 		return *this;
 	}
 
-	bool Read(grib_handle* h);
+	bool Read(grib_handle** h);
 
 	long SizeX() const;
 	long SizeY() const;

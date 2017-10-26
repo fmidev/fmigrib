@@ -1,7 +1,7 @@
 #include "NFmiGrib.h"
 #include <iostream>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/copy.hpp>
@@ -21,7 +21,8 @@ NFmiGrib::NFmiGrib()
       f(0),
       itsMessageCount(INVALID_INT_VALUE),
       itsCurrentMessage(0)
-{}
+{
+}
 
 NFmiGrib::~NFmiGrib()
 {
@@ -231,7 +232,7 @@ bool NFmiGrib::Message(const std::map<std::string, long>& theKeyValue)
 		return false;
 	}
 	assert(h);
-	return itsMessage.Read(h);
+	return itsMessage.Read(&h);
 }
 
 bool NFmiGrib::NextMessage()
@@ -260,7 +261,7 @@ bool NFmiGrib::NextMessage()
 			itsCurrentMessage++;
 			assert(h);
 
-			return itsMessage.Read(h);
+			return itsMessage.Read(&h);
 		}
 
 		return false;
@@ -272,7 +273,7 @@ bool NFmiGrib::NextMessage()
 	{
 		itsCurrentMessage++;
 		assert(h);
-		return itsMessage.Read(h);
+		return itsMessage.Read(&h);
 	}
 
 	return false;
