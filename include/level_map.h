@@ -23,6 +23,7 @@ bimapLong levelTypeMap = boost::assign::list_of<bimapLong::relation>
 (102,101) // mean sea
 (103,102) // specific altitude above mean-sea level
 (105,103) // specified height above ground
+(108,108) // pressure deviation from ground to level
 (109,105) // hybrid
 (111,106) // depth below land surface
 (246,246) // max thetae
