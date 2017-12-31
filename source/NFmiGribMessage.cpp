@@ -120,7 +120,7 @@ void NFmiGribMessage::TypeOfStatisticalProcessing(long theType)
  * for freeing memory.
  *
  */
-double* NFmiGribMessage::Values()
+double* NFmiGribMessage::Values() const
 {
 	// Set missing value to kFloatMissing
 	assert(itsHandle);
@@ -128,7 +128,7 @@ double* NFmiGribMessage::Values()
 	{
 		double missingValue = GetDoubleKey("missingValue");
 
-		if (missingValue == 9999) SetDoubleKey("missingValue", kFloatMissing);
+		if (missingValue == 9999) MissingValue(kFloatMissing);
 	}
 	size_t values_len = ValuesLength();
 	double* vals = static_cast<double*>(malloc(values_len * sizeof(double)));
@@ -138,7 +138,7 @@ double* NFmiGribMessage::Values()
 	return vals;
 }
 
-void NFmiGribMessage::GetValues(double* values, size_t* cntValues)
+void NFmiGribMessage::GetValues(double* values, size_t* cntValues) const
 {
 	assert(itsHandle);
 	assert(values);
@@ -149,7 +149,7 @@ void NFmiGribMessage::GetValues(double* values, size_t* cntValues)
 		double missingValue = GetDoubleKey("missingValue");
 		if (missingValue == 9999)
 		{
-			SetDoubleKey("missingValue", kFloatMissing);
+			MissingValue(kFloatMissing);
 		}
 	}
 
@@ -448,7 +448,12 @@ long NFmiGribMessage::Table2Version() const { return GetLongKey("table2Version")
 void NFmiGribMessage::Table2Version(long theVersion) { SetLongKey("table2Version", theVersion); }
 long NFmiGribMessage::NumberOfMissing() const { return GetLongKey("numberOfMissing"); }
 double NFmiGribMessage::MissingValue() const { return GetDoubleKey("missingValue"); }
-void NFmiGribMessage::MissingValue(double missingValue) { SetDoubleKey("missingValue", missingValue); }
+void NFmiGribMessage::MissingValue(double missingValue) const
+{
+	assert(itsHandle);
+
+	GRIB_CHECK(grib_set_double(itsHandle, "missingValue", missingValue), 0);
+}
 /*
  * NormalizedLevelType()
  *

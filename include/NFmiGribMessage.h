@@ -76,8 +76,8 @@ class NFmiGribMessage
 	double SouthPoleY() const;
 	void SouthPoleY(double theLatitude);
 
-	double* Values();
-	void GetValues(double* values, size_t* cntValues);
+	double* Values() const;
+	void GetValues(double* values, size_t* cntValues) const;
 	void Values(const double* theValues, long theValuesLength);
 
 	size_t ValuesLength() const;
@@ -204,7 +204,10 @@ class NFmiGribMessage
 	long NumberOfMissing() const;
 
 	double MissingValue() const;
-	void MissingValue(double missingValue);
+
+	// Note: this function is const although it set the missing value.
+	// We need it because while fetching data, we might alter the missing value.
+	void MissingValue(double missingValue) const;
 
 	bool UVRelativeToGrid() const;
 	void UVRelativeToGrid(bool theRelativity);
