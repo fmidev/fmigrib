@@ -26,5 +26,6 @@ bimapLong levelTypeMap = boost::assign::list_of<bimapLong::relation>
 (101,108) // pressure deviation from ground to level
 (109,105) // hybrid
 (111,106) // depth below land surface
+(200,200) // entire atmosphere considered as a single layer
 (246,246) // max thetae
 ;
