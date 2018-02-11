@@ -1078,7 +1078,7 @@ void NFmiGribMessage::NV(long theNV)
 		SetLongKey("NV", theNV);
 }
 
-std::vector<double> NFmiGribMessage::PV()
+std::vector<double> NFmiGribMessage::PV() const
 {
 	assert(itsHandle);
 	size_t numCoordinates = NV();
