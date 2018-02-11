@@ -34,6 +34,8 @@ class NFmiGribMessage
 {
    public:
 	NFmiGribMessage();
+	NFmiGribMessage(void* buf, long size);
+
 	~NFmiGribMessage();
 
 	NFmiGribMessage(const NFmiGribMessage& other);

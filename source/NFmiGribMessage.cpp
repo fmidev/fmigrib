@@ -28,7 +28,16 @@ NFmiGribMessage::NFmiGribMessage() : itsHandle(0)
 	assert(itsHandle);
 }
 
-NFmiGribMessage::~NFmiGribMessage() { grib_handle_delete(itsHandle); }
+NFmiGribMessage::NFmiGribMessage(void* buf, long size)
+{
+	itsHandle = grib_handle_new_from_message(0, buf, size);
+	Clear();
+}
+
+NFmiGribMessage::~NFmiGribMessage()
+{
+	grib_handle_delete(itsHandle);
+}
 NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(nullptr)
 {
 	Clear();
@@ -63,7 +72,10 @@ void NFmiGribMessage::PerturbationNumber(long thePerturbationNumber)
 	SetLongKey("perturbationNumber", thePerturbationNumber);
 }
 
-long NFmiGribMessage::PerturbationNumber() const { return GetLongKey("perturbationNumber"); }
+long NFmiGribMessage::PerturbationNumber() const
+{
+	return GetLongKey("perturbationNumber");
+}
 long NFmiGribMessage::LocalDefinitionNumber() const
 {
 	if (Edition() == 1)
@@ -128,7 +140,8 @@ double* NFmiGribMessage::Values() const
 	{
 		double missingValue = GetDoubleKey("missingValue");
 
-		if (missingValue == 9999) MissingValue(kFloatMissing);
+		if (missingValue == 9999)
+			MissingValue(kFloatMissing);
 	}
 	size_t values_len = ValuesLength();
 	double* vals = static_cast<double*>(malloc(values_len * sizeof(double)));
@@ -163,7 +176,8 @@ void NFmiGribMessage::Values(const double* theValues, long theValuesLength)
 	{
 		double missingValue = GetDoubleKey("missingValue");
 
-		if (missingValue == 9999) SetDoubleKey("missingValue", kFloatMissing);
+		if (missingValue == 9999)
+			SetDoubleKey("missingValue", kFloatMissing);
 	}
 
 	if (Edition() == 2)
@@ -174,13 +188,34 @@ void NFmiGribMessage::Values(const double* theValues, long theValuesLength)
 	GRIB_CHECK(grib_set_double_array(itsHandle, "values", theValues, theValuesLength), 0);
 }
 
-size_t NFmiGribMessage::ValuesLength() const { return GetSizeTKey("values"); }
-long NFmiGribMessage::DataDate() const { return GetLongKey("dataDate"); }
-void NFmiGribMessage::DataDate(long theDate) { SetLongKey("dataDate", theDate); }
-long NFmiGribMessage::DataTime() const { return GetLongKey("dataTime"); }
-void NFmiGribMessage::DataTime(long theTime) { SetLongKey("dataTime", theTime); }
-long NFmiGribMessage::ForecastTime() const { return GetLongKey("forecastTime"); }
-void NFmiGribMessage::ForecastTime(long theTime) { SetLongKey("forecastTime", theTime); }
+size_t NFmiGribMessage::ValuesLength() const
+{
+	return GetSizeTKey("values");
+}
+long NFmiGribMessage::DataDate() const
+{
+	return GetLongKey("dataDate");
+}
+void NFmiGribMessage::DataDate(long theDate)
+{
+	SetLongKey("dataDate", theDate);
+}
+long NFmiGribMessage::DataTime() const
+{
+	return GetLongKey("dataTime");
+}
+void NFmiGribMessage::DataTime(long theTime)
+{
+	SetLongKey("dataTime", theTime);
+}
+long NFmiGribMessage::ForecastTime() const
+{
+	return GetLongKey("forecastTime");
+}
+void NFmiGribMessage::ForecastTime(long theTime)
+{
+	SetLongKey("forecastTime", theTime);
+}
 std::string NFmiGribMessage::ParameterUnit() const
 {
 	std::string keyName = "units";
@@ -242,15 +277,20 @@ void NFmiGribMessage::ParameterNumber(long theNumber)
 
 void NFmiGribMessage::ParameterCategory(long theCategory)
 {
-	if (Edition() == 2) SetLongKey("parameterCategory", theCategory);
+	if (Edition() == 2)
+		SetLongKey("parameterCategory", theCategory);
 }
 
 void NFmiGribMessage::ParameterDiscipline(long theDiscipline)
 {
-	if (Edition() == 2) SetLongKey("discipline", theDiscipline);
+	if (Edition() == 2)
+		SetLongKey("discipline", theDiscipline);
 }
 
-std::string NFmiGribMessage::ParameterName() const { return GetStringKey("name"); }
+std::string NFmiGribMessage::ParameterName() const
+{
+	return GetStringKey("name");
+}
 long NFmiGribMessage::GridType() const
 {
 	if (Edition() == 1)
@@ -293,13 +333,19 @@ void NFmiGribMessage::GridOrientation(double theOrientation)
 	}
 }
 
-double NFmiGribMessage::iDirectionIncrement() const { return GetDoubleKey("iDirectionIncrementInDegrees"); }
+double NFmiGribMessage::iDirectionIncrement() const
+{
+	return GetDoubleKey("iDirectionIncrementInDegrees");
+}
 void NFmiGribMessage::iDirectionIncrement(double theIncrement)
 {
 	SetDoubleKey("iDirectionIncrementInDegrees", theIncrement);
 }
 
-double NFmiGribMessage::jDirectionIncrement() const { return GetDoubleKey("jDirectionIncrementInDegrees"); }
+double NFmiGribMessage::jDirectionIncrement() const
+{
+	return GetDoubleKey("jDirectionIncrementInDegrees");
+}
 void NFmiGribMessage::jDirectionIncrement(double theIncrement)
 {
 	SetDoubleKey("jDirectionIncrementInDegrees", theIncrement);
@@ -390,22 +436,55 @@ void NFmiGribMessage::LevelValue2(long theLevelValue2, long theScaleFactor)
 	}
 }
 
-double NFmiGribMessage::X0() const { return GetDoubleKey("longitudeOfFirstGridPointInDegrees"); }
-double NFmiGribMessage::Y0() const { return GetDoubleKey("latitudeOfFirstGridPointInDegrees"); }
-void NFmiGribMessage::X0(double theX0) { SetDoubleKey("longitudeOfFirstGridPointInDegrees", theX0); }
-void NFmiGribMessage::Y0(double theY0) { SetDoubleKey("latitudeOfFirstGridPointInDegrees", theY0); }
-double NFmiGribMessage::X1() const { return GetDoubleKey("longitudeOfLastGridPointInDegrees"); }
-double NFmiGribMessage::Y1() const { return GetDoubleKey("latitudeOfLastGridPointInDegrees"); }
-void NFmiGribMessage::X1(double theX1) { SetDoubleKey("longitudeOfLastGridPointInDegrees", theX1); }
-void NFmiGribMessage::Y1(double theY1) { SetDoubleKey("latitudeOfLastGridPointInDegrees", theY1); }
-double NFmiGribMessage::SouthPoleX() const { return GetDoubleKey("longitudeOfSouthernPoleInDegrees"); }
+double NFmiGribMessage::X0() const
+{
+	return GetDoubleKey("longitudeOfFirstGridPointInDegrees");
+}
+double NFmiGribMessage::Y0() const
+{
+	return GetDoubleKey("latitudeOfFirstGridPointInDegrees");
+}
+void NFmiGribMessage::X0(double theX0)
+{
+	SetDoubleKey("longitudeOfFirstGridPointInDegrees", theX0);
+}
+void NFmiGribMessage::Y0(double theY0)
+{
+	SetDoubleKey("latitudeOfFirstGridPointInDegrees", theY0);
+}
+double NFmiGribMessage::X1() const
+{
+	return GetDoubleKey("longitudeOfLastGridPointInDegrees");
+}
+double NFmiGribMessage::Y1() const
+{
+	return GetDoubleKey("latitudeOfLastGridPointInDegrees");
+}
+void NFmiGribMessage::X1(double theX1)
+{
+	SetDoubleKey("longitudeOfLastGridPointInDegrees", theX1);
+}
+void NFmiGribMessage::Y1(double theY1)
+{
+	SetDoubleKey("latitudeOfLastGridPointInDegrees", theY1);
+}
+double NFmiGribMessage::SouthPoleX() const
+{
+	return GetDoubleKey("longitudeOfSouthernPoleInDegrees");
+}
 void NFmiGribMessage::SouthPoleX(double theLongitude)
 {
 	SetDoubleKey("longitudeOfSouthernPoleInDegrees", theLongitude);
 }
 
-double NFmiGribMessage::SouthPoleY() const { return GetDoubleKey("latitudeOfSouthernPoleInDegrees"); }
-void NFmiGribMessage::SouthPoleY(double theLatitude) { SetDoubleKey("latitudeOfSouthernPoleInDegrees", theLatitude); }
+double NFmiGribMessage::SouthPoleY() const
+{
+	return GetDoubleKey("latitudeOfSouthernPoleInDegrees");
+}
+void NFmiGribMessage::SouthPoleY(double theLatitude)
+{
+	SetDoubleKey("latitudeOfSouthernPoleInDegrees", theLatitude);
+}
 long NFmiGribMessage::Edition() const
 {
 	if (itsEdition != INVALID_INT_VALUE)
@@ -424,12 +503,30 @@ void NFmiGribMessage::Edition(long theEdition)
 	itsEdition = theEdition;
 }
 
-long NFmiGribMessage::Process() const { return GetLongKey("generatingProcessIdentifier"); }
-void NFmiGribMessage::Process(long theProcess) { SetLongKey("generatingProcessIdentifier", theProcess); }
-long NFmiGribMessage::Centre() const { return GetLongKey("centre"); }
-void NFmiGribMessage::Centre(long theCentre) { SetLongKey("centre", theCentre); }
-bool NFmiGribMessage::IScansNegatively() const { return (1 == GetLongKey("iScansNegatively")); }
-bool NFmiGribMessage::JScansPositively() const { return (1 == GetLongKey("jScansPositively")); }
+long NFmiGribMessage::Process() const
+{
+	return GetLongKey("generatingProcessIdentifier");
+}
+void NFmiGribMessage::Process(long theProcess)
+{
+	SetLongKey("generatingProcessIdentifier", theProcess);
+}
+long NFmiGribMessage::Centre() const
+{
+	return GetLongKey("centre");
+}
+void NFmiGribMessage::Centre(long theCentre)
+{
+	SetLongKey("centre", theCentre);
+}
+bool NFmiGribMessage::IScansNegatively() const
+{
+	return (1 == GetLongKey("iScansNegatively"));
+}
+bool NFmiGribMessage::JScansPositively() const
+{
+	return (1 == GetLongKey("jScansPositively"));
+}
 void NFmiGribMessage::IScansNegatively(bool theNegativeIScan)
 {
 	SetLongKey("iScansNegatively", static_cast<long>(theNegativeIScan));
@@ -440,14 +537,38 @@ void NFmiGribMessage::JScansPositively(bool thePositiveJScan)
 	SetLongKey("jScansPositively", static_cast<long>(thePositiveJScan));
 }
 
-long NFmiGribMessage::SizeX() const { return GetLongKey("Ni"); }
-long NFmiGribMessage::SizeY() const { return GetLongKey("Nj"); }
-void NFmiGribMessage::SizeX(long theXSize) { SetLongKey("Ni", theXSize); }
-void NFmiGribMessage::SizeY(long theYSize) { SetLongKey("Nj", theYSize); }
-long NFmiGribMessage::Table2Version() const { return GetLongKey("table2Version"); }
-void NFmiGribMessage::Table2Version(long theVersion) { SetLongKey("table2Version", theVersion); }
-long NFmiGribMessage::NumberOfMissing() const { return GetLongKey("numberOfMissing"); }
-double NFmiGribMessage::MissingValue() const { return GetDoubleKey("missingValue"); }
+long NFmiGribMessage::SizeX() const
+{
+	return GetLongKey("Ni");
+}
+long NFmiGribMessage::SizeY() const
+{
+	return GetLongKey("Nj");
+}
+void NFmiGribMessage::SizeX(long theXSize)
+{
+	SetLongKey("Ni", theXSize);
+}
+void NFmiGribMessage::SizeY(long theYSize)
+{
+	SetLongKey("Nj", theYSize);
+}
+long NFmiGribMessage::Table2Version() const
+{
+	return GetLongKey("table2Version");
+}
+void NFmiGribMessage::Table2Version(long theVersion)
+{
+	SetLongKey("table2Version", theVersion);
+}
+long NFmiGribMessage::NumberOfMissing() const
+{
+	return GetLongKey("numberOfMissing");
+}
+double NFmiGribMessage::MissingValue() const
+{
+	return GetDoubleKey("missingValue");
+}
 void NFmiGribMessage::MissingValue(double missingValue) const
 {
 	assert(itsHandle);
@@ -597,7 +718,8 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const
 			step += LengthOfTimeRange();
 		}
 	}
-	if (!flatten) return step;
+	if (!flatten)
+		return step;
 
 	long multiplier = 1;
 	long unitOfTimeRange = NormalizedUnitOfTimeRange();
@@ -634,40 +756,98 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const
 			break;
 	}
 
-	if (step != INVALID_INT_VALUE) step *= multiplier;
+	if (step != INVALID_INT_VALUE)
+		step *= multiplier;
 
 	return step;
 }
 
-long NFmiGribMessage::StartStep() const { return GetLongKey("startStep"); }
-void NFmiGribMessage::StartStep(long theStartStep) { SetLongKey("startStep", theStartStep); }
-long NFmiGribMessage::EndStep() const { return GetLongKey("endStep"); }
-void NFmiGribMessage::EndStep(long theEndStep) { SetLongKey("endStep", theEndStep); }
-long NFmiGribMessage::StepUnits() const { return GetLongKey("stepUnits"); }
-void NFmiGribMessage::StepUnits(long theUnit) { SetLongKey("stepUnits", theUnit); }
-long NFmiGribMessage::StepRange() const { return GetLongKey("stepRange"); }
-void NFmiGribMessage::StepRange(long theRange) { SetLongKey("stepRange", theRange); }
-long NFmiGribMessage::Year() const { return GetLongKey("year"); }
-void NFmiGribMessage::Year(const std::string& theYear) { SetLongKey("year", boost::lexical_cast<long>(theYear)); }
-long NFmiGribMessage::Month() const { return GetLongKey("month"); }
-void NFmiGribMessage::Month(const std::string& theMonth) { SetLongKey("month", boost::lexical_cast<long>(theMonth)); }
-long NFmiGribMessage::Day() const { return GetLongKey("day"); }
-void NFmiGribMessage::Day(const std::string& theDay) { SetLongKey("day", boost::lexical_cast<long>(theDay)); }
-long NFmiGribMessage::Hour() const { return GetLongKey("hour"); }
-void NFmiGribMessage::Hour(const std::string& theHour) { SetLongKey("hour", boost::lexical_cast<long>(theHour)); }
-long NFmiGribMessage::Minute() const { return GetLongKey("minute"); }
+long NFmiGribMessage::StartStep() const
+{
+	return GetLongKey("startStep");
+}
+void NFmiGribMessage::StartStep(long theStartStep)
+{
+	SetLongKey("startStep", theStartStep);
+}
+long NFmiGribMessage::EndStep() const
+{
+	return GetLongKey("endStep");
+}
+void NFmiGribMessage::EndStep(long theEndStep)
+{
+	SetLongKey("endStep", theEndStep);
+}
+long NFmiGribMessage::StepUnits() const
+{
+	return GetLongKey("stepUnits");
+}
+void NFmiGribMessage::StepUnits(long theUnit)
+{
+	SetLongKey("stepUnits", theUnit);
+}
+long NFmiGribMessage::StepRange() const
+{
+	return GetLongKey("stepRange");
+}
+void NFmiGribMessage::StepRange(long theRange)
+{
+	SetLongKey("stepRange", theRange);
+}
+long NFmiGribMessage::Year() const
+{
+	return GetLongKey("year");
+}
+void NFmiGribMessage::Year(const std::string& theYear)
+{
+	SetLongKey("year", boost::lexical_cast<long>(theYear));
+}
+long NFmiGribMessage::Month() const
+{
+	return GetLongKey("month");
+}
+void NFmiGribMessage::Month(const std::string& theMonth)
+{
+	SetLongKey("month", boost::lexical_cast<long>(theMonth));
+}
+long NFmiGribMessage::Day() const
+{
+	return GetLongKey("day");
+}
+void NFmiGribMessage::Day(const std::string& theDay)
+{
+	SetLongKey("day", boost::lexical_cast<long>(theDay));
+}
+long NFmiGribMessage::Hour() const
+{
+	return GetLongKey("hour");
+}
+void NFmiGribMessage::Hour(const std::string& theHour)
+{
+	SetLongKey("hour", boost::lexical_cast<long>(theHour));
+}
+long NFmiGribMessage::Minute() const
+{
+	return GetLongKey("minute");
+}
 void NFmiGribMessage::Minute(const std::string& theMinute)
 {
 	SetLongKey("minute", boost::lexical_cast<long>(theMinute));
 }
 
-long NFmiGribMessage::Second() const { return GetLongKey("second"); }
+long NFmiGribMessage::Second() const
+{
+	return GetLongKey("second");
+}
 void NFmiGribMessage::Second(const std::string& theSecond)
 {
 	SetLongKey("second", boost::lexical_cast<long>(theSecond));
 }
 
-bool NFmiGribMessage::Bitmap() const { return static_cast<bool>(GetLongKey("bitmapPresent")); }
+bool NFmiGribMessage::Bitmap() const
+{
+	return static_cast<bool>(GetLongKey("bitmapPresent"));
+}
 void NFmiGribMessage::Bitmap(bool theBitmap)
 {
 	if (Edition() == 2)
@@ -687,8 +867,14 @@ void NFmiGribMessage::Bitmap(bool theBitmap)
 	}
 }
 
-long NFmiGribMessage::BitsPerValue() const { return GetLongKey("bitsPerValue"); }
-void NFmiGribMessage::BitsPerValue(long theBitsPerValue) { SetLongKey("bitsPerValue", theBitsPerValue); }
+long NFmiGribMessage::BitsPerValue() const
+{
+	return GetLongKey("bitsPerValue");
+}
+void NFmiGribMessage::BitsPerValue(long theBitsPerValue)
+{
+	SetLongKey("bitsPerValue", theBitsPerValue);
+}
 bool NFmiGribMessage::UVRelativeToGrid() const
 {
 	long l = -1;
@@ -737,7 +923,10 @@ void NFmiGribMessage::UVRelativeToGrid(bool theRelativity)
 	}
 }
 
-long NFmiGribMessage::ResolutionAndComponentFlags() const { return GetLongKey("resolutionAndComponentFlags"); }
+long NFmiGribMessage::ResolutionAndComponentFlags() const
+{
+	return GetLongKey("resolutionAndComponentFlags");
+}
 void NFmiGribMessage::ResolutionAndComponentFlags(long theResolutionAndComponentFlags)
 {
 	SetLongKey("resolutionAndComponentFlags", theResolutionAndComponentFlags);
@@ -750,7 +939,10 @@ void NFmiGribMessage::PackingType(const std::string& thePackingType)
 	GRIB_CHECK(grib_set_string(itsHandle, "packingType", thePackingType.c_str(), &len), 0);
 }
 
-std::string NFmiGribMessage::PackingType() const { return GetStringKey("packingType"); }
+std::string NFmiGribMessage::PackingType() const
+{
+	return GetStringKey("packingType");
+}
 long NFmiGribMessage::TypeOfGeneratingProcess() const
 {
 	if (Edition() == 1)
@@ -760,11 +952,26 @@ long NFmiGribMessage::TypeOfGeneratingProcess() const
 	return GetLongKey("typeOfGeneratingProcess");
 }
 
-void NFmiGribMessage::TypeOfGeneratingProcess(long theProcess) { SetLongKey("typeOfGeneratingProcess", theProcess); }
-void NFmiGribMessage::XLengthInMeters(double theLength) { SetDoubleKey("DxInMetres", theLength); }
-void NFmiGribMessage::YLengthInMeters(double theLength) { SetDoubleKey("DyInMetres", theLength); }
-double NFmiGribMessage::XLengthInMeters() const { return GetDoubleKey("DxInMetres"); }
-double NFmiGribMessage::YLengthInMeters() const { return GetDoubleKey("DyInMetres"); }
+void NFmiGribMessage::TypeOfGeneratingProcess(long theProcess)
+{
+	SetLongKey("typeOfGeneratingProcess", theProcess);
+}
+void NFmiGribMessage::XLengthInMeters(double theLength)
+{
+	SetDoubleKey("DxInMetres", theLength);
+}
+void NFmiGribMessage::YLengthInMeters(double theLength)
+{
+	SetDoubleKey("DyInMetres", theLength);
+}
+double NFmiGribMessage::XLengthInMeters() const
+{
+	return GetDoubleKey("DxInMetres");
+}
+double NFmiGribMessage::YLengthInMeters() const
+{
+	return GetDoubleKey("DyInMetres");
+}
 long NFmiGribMessage::NormalizedUnitOfTimeRange() const
 {
 	// http://www.nco.ncep.noaa.gov/pmb/docs/on388/table4.html
@@ -831,29 +1038,44 @@ void NFmiGribMessage::LengthOfTimeRange(long theLength)
 	}
 }
 
-long NFmiGribMessage::TimeRangeIndicator() const { return GetLongKey("timeRangeIndicator"); }
+long NFmiGribMessage::TimeRangeIndicator() const
+{
+	return GetLongKey("timeRangeIndicator");
+}
 void NFmiGribMessage::TimeRangeIndicator(long theTimeRangeIndicator)
 {
 	SetLongKey("timeRangeIndicator", theTimeRangeIndicator);
 }
 
-long NFmiGribMessage::P1() const { return GetLongKey("P1"); }
+long NFmiGribMessage::P1() const
+{
+	return GetLongKey("P1");
+}
 void NFmiGribMessage::P1(long theP1)
 {
-	if (Edition() == 1) SetLongKey("P1", theP1);
+	if (Edition() == 1)
+		SetLongKey("P1", theP1);
 }
 
-long NFmiGribMessage::P2() const { return GetLongKey("P2"); }
+long NFmiGribMessage::P2() const
+{
+	return GetLongKey("P2");
+}
 void NFmiGribMessage::P2(long theP2)
 {
-	if (Edition() == 1) SetLongKey("P2", theP2);
+	if (Edition() == 1)
+		SetLongKey("P2", theP2);
 }
 
-long NFmiGribMessage::NV() const { return GetLongKey("NV"); }
+long NFmiGribMessage::NV() const
+{
+	return GetLongKey("NV");
+}
 void NFmiGribMessage::NV(long theNV)
 {
 	// For some reason writing NV on grib2 disables the key "pv" !
-	if (Edition() == 1) SetLongKey("NV", theNV);
+	if (Edition() == 1)
+		SetLongKey("NV", theNV);
 }
 
 std::vector<double> NFmiGribMessage::PV()
@@ -909,7 +1131,8 @@ bool NFmiGribMessage::Write(const std::string& theFileName, bool appendToFile)
 	assert(itsHandle);
 	std::string mode = "w";
 
-	if (appendToFile) mode = "a";
+	if (appendToFile)
+		mode = "a";
 
 	// write compressed output if file extension is .gz or .bz2
 	boost::filesystem::path p(theFileName);
@@ -997,7 +1220,10 @@ size_t NFmiGribMessage::PackedValuesLength() const
 	return itsPackedValuesLength;
 }
 
-size_t NFmiGribMessage::BytesLength(const std::string& key) const { return GetSizeTKey(key); }
+size_t NFmiGribMessage::BytesLength(const std::string& key) const
+{
+	return GetSizeTKey(key);
+}
 bool NFmiGribMessage::Bytes(const std::string& key, unsigned char* data) const
 {
 	assert(itsHandle);
@@ -1039,7 +1265,10 @@ bool NFmiGribMessage::PackedValues(unsigned char* data, size_t unpacked_len, int
 	return true;
 }
 
-long NFmiGribMessage::BinaryScaleFactor() const { return GetLongKey("binaryScaleFactor"); }
+long NFmiGribMessage::BinaryScaleFactor() const
+{
+	return GetLongKey("binaryScaleFactor");
+}
 void NFmiGribMessage::BinaryScaleFactor(long theFactor)
 {
 #ifdef GRIB_WRITE_PACKED_DATA
@@ -1048,7 +1277,10 @@ void NFmiGribMessage::BinaryScaleFactor(long theFactor)
 #endif
 }
 
-long NFmiGribMessage::DecimalScaleFactor() const { return GetLongKey("decimalScaleFactor"); }
+long NFmiGribMessage::DecimalScaleFactor() const
+{
+	return GetLongKey("decimalScaleFactor");
+}
 void NFmiGribMessage::DecimalScaleFactor(long theFactor)
 {
 #ifdef GRIB_WRITE_PACKED_DATA
@@ -1099,7 +1331,10 @@ std::vector<int> NFmiGribMessage::PL() const
 	return ret;
 }
 
-double NFmiGribMessage::ReferenceValue() const { return GetDoubleKey("referenceValue"); }
+double NFmiGribMessage::ReferenceValue() const
+{
+	return GetDoubleKey("referenceValue");
+}
 void NFmiGribMessage::ReferenceValue(double theValue)
 {
 #ifdef GRIB_WRITE_PACKED_DATA
@@ -1108,7 +1343,10 @@ void NFmiGribMessage::ReferenceValue(double theValue)
 #endif
 }
 
-long NFmiGribMessage::Section4Length() const { return GetLongKey("section4Length"); }
+long NFmiGribMessage::Section4Length() const
+{
+	return GetLongKey("section4Length");
+}
 bool NFmiGribMessage::KeyExists(const std::string& theKey) const
 {
 	int i;
@@ -1392,7 +1630,8 @@ long NFmiGribMessage::ForecastTypeValue() const
 
 void NFmiGribMessage::ForecastTypeValue(long theForecastTypeValue)
 {
-	if (Edition() == 1) return;
+	if (Edition() == 1)
+		return;
 
 	PerturbationNumber(theForecastTypeValue);
 }
