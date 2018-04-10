@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 18.2.12
+Version: 18.4.10
 Release: 1.el7.fmi
 License: MIT
 Group: Development/Tools
@@ -10,7 +10,7 @@ Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}.so
 BuildRequires: eccodes-devel
-BuildRequires: boost-devel >= 1.65
+BuildRequires: boost-devel >= 1.66
 Provides: lib%{LIBNAME}.so
 
 %description
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Tue Apr 10 2018 Mikko Partio <mikko.partio@fmi.fi> - 18.4.10-1.fmi
+- New boost
 * Mon Feb 12 2018 Mikko Partio <mikko.partio@fmi.fi> - 18.2.12-1.fmi
 - const change on PV() function
 - new constructor for NFmiGribMessage
