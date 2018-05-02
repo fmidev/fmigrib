@@ -46,13 +46,21 @@ NFmiGrib::~NFmiGrib()
 
 bool NFmiGrib::Open(const std::string& theFileName)
 {
-	/*
-	 * Check if input file is gzip packed
-	 */
+	if (f)
+	{
+		fclose(f);
+		f = 0;
+	}
 
 	if (ifs.is_open())
 	{
 		ifs.close();
+	}
+
+	if (theFileName == "-")
+	{
+		f = stdin;
+		return true;
 	}
 
 	boost::filesystem::path p(theFileName);
@@ -85,12 +93,6 @@ bool NFmiGrib::Open(const std::string& theFileName)
 	else
 	{
 		ifs_compression = file_compression::none;
-	}
-
-	if (f)
-	{
-		fclose(f);
-		f = 0;
 	}
 
 	if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip2)
