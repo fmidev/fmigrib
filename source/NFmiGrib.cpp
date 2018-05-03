@@ -46,13 +46,21 @@ NFmiGrib::~NFmiGrib()
 
 bool NFmiGrib::Open(const std::string& theFileName)
 {
-	/*
-	 * Check if input file is gzip packed
-	 */
+	if (f)
+	{
+		fclose(f);
+		f = 0;
+	}
 
 	if (ifs.is_open())
 	{
 		ifs.close();
+	}
+
+	if (theFileName == "-")
+	{
+		f = stdin;
+		return true;
 	}
 
 	boost::filesystem::path p(theFileName);
@@ -127,19 +135,11 @@ bool NFmiGrib::Open(const std::string& theFileName)
 
 		ifs.close();
 
-		// return true if file opened succesfully
-		return true;
+		f = fmemopen(const_cast<char*> (ifile.data()), ifile.size(), "r");
+		return (f == nullptr);
 	}
 
-	if (f)
-	{
-		fclose(f);
-		f = 0;
-	}
-
-	// Open with 'rb', although in linux it equals to 'r'
-
-	if (!(f = fopen(theFileName.c_str(), "rb")))
+	if (!(f = fopen(theFileName.c_str(), "r")))
 	{
 		return false;
 	}
@@ -238,34 +238,6 @@ bool NFmiGrib::Message(const std::map<std::string, long>& theKeyValue)
 bool NFmiGrib::NextMessage()
 {
 	grib_handle* h;
-
-	/*
-	 * Read data through filtering streambuf if gzip packed.
-	 */
-
-	if (ifs_compression == file_compression::gzip || ifs_compression == file_compression::bzip2)
-	{
-		message_start = ifile.find("GRIB", message_end);      // find next grib message after previous message ended
-		message_end = ifile.find("GRIB", message_start + 1);  // find end of next grib message
-
-		if (message_end == std::string::npos) message_end = ifile.size();
-
-		size_t message_length = message_end - message_start;
-
-		if (message_start == std::string::npos) return false;
-
-		// create grib_message from stringbuffer
-		if ((h = grib_handle_new_from_message_copy(0, (ifile.substr(message_start, message_length)).c_str(),
-		                                           message_length * sizeof(char))) != NULL)
-		{
-			itsCurrentMessage++;
-			assert(h);
-
-			return itsMessage.Read(&h);
-		}
-
-		return false;
-	}
 
 	int err;
 

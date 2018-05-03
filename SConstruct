@@ -44,11 +44,9 @@ workspace = os.getcwd() + "/../"
 
 # cuda toolkit path
 
-cuda_toolkit_path = '/usr/local/cuda-8.0'
+cuda_toolkit_path = '/usr/local/cuda'
 
-if os.environ.get('CUDA_TOOLKIT_PATH') is None:
-        print "Environment variable CUDA_TOOLKIT_PATH not set, assuming " + cuda_toolkit_path
-else:
+if os.environ.get('CUDA_TOOLKIT_PATH') is not None:
         cuda_toolkit_path = os.environ['CUDA_TOOLKIT_PATH']
 
 have_cuda = False
@@ -173,6 +171,7 @@ env.Append(NVCCFLAGS = ['-Xcompiler','-fPIC'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-Wall'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_35,code=sm_35'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_52,code=sm_52'])
+env.Append(NVCCFLAGS = ['-gencode=arch=compute_60,code=sm_60'])
 
 if IS_RHEL and OS_VERSION >= 7.0:
 	env.Append(NVCCFLAGS = ['-std=c++11'])
@@ -200,7 +199,7 @@ if DEBUG:
 	env.Append(CPPDEFINES = ['DEBUG'])
 
 	# Cuda
-	env.Append(NVCCFLAGS = ['-O0','-g','-G', '-lineinfo'])
+	env.Append(NVCCFLAGS = ['-O0','-g','-G'])
 	env.Append(NVCCDEFINES = ['DEBUG'])
 
 	build_dir = 'build/debug'
