@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 18.4.10
+Version: 18.5.3
 Release: 1.el7.fmi
 License: MIT
 Group: Development/Tools
