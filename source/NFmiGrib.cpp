@@ -135,8 +135,8 @@ bool NFmiGrib::Open(const std::string& theFileName)
 
 		ifs.close();
 
-		f = fmemopen(const_cast<char*> (ifile.data()), ifile.size(), "r");
-		return (f == nullptr);
+		f = fmemopen(const_cast<char*>(ifile.data()), ifile.size(), "r");
+		return (f != nullptr);
 	}
 
 	if (!(f = fopen(theFileName.c_str(), "r")))
@@ -275,7 +275,10 @@ int NFmiGrib::MessageCount()
 	return itsMessageCount;
 }
 
-int NFmiGrib::CurrentMessageIndex() { return itsCurrentMessage; }
+int NFmiGrib::CurrentMessageIndex()
+{
+	return itsCurrentMessage;
+}
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
 {
 	if (theMultiGribSupport)
@@ -291,4 +294,7 @@ bool NFmiGrib::WriteIndex(const std::string& theFileName)
 	return true;
 }
 
-bool NFmiGrib::WriteMessage(const std::string& theFileName) { return itsMessage.Write(theFileName, false); }
+bool NFmiGrib::WriteMessage(const std::string& theFileName)
+{
+	return itsMessage.Write(theFileName, false);
+}
