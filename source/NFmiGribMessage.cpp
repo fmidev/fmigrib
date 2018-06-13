@@ -712,14 +712,17 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const
 	else
 	{
 		step = ForecastTime();
-
-		if (KeyExists("lengthOfTimeRange"))
-		{
-			step += LengthOfTimeRange();
-		}
 	}
+
 	if (!flatten)
+	{
+		if (Edition() == 2 && KeyExists("lengthOfTimeRange"))
+		{
+			step *= LengthOfTimeRange();
+		}
+
 		return step;
+	}
 
 	long multiplier = 1;
 	long unitOfTimeRange = NormalizedUnitOfTimeRange();
@@ -754,6 +757,18 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const
 
 		default:
 			break;
+	}
+
+	if (Edition() == 2 && KeyExists("lengthOfTimeRange"))
+	{
+		auto lengthOfTimeRange = LengthOfTimeRange();
+
+		if (unitOfTimeRange == 13 || unitOfTimeRange == 30 || unitOfTimeRange == 0)
+		{
+			lengthOfTimeRange *= 60;
+		}
+
+		step += lengthOfTimeRange / multiplier;
 	}
 
 	if (step != INVALID_INT_VALUE)
@@ -994,6 +1009,9 @@ long NFmiGribMessage::NormalizedUnitOfTimeRange() const
 				l = 254;  // second
 				break;
 
+			case 254:
+				l = 13; // 15 minutes
+				break;
 			default:
 				break;
 		}
