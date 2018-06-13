@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 18.5.15
+Version: 18.6.13
 Release: 1.el7.fmi
 License: MIT
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Wed Jun 13 2018 Mikko Partio <mikko.partio@fmi.fi> - 18.6.13-1.fmi
+- Supporting minute resolution with grib2
 * Tue May 15 2018 Mikko Partio <mikko.partio@fmi.fi> - 18.5.15-1.fmi
 - Bugfix
 * Thu May  3 2018 Mikko Partio <mikko.partio@fmi.fi> - 18.5.3-1.fmi
