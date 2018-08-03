@@ -22,17 +22,11 @@ test:
 clean:
 	scons -c ; scons --debug-build -c ; rm -f *~ source/*~ include/*~
 
-rpm:    clean
-	mkdir -p $(rpmsourcedir) ; \
-	if [ -a $(LIB).spec ]; \
-        then \
-          tar -C ../ --exclude .svn \
-                   -cf $(rpmsourcedir)/lib$(LIB).tar $(LIB) ; \
-          gzip -f $(rpmsourcedir)/lib$(LIB).tar ; \
-          rpmbuild -ta $(rpmsourcedir)/lib$(LIB).tar.gz ; \
-        else \
-          echo $(rpmerr); \
-        fi;
+rpm:    clean $(LIB).spec
+	mkdir -p $(rpmsourcedir)
+	tar -C ../ --exclude .svn \
+                   -czf $(rpmsourcedir)/lib$(LIB).tar.gz $(LIB)
+	rpmbuild -ta $(rpmsourcedir)/lib$(LIB).tar.gz
 
 install:
 	mkdir -p $(DESTDIR)/$(INSTALL_TARGET) $(DESTDIR)/usr/include
