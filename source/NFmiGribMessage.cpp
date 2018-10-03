@@ -1010,7 +1010,7 @@ long NFmiGribMessage::NormalizedUnitOfTimeRange() const
 				break;
 
 			case 254:
-				l = 13; // 15 minutes
+				l = 13;  // 15 minutes
 				break;
 			default:
 				break;
@@ -1691,30 +1691,10 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 	coeffs.decimalScaleFactor = ToPower(-static_cast<double>(DecimalScaleFactor()), 10);
 	coeffs.referenceValue = ReferenceValue();
 
-	// Special case when bits per value is zero which means we have a constant grid
-	if (coeffs.bitsPerValue == 0)
-	{
-		if (NFmiGribPacking::IsHostPointer(arr))
-		{
-			std::fill(arr, arr + unpackedLen, coeffs.referenceValue);
-		}
-		else
-		{
-			NFmiGribPacking::Fill(arr, unpackedLen, coeffs.referenceValue);
-		}
-		return true;
-	}
-
-	// 2. Get packed values from grib
-
-	unsigned char* packed = 0;
-	size_t packedLen = PackedValuesLength();
-	CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**>(&packed), packedLen * sizeof(unsigned char)));
-	PackedValues(packed);
-
-	// 3. If bitmap is present, unpack it and copy to cuda device
+	// 2. If bitmap is present, unpack it and copy to cuda device
 
 	int* d_bitmap = 0;
+	int* bitmap = 0;
 
 	if (Bitmap())
 	{
@@ -1724,40 +1704,101 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 		size_t bitmap_size = static_cast<size_t>(ceil(static_cast<double>(bitmap_len) / 8));
 		// CUDA_CHECK(cudaMemcpyAsync(d_bitmap, bitmap, bitmapLength * sizeof(int), cudaMemcpyHostToDevice, *stream));
 
-		unsigned char* bitmap = new unsigned char[bitmap_size];
+		unsigned char* packed_bitmap = new unsigned char[bitmap_size];
 
-		Bytes("bitmap", bitmap);
+		Bytes("bitmap", packed_bitmap);
 
-		int* unpacked_bitmap = 0;
+		bitmap = new int[bitmap_len];
 
-		CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**>(&unpacked_bitmap), bitmap_len * sizeof(int)));
-
-		UnpackBitmap(bitmap, unpacked_bitmap, bitmap_size, bitmap_len);
+		UnpackBitmap(packed_bitmap, bitmap, bitmap_size, bitmap_len);
 		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_bitmap), bitmap_len * sizeof(int)));
-		CUDA_CHECK(
-		    cudaMemcpyAsync(d_bitmap, unpacked_bitmap, bitmap_len * sizeof(int), cudaMemcpyHostToDevice, stream));
+		CUDA_CHECK(cudaMemcpyAsync(d_bitmap, bitmap, bitmap_len * sizeof(int), cudaMemcpyHostToDevice, stream));
 
 		CUDA_CHECK(cudaStreamSynchronize(stream));
 
+		delete[] packed_bitmap;
+	}
+
+	// 3. Check for constant grid (bits per value is zero)
+
+	if (coeffs.bitsPerValue == 0)
+	{
+		if (NFmiGribPacking::IsHostPointer(arr))
+		{
+			// If there's a bitmap, set reference value to only selected
+			// cells. Otherwise copy it to whole grid.
+			if (bitmap)
+			{
+				for (size_t i = 0; i < unpackedLen; i++)
+				{
+					if (bitmap[i])
+						arr[i] = coeffs.referenceValue;
+				}
+			}
+			else
+			{
+				std::fill(arr, arr + unpackedLen, coeffs.referenceValue);
+			}
+		}
+		else
+		{
+			if (bitmap)
+			{
+				// easier to create correct values at host and copy them
+				// to gpu, than try to create the array at gpu code
+				double* vals = new double[unpackedLen];
+
+				for (size_t i = 0; i < unpackedLen; i++)
+				{
+					vals[i] = (bitmap[i]) ? coeffs.referenceValue : kFloatMissing;
+				}
+
+				CUDA_CHECK(cudaMemcpyAsync(arr, vals, unpackedLen * sizeof(double), cudaMemcpyHostToDevice, stream));
+				CUDA_CHECK(cudaStreamSynchronize(stream));
+				delete[] vals;
+			}
+			else
+			{
+				NFmiGribPacking::Fill(arr, unpackedLen, coeffs.referenceValue);
+			}
+		}
+
+		if (bitmap)
+		{
+			delete[] bitmap;
+		}
+
+		if (d_bitmap)
+		{
+			CUDA_CHECK(cudaFree(d_bitmap));
+		}
+
+		return true;
+	}
+
+	if (bitmap)
+	{
 		delete[] bitmap;
 	}
 
-	// 4. Unpack
+	// 4. Get packed values from grib
+
+	unsigned char* packed = 0;
+	size_t packedLen = PackedValuesLength();
+	CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**>(&packed), packedLen * sizeof(unsigned char)));
+	PackedValues(packed);
+
+	// 5. Unpack
+
+	bool ret = false;
 
 	if (PackingType() == "grid_simple")
 	{
-		simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
+		ret = simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
 	}
-#if 0
-	else if (PackingType() == "grid_jpeg")
-	{
-		jpeg_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
-	}
-#endif
 	else
 	{
-		CUDA_CHECK(cudaFreeHost(packed));
-		return false;
+		ret = false;
 	}
 
 	if (d_bitmap)
@@ -1768,7 +1809,7 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 	CUDA_CHECK(cudaStreamSynchronize(stream));
 	CUDA_CHECK(cudaFreeHost(packed));
 
-	return true;
+	return ret;
 }
 
 bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen)

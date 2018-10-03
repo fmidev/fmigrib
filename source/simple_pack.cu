@@ -1,6 +1,7 @@
 #include "NFmiGribPacking.h"
 #include <cassert>
-#include <cub/cub.cuh>
+#include <thrust/device_ptr.h>
+#include <thrust/extrema.h>
 
 void NFmiGribPacking::UnpackBitmap(const unsigned char* __restrict__ bitmap, int* __restrict__ unpacked, size_t len,
                                    size_t unpackedLen)
@@ -36,51 +37,17 @@ void NFmiGribPacking::UnpackBitmap(const unsigned char* __restrict__ bitmap, int
 template <typename T>
 __host__ T Min(T* d_arr, size_t N, cudaStream_t& stream)
 {
-	void* d_temp = 0;
-	size_t temp_N = 0;
-	T* d_min = 0;
-	T min;
+	T* ret = thrust::min_element(thrust::cuda::par.on(stream), d_arr, d_arr + N);
 
-	CUDA_CHECK(cudaMalloc((void**)&d_min, sizeof(T)));
-
-	// Allocate temp storage
-	CUDA_CHECK(cub::DeviceReduce::Min(d_temp, temp_N, d_arr, d_min, N, stream));
-	CUDA_CHECK(cudaMalloc((void**)&d_temp, temp_N));
-
-	CUDA_CHECK(cub::DeviceReduce::Min(d_temp, temp_N, d_arr, d_min, N, stream));
-
-	CUDA_CHECK(cudaStreamSynchronize(stream));
-
-	CUDA_CHECK(cudaFree(d_temp));
-	CUDA_CHECK(cudaMemcpyAsync(&min, d_min, sizeof(T), cudaMemcpyDeviceToHost, stream));
-	CUDA_CHECK(cudaFree(d_min));
-
-	return min;
+	return *ret;
 }
 
 template <typename T>
 __host__ T Max(T* d_arr, size_t N, cudaStream_t& stream)
 {
-	void* d_temp = 0;
-	size_t temp_N = 0;
-	T* d_max = 0;
-	T max;
+	T* ret = thrust::max_element(thrust::cuda::par.on(stream), d_arr, d_arr + N);
 
-	CUDA_CHECK(cudaMalloc((void**)&d_max, sizeof(T)));
-
-	// Allocate temp storage
-	CUDA_CHECK(cub::DeviceReduce::Max(d_temp, temp_N, d_arr, d_max, N, stream));
-	CUDA_CHECK(cudaMalloc((void**)&d_temp, temp_N));
-
-	CUDA_CHECK(cub::DeviceReduce::Max(d_temp, temp_N, d_arr, d_max, N, stream));
-
-	CUDA_CHECK(cudaStreamSynchronize(stream));
-
-	CUDA_CHECK(cudaFree(d_temp));
-	CUDA_CHECK(cudaMemcpyAsync(&max, d_max, sizeof(T), cudaMemcpyDeviceToHost, stream));
-	CUDA_CHECK(cudaFree(d_max));
-
-	return max;
+	return *ret;
 }
 
 __device__ void SetBitOn(unsigned char* p, long bitp)
@@ -108,7 +75,8 @@ long NFmiGribPacking::simple_packing::get_binary_scale_fact(double max, double m
 
 	assert(bpval >= 1);
 
-	if (range == 0) return 0;
+	if (range == 0)
+		return 0;
 
 	/* range -= 1e-10; */
 	while ((range * zs) <= dmaxint)
