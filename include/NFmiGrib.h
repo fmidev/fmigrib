@@ -30,7 +30,17 @@ class NFmiGrib
 
 	std::vector<long> GetIndexValues(const std::string& theKey);
 
+	// Return message from index that match given keys. All keys must match.
 	bool Message(const std::map<std::string, long>& theKeyValue);
+
+	// Return message from index that matches keys in indexKeys and gribKeys.
+	// indexKeys must be in the grib index
+	// all messages (might be more than one) found from index are then searched
+	// with gribKeys, and first message matching them is returned
+	// this is a workaround for the fact that it's practically impossible to create
+	// a grib index that support both grib editions
+	bool Message(const std::map<std::string, long>& indexKeys, const std::map<std::string, long>& gribKeys);
+
 	bool NextMessage();
 	int MessageCount();
 	int CurrentMessageIndex();
@@ -39,7 +49,11 @@ class NFmiGrib
 	bool WriteMessage(const std::string& theFileName);
 	bool WriteIndex(const std::string& theFileName);
 
-	NFmiGribMessage& Message() { return itsMessage; }
+	NFmiGribMessage& Message()
+	{
+		return itsMessage;
+	}
+
    private:
 	enum class file_compression
 	{

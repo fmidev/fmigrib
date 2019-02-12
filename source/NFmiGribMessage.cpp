@@ -1867,6 +1867,9 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 #endif
 	CUDA_CHECK(cudaStreamSynchronize(stream));
 	PackedValues(packed, unpackedLen, 0, 0);
+	ReferenceValue(coeffs.referenceValue);
+	DecimalScaleFactor(coeffs.decimalScaleFactor);
+	BinaryScaleFactor(coeffs.binaryScaleFactor);
 
 	CUDA_CHECK(cudaFreeHost(packed));
 
