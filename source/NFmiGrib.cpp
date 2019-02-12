@@ -207,30 +207,81 @@ std::vector<long> NFmiGrib::GetIndexValues(const std::string& theKey)
 	return values;
 }
 
+bool NFmiGrib::Message(const std::map<std::string, long>& indexKeys, const std::map<std::string, long>& gribKeys)
+{
+	assert(index);
+	int ret = 0;
+
+	grib_handle* h = nullptr;
+
+	for (const auto& p : indexKeys)
+	{
+		GRIB_CHECK(grib_index_select_long(index, p.first.c_str(), p.second), 0);
+	}
+
+	while (true)
+	{
+		h = grib_handle_new_from_index(index, &ret);
+
+		if (ret == GRIB_END_OF_INDEX)
+		{
+			break;
+		}
+
+		for (const auto& p : gribKeys)
+		{
+			long val = 0;
+			int err = grib_get_long(h, p.first.c_str(), &val);
+
+			// typeOfStatisticalProcessing is a non-mandatory key: for non-aggregated parametres
+			// it is not defined
+			if ((err != GRIB_SUCCESS || val != p.second) && (p.first != "typeOfStatisticalProcessing"))
+			{
+				//	std::cout << "not found " << p.first << "=" << p.second << "\n";
+
+				grib_handle_delete(h);
+				h = nullptr;
+				break;
+			}
+			// else std::cout << "found " << p.first << "=" << p.second << "\n";
+		}
+
+		if (h)
+		{
+			return itsMessage.Read(&h);
+		}
+	}
+
+	return false;
+}
+
 bool NFmiGrib::Message(const std::map<std::string, long>& theKeyValue)
 {
 	assert(index);
 	int ret = 0;
 
-	for (auto p : theKeyValue)
+	for (const auto& p : theKeyValue)
 	{
-		GRIB_CHECK(grib_index_select_long(index, (p.first).c_str(), p.second), 0);
+		GRIB_CHECK(grib_index_select_long(index, p.first.c_str(), p.second), 0);
 	}
 
 	auto h = grib_handle_new_from_index(index, &ret);
 
-	if (ret == GRIB_END_OF_INDEX)
+	if (ret != GRIB_SUCCESS)
 	{
 #ifdef DEBUG
-		std::string out;
-		for (auto& val : theKeyValue)
+		if (ret == GRIB_END_OF_INDEX)
 		{
-			out += " " + val.first + "=" + std::to_string(val.second);
+			std::cout << "Message not found from index\n";
+			for (const auto& p : theKeyValue)
+			{
+				std::cout << p.first << "=" << p.second << "\n";
+			}
 		}
-		std::cout << "Message not found from index with conditions:" + out + "\n";
 #endif
 		return false;
 	}
+
 	assert(h);
 	return itsMessage.Read(&h);
 }
