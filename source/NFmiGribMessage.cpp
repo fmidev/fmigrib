@@ -763,7 +763,7 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const
 	{
 		auto lengthOfTimeRange = LengthOfTimeRange();
 
-		if (unitOfTimeRange == 13 || unitOfTimeRange == 30 || unitOfTimeRange == 0)
+		if (unitOfTimeRange == 13 || unitOfTimeRange == 30)
 		{
 			lengthOfTimeRange *= 60;
 		}
