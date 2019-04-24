@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 19.4.4
+Version: 19.4.24
 Release: 1.el7.fmi
 License: MIT
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Wed Apr 24 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.4.24-1.fmi
+- Add maxwind level to level map
 * Thu Apr  4 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.4.4-1.fmi
 - Fix for grib2 minute timestep handling
 * Tue Feb 12 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.2.12-1.fmi
