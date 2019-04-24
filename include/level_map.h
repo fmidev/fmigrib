@@ -18,6 +18,7 @@ bimapLong gridTypeMap = boost::assign::list_of<bimapLong::relation>
 bimapLong levelTypeMap = boost::assign::list_of<bimapLong::relation>
 (1,1) // ground
 (8,8) // top of atmosphere
+(6,6) // max wind level
 (100,100) // isobaric
 (160,160) // depth below sea
 (102,101) // mean sea
