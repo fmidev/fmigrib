@@ -759,13 +759,28 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const
 			break;
 	}
 
+	// if accumulated parameter, add accumulation period to step
+	// because 'forecastTime' is the start of the time step
 	if (Edition() == 2 && KeyExists("lengthOfTimeRange"))
 	{
 		auto lengthOfTimeRange = LengthOfTimeRange();
+		const auto unitForTimeRange = GetLongKey("indicatorOfUnitForTimeRange");
 
-		if (unitOfTimeRange == 13 || unitOfTimeRange == 30)
+		if (unitForTimeRange != unitOfTimeRange)
 		{
-			lengthOfTimeRange *= 60;
+			if ((unitOfTimeRange == 1 || unitOfTimeRange == 10 || unitOfTimeRange == 11 || unitOfTimeRange == 12) &&
+			    (unitForTimeRange == 0 || unitForTimeRange == 13 || unitForTimeRange == 14))
+			{
+				// unitof in hours, unitfor in minutes
+				lengthOfTimeRange /= 60;
+			}
+			else if ((unitOfTimeRange == 0 || unitOfTimeRange == 13 || unitOfTimeRange == 14) &&
+			         (unitForTimeRange == 1 || unitForTimeRange == 10 || unitForTimeRange == 11 ||
+			          unitForTimeRange == 12))
+			{
+				// unitof in minutes, unitfor in hours
+				lengthOfTimeRange *= 60;
+			}
 		}
 
 		step += lengthOfTimeRange / multiplier;
