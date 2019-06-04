@@ -1024,6 +1024,7 @@ long NFmiGribMessage::NormalizedUnitOfTimeRange() const
 				l = 254;  // second
 				break;
 
+			case 14:
 			case 254:
 				l = 13;  // 15 minutes
 				break;
