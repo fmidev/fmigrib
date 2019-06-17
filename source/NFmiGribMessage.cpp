@@ -781,6 +781,12 @@ long NFmiGribMessage::NormalizedStep(bool endStep, bool flatten) const
 				// unitof in minutes, unitfor in hours
 				lengthOfTimeRange *= 60;
 			}
+
+			// MNWC unitForTimeRange 14 = 15 minutes and there is no "NormalizedUnitForTimeRange()"
+			if (unitForTimeRange == 14)
+			{
+				lengthOfTimeRange *= 15;
+			}
 		}
 
 		step += lengthOfTimeRange / multiplier;
