@@ -143,11 +143,7 @@ cflags_difficult.append('-Wctor-dtor-privacy')
 
 cflags = []
 
-if not IS_RHEL or (IS_RHEL and OS_VERSION >= 7.0):
-	cflags.append('-std=c++11')
-else:
-	cflags.append('-std=c++0x')
-
+cflags.append('-std=c++11')
 cflags.append('-fPIC')
 
 env.Append(CCFLAGS = cflags)
@@ -183,12 +179,12 @@ env.Append(NVCCPATH = ['./include'])
 build_dir = ""
 
 if RELEASE:
-	env.Append(CCFLAGS = ['-O2'])
+	env.Append(CCFLAGS = ['-g', '-O2'])
 	env.Append(CPPDEFINES = ['NDEBUG'])
 	build_dir = 'build/release'
 
 	# Cuda
-	env.Append(NVCCFLAGS = ['-O2'])
+	env.Append(NVCCFLAGS = ['-g', '-O2'])
 	env.Append(NVCCDEFINES = ['NDEBUG'])
 
 

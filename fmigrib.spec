@@ -2,7 +2,7 @@
 Summary: fmigrib library
 Name: lib%{LIBNAME}
 Version: 19.10.23
-Release: 1.el7.fmi
+Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
 URL: http://www.fmi.fi
@@ -11,6 +11,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}.so
 BuildRequires: eccodes-devel
 BuildRequires: boost-devel >= 1.66
+BuildRequires: python3-scons
 Provides: lib%{LIBNAME}.so
 
 %description
