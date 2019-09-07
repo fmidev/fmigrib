@@ -41,6 +41,7 @@ class NFmiGrib
 	// a grib index that support both grib editions
 	bool Message(const std::map<std::string, long>& indexKeys, const std::map<std::string, long>& gribKeys);
 
+	bool ReadMessage(unsigned long offset, unsigned long length);
 	bool NextMessage();
 	int MessageCount();
 	int CurrentMessageIndex();
@@ -53,6 +54,8 @@ class NFmiGrib
 	{
 		return itsMessage;
 	}
+
+	unsigned long Offset(int messageNo) const;
 
    private:
 	enum class file_compression
@@ -78,6 +81,8 @@ class NFmiGrib
 	int itsCurrentMessage;
 
 	NFmiGribMessage itsMessage;
+
+	std::vector<unsigned long> itsMessageOffsets;
 };
 
 #endif

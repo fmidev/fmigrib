@@ -20,7 +20,7 @@ NFmiGrib::NFmiGrib()
       index(0),
       f(0),
       itsMessageCount(INVALID_INT_VALUE),
-      itsCurrentMessage(0)
+      itsCurrentMessage(-1)
 {
 }
 
@@ -294,9 +294,55 @@ bool NFmiGrib::NextMessage()
 
 	if ((h = grib_handle_new_from_file(0, f, &err)) != NULL)
 	{
+		bool ret = itsMessage.Read(&h);
+		if (!ret)
+		{
+			return ret;
+		}
+
+		itsMessageOffsets.push_back(ftell(f) - itsMessage.GetLongKey("totalLength"));
+
 		itsCurrentMessage++;
 		assert(h);
-		return itsMessage.Read(&h);
+		return ret;
+	}
+
+	return false;
+}
+
+bool NFmiGrib::ReadMessage(unsigned long offset, unsigned long length)
+{
+	if (fseek(f, offset, SEEK_SET) != 0)
+	{
+		return false;
+	}
+
+	char* buff = new char[length];
+
+	unsigned int read_bytes = fread(buff, 1, length, f);
+	if (read_bytes != length)
+	{
+		delete[] buff;
+		return false;
+	}
+
+	grib_handle* h = grib_handle_new_from_message_copy(0, buff, length);
+
+	delete[] buff;
+
+	if (h != NULL)
+	{
+		bool ret = itsMessage.Read(&h);
+		if (!ret)
+		{
+			return ret;
+		}
+		itsMessageOffsets.push_back(offset);
+
+		itsCurrentMessage++;
+		assert(h);
+
+		return ret;
 	}
 
 	return false;
@@ -348,4 +394,9 @@ bool NFmiGrib::WriteIndex(const std::string& theFileName)
 bool NFmiGrib::WriteMessage(const std::string& theFileName)
 {
 	return itsMessage.Write(theFileName, false);
+}
+
+unsigned long NFmiGrib::Offset(int messageNo) const
+{
+	return itsMessageOffsets.at(messageNo);
 }
