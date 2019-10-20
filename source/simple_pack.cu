@@ -3,6 +3,26 @@
 #include <thrust/device_ptr.h>
 #include <thrust/extrema.h>
 
+// custom atomicAdd for unsigned char because cuda libraries do not have it
+__device__ unsigned char atomicAdd(unsigned char* address, unsigned char val)
+{
+	unsigned int* address_as_ui = (unsigned int*)(address - ((size_t)address & 3));
+	unsigned int old = *address_as_ui;
+	const unsigned int shift = (((size_t)address & 3) * 8);
+	unsigned int sum;
+	unsigned int assumed;
+
+	do
+	{
+		assumed = old;
+		sum = val + static_cast<unsigned char>((old >> shift) & 0xff);
+		old = (old & ~(0x000000ff << shift)) | (sum << shift);
+		old = atomicCAS(address_as_ui, assumed, old);
+	} while (assumed != old);
+
+	return old;
+}
+
 void NFmiGribPacking::UnpackBitmap(const unsigned char* __restrict__ bitmap, int* __restrict__ unpacked, size_t len,
                                    size_t unpackedLen)
 {
@@ -48,18 +68,6 @@ __host__ T Max(T* d_arr, size_t N, cudaStream_t& stream)
 	T* ret = thrust::max_element(thrust::cuda::par.on(stream), d_arr, d_arr + N);
 
 	return *ret;
-}
-
-__device__ void SetBitOn(unsigned char* p, long bitp)
-{
-	p += bitp / 8;
-	*p |= (1u << (7 - ((bitp) % 8)));
-}
-
-__device__ void SetBitOff(unsigned char* p, long bitp)
-{
-	p += bitp / 8;
-	*p &= ~(1u << (7 - ((bitp) % 8)));
 }
 
 long NFmiGribPacking::simple_packing::get_binary_scale_fact(double max, double min, long bpval)
@@ -115,6 +123,7 @@ long NFmiGribPacking::simple_packing::get_binary_scale_fact(double max, double m
 
 long NFmiGribPacking::simple_packing::get_decimal_scale_fact(double max, double min, long bpval, long binary_scale)
 {
+	// Copied from eccodes library
 	assert(max >= min);
 
 	double range = max - min;
@@ -155,11 +164,11 @@ long NFmiGribPacking::simple_packing::get_decimal_scale_fact(double max, double 
 __device__ void PackUnevenBytes(unsigned char* __restrict__ d_p, const double* __restrict__ d_u, size_t values_len,
                                 NFmiGribPacking::packing_coefficients coeff, int idx)
 {
-	double decimal = NFmiGribPacking::ToPower(-coeff.decimalScaleFactor, 10);
-	double divisor = NFmiGribPacking::ToPower(-coeff.binaryScaleFactor, 2);
+	const double decimal = NFmiGribPacking::ToPower(-coeff.decimalScaleFactor, 10);
+	const double divisor = NFmiGribPacking::ToPower(-coeff.binaryScaleFactor, 2);
 
-	double x = (((d_u[idx] * decimal) - coeff.referenceValue) * divisor) + 0.5;
-	unsigned long unsigned_val = static_cast<unsigned long>(x);
+	const double x = (((d_u[idx] * decimal) - coeff.referenceValue) * divisor) + 0.5;
+	const unsigned long unsigned_val = static_cast<unsigned long>(x);
 
 	long bitp = coeff.bitsPerValue * idx;
 
@@ -167,16 +176,18 @@ __device__ void PackUnevenBytes(unsigned char* __restrict__ d_p, const double* _
 
 	for (i = coeff.bitsPerValue - 1; i >= 0; i--)
 	{
-		if (BitTest(unsigned_val, i))
-		{
-			SetBitOn(d_p, bitp);
-		}
-		else
-		{
-			SetBitOff(d_p, bitp);
-		}
+		d_p += bitp / 8;
+
+		const long onoff = BitTest(unsigned_val, i);
+		const long bm = 1u << (7 - (bitp & 7));
+		const unsigned char ad = (*d_p & ~bm) | (-onoff & bm);
 
 		bitp++;
+
+		if (onoff)
+		{
+			atomicAdd(d_p, ad);
+		}
 	}
 }
 
@@ -206,8 +217,7 @@ __global__ void PackSimpleKernel(const double* d_u, unsigned char* d_p, const in
 
 	if (idx < N)
 	{
-		if (coeff.bitsPerValue %
-		    8)  // modulo is expensive but "Compiler will convert literal power-of-2 divides to bitwise shifts"
+		if (coeff.bitsPerValue % 8)
 		{
 			PackUnevenBytes(d_p, d_u, N, coeff, idx);
 		}
@@ -247,8 +257,8 @@ bool NFmiGribPacking::simple_packing::Pack(double* arr, unsigned char* packed, c
 	long packedLen = ((coeffs.bitsPerValue * unpackedLen) + 7) / 8;
 	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_packed), packedLen * sizeof(unsigned char)));
 
-	int blockSize = 512;
-	int gridSize = unpackedLen / blockSize + (unpackedLen % blockSize == 0 ? 0 : 1);
+	const int blockSize = 512;
+	const int gridSize = unpackedLen / blockSize + (unpackedLen % blockSize == 0 ? 0 : 1);
 
 	PackSimpleKernel<<<gridSize, blockSize, 0, stream>>>(d_arr, d_packed, d_bitmap, unpackedLen, coeffs);
 
