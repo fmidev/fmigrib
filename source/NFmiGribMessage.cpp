@@ -1282,7 +1282,12 @@ bool NFmiGribMessage::PackedValues(unsigned char* data) const
 
 	GRIB_CHECK(grib_get_packed_values(itsHandle, data, &dataLength), 0);
 
-	assert(dataLength == PackedValuesLength());
+	if (dataLength != PackedValuesLength())
+	{
+		throw std::runtime_error("Fatal error reading packed values from grib: assumed length (" +
+		                         std::to_string(PackedValuesLength()) + ") was different from actual length (" +
+		                         std::to_string(dataLength) + ")");
+	}
 
 #else
 #warning GRIB_READ_PACKED_DATA not defined -- reading packed data with fmigrib is not supported
@@ -1838,9 +1843,9 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen)
 {
 	cudaStream_t stream;
 	CUDA_CHECK(cudaStreamCreate(&stream));
-	CudaPack(arr, unpackedLen, stream);
+	bool ret = CudaPack(arr, unpackedLen, stream);
 	CUDA_CHECK(cudaStreamDestroy(stream));  // synchronizes obviously
-	return true;
+	return ret;
 }
 
 bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& stream)
@@ -1850,7 +1855,13 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 
 	// 1. No bitmap support for now
 
-	assert(!Bitmap());
+	if (Bitmap())
+	{
+#ifdef DEBUG
+		std::cerr << "CudaPack doesn't work with bitmap yet\n";
+#endif
+		return false;
+	}
 
 	// 3. Set up coefficients
 
@@ -1873,10 +1884,6 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 	unsigned char* packed = 0;
 	CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**>(&packed), packedLen * sizeof(unsigned char)));
 
-#ifdef DEBUG
-	std::cout << "grib packing type: " << PackingType() << std::endl;
-#endif
-
 	if (PackingType() == "grid_simple")
 	{
 		simple_packing::Pack(arr, packed, 0, unpackedLen, coeffs, stream);
@@ -1890,11 +1897,10 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 	CUDA_CHECK(cudaStreamSynchronize(stream));
 	PackedValues(packed, unpackedLen, 0, 0);
 	ReferenceValue(coeffs.referenceValue);
-	DecimalScaleFactor(coeffs.decimalScaleFactor);
-	BinaryScaleFactor(coeffs.binaryScaleFactor);
+	DecimalScaleFactor(static_cast<long>(coeffs.decimalScaleFactor));
+	BinaryScaleFactor(static_cast<long>(coeffs.binaryScaleFactor));
 
 	CUDA_CHECK(cudaFreeHost(packed));
-
 	return true;
 }
 
