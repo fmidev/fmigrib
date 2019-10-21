@@ -319,7 +319,7 @@ bool NFmiGrib::ReadMessage(unsigned long offset, unsigned long length)
 
 	char* buff = new char[length];
 
-	unsigned int read_bytes = fread(buff, 1, length, f);
+	size_t read_bytes = fread(buff, 1, length, f);
 	if (read_bytes != length)
 	{
 		delete[] buff;
