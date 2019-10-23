@@ -24,16 +24,29 @@
 #endif
 
 void CheckCudaError(cudaError_t errarg, const char* file, const int line);
+void CheckCudaErrorString(const char* errstr, const char* file, const int line);
 
-#ifndef CUDA_CHECK
 #define CUDA_CHECK(errarg) CheckCudaError(errarg, __FILE__, __LINE__)
-#endif
+#define CUDA_CHECK_ERROR_MSG(errstr) CheckCudaErrorString(errstr, __FILE__, __LINE__)
 
 inline void CheckCudaError(cudaError_t errarg, const char* file, const int line)
 {
 	if (errarg)
 	{
 		std::cerr << "Error at " << file << "(" << line << "): " << cudaGetErrorString(errarg) << std::endl;
+		exit(1);
+	}
+}
+
+inline void CheckCudaErrorString(const char* errstr, const char* file, const int line)
+{
+	cudaError_t err = cudaGetLastError();
+
+	if (err != cudaSuccess)
+	{
+		std::cerr << "Error: " << errstr << " " << file << " at (" << line << "): " << cudaGetErrorString(err)
+		          << std::endl;
+
 		exit(1);
 	}
 }
@@ -50,7 +63,9 @@ struct packing_coefficients
 	double decimalScaleFactor;
 	double referenceValue;
 
-	packing_coefficients() : bitsPerValue(0), binaryScaleFactor(0), decimalScaleFactor(0), referenceValue(0) {}
+	packing_coefficients() : bitsPerValue(0), binaryScaleFactor(0), decimalScaleFactor(0), referenceValue(0)
+	{
+	}
 };
 
 namespace simple_packing
