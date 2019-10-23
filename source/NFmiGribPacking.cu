@@ -1,5 +1,4 @@
 #include "NFmiGribPacking.h"
-
 #include <thrust/device_ptr.h>
 #include <thrust/fill.h>
 
@@ -8,7 +7,9 @@ void NFmiGribPacking::Fill(double* arr, size_t len, double fillValue)
 	thrust::device_ptr<double> ptr = thrust::device_pointer_cast(arr);
 	thrust::fill(ptr, ptr + len, fillValue);
 }
-bool NFmiGribPacking::IsHostPointer(const double* ptr)
+
+template <typename T>
+bool NFmiGribPacking::IsHostPointer(const T* ptr)
 {
 	cudaPointerAttributes attributes;
 	cudaError_t err = cudaPointerGetAttributes(&attributes, ptr);
@@ -43,30 +44,42 @@ bool NFmiGribPacking::IsHostPointer(const double* ptr)
 	return ret;
 }
 
-__host__ __device__ void MinMax_(double* d, size_t unpackedLen, double& min, double& max)
+template bool NFmiGribPacking::IsHostPointer(const double*);
+template bool NFmiGribPacking::IsHostPointer(const float*);
+
+template <typename T>
+__host__ __device__ void MinMax_(T* d, size_t unpackedLen, T& min, T& max)
 {
-	min = 1e38;
-	max = -1e38;
-	const double kFloatMissing = 32700.;
+	using namespace NFmiGribPacking::simple_packing;
+	min = MissingValue<T>();
+	max = MissingValue<T>();
 
 	for (size_t i = 0; i < unpackedLen; i++)
 	{
-		double val = d[i];
-		if (val == kFloatMissing) continue;
+		T val = d[i];
+		if (IsMissing(val))
+			continue;
 
-		if (val < min) min = val;
-		if (val > max) max = val;
+		if (val < min)
+			min = val;
+		if (val > max)
+			max = val;
 	}
 }
 
-__global__ void MinMaxKernel(double* d, size_t unpackedLen, double& min, double& max)
+template __host__ __device__ void MinMax_(double*, size_t, double&, double&);
+template __host__ __device__ void MinMax_(float*, size_t, float&, float&);
+
+template <typename T>
+__global__ void MinMaxKernel(T* d, size_t unpackedLen, T& min, T& max)
 {
-	MinMax_(d, unpackedLen, min, max);
+	MinMax_<T>(d, unpackedLen, min, max);
 }
 
-void NFmiGribPacking::MinMax(double* d, size_t unpackedLen, double& min, double& max, cudaStream_t& stream)
+template <typename T>
+void NFmiGribPacking::MinMax(T* d, size_t unpackedLen, T& min, T& max, cudaStream_t& stream)
 {
-	if (IsHostPointer(d))
+	if (IsHostPointer<T>(d))
 	{
 		MinMax_(d, unpackedLen, min, max);
 	}
@@ -87,3 +100,6 @@ void NFmiGribPacking::MinMax(double* d, size_t unpackedLen, double& min, double&
 		CUDA_CHECK(cudaFree(d_max));
 	}
 }
+
+template void NFmiGribPacking::MinMax(double*, size_t, double&, double&, cudaStream_t&);
+template void NFmiGribPacking::MinMax(float*, size_t, float&, float&, cudaStream_t&);
