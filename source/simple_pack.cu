@@ -23,6 +23,27 @@ __device__ unsigned char atomicAdd(unsigned char* address, unsigned char val)
 	return old;
 }
 
+template <typename T>
+__global__ void InitializeArrayKernel(T* d_arr, T val, size_t N)
+{
+	int idx = threadIdx.x + blockDim.x * blockIdx.x;
+	int stride = blockDim.x * gridDim.x;
+
+	for (; idx < N; idx += stride)
+	{
+		d_arr[idx] = val;
+	}
+}
+
+template <typename T>
+void InitializeArray(T* d_arr, T val, size_t N, cudaStream_t& stream)
+{
+	const int blockSize = 128;
+	const int gridSize = N / blockSize + (N % blockSize == 0 ? 0 : 1);
+
+	InitializeArrayKernel<T><<<gridSize, blockSize, 0, stream>>>(d_arr, val, N);
+}
+
 void NFmiGribPacking::UnpackBitmap(const unsigned char* __restrict__ bitmap, int* __restrict__ unpacked, size_t len,
                                    size_t unpackedLen)
 {
@@ -168,25 +189,30 @@ __device__ void PackUnevenBytes(unsigned char* __restrict__ d_p, const double* _
 	const double divisor = NFmiGribPacking::ToPower(-coeff.binaryScaleFactor, 2);
 
 	const double x = (((d_u[idx] * decimal) - coeff.referenceValue) * divisor) + 0.5;
-	const unsigned long unsigned_val = static_cast<unsigned long>(x);
+	const unsigned long val = static_cast<unsigned long>(x);
 
 	long bitp = coeff.bitsPerValue * idx;
+
+	d_p += (bitp / 8);
 
 	long i = 0;
 
 	for (i = coeff.bitsPerValue - 1; i >= 0; i--)
 	{
-		d_p += bitp / 8;
-
-		const long onoff = BitTest(unsigned_val, i);
-		const long bm = 1u << (7 - (bitp & 7));
-		const unsigned char ad = (*d_p & ~bm) | (-onoff & bm);
-
-		bitp++;
+		const long onoff = BitTest(val, i);
+		const unsigned char ad = 1 << (7 - (bitp % 8));
 
 		if (onoff)
 		{
 			atomicAdd(d_p, ad);
+		}
+
+		bitp++;
+
+		if (bitp % 8 == 0)
+		{
+			// change of byte (memory location)
+			d_p++;
 		}
 	}
 }
@@ -256,6 +282,8 @@ bool NFmiGribPacking::simple_packing::Pack(double* arr, unsigned char* packed, c
 
 	long packedLen = ((coeffs.bitsPerValue * unpackedLen) + 7) / 8;
 	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_packed), packedLen * sizeof(unsigned char)));
+	InitializeArray<unsigned char>(d_packed, 0u, packedLen, stream);
+	CUDA_CHECK_ERROR_MSG("Kernel invocation");
 
 	const int blockSize = 512;
 	const int gridSize = unpackedLen / blockSize + (unpackedLen % blockSize == 0 ? 0 : 1);
@@ -264,6 +292,7 @@ bool NFmiGribPacking::simple_packing::Pack(double* arr, unsigned char* packed, c
 
 	CUDA_CHECK(cudaMemcpyAsync(packed, d_packed, packedLen * sizeof(unsigned char), cudaMemcpyDeviceToHost, stream));
 	CUDA_CHECK(cudaStreamSynchronize(stream));
+	CUDA_CHECK_ERROR_MSG("Kernel invocation");
 
 	CUDA_CHECK(cudaFree(d_packed));
 

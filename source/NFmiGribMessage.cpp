@@ -1869,6 +1869,11 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 
 	coeffs.bitsPerValue = static_cast<int>(BitsPerValue());
 
+	if (coeffs.bitsPerValue == 0)
+	{
+		return false;
+	}
+
 	double min, max;
 	MinMax(arr, unpackedLen, min, max, stream);
 
