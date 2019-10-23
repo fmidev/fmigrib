@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 19.10.21
+Version: 19.10.23
 Release: 1.el7.fmi
 License: MIT
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Wed Oct 23 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.10.23-1.fmi
+- More fixes to Cuda packing
 * Mon Oct 21 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.10.21-1.fmi
 - Fixes to Cuda packing
 * Fri Sep 20 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.9.20-1.fmi
