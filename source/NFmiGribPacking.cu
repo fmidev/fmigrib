@@ -1,6 +1,7 @@
 #include "NFmiGribPacking.h"
 #include <thrust/device_ptr.h>
 #include <thrust/fill.h>
+#include <cuda_runtime_api.h>
 
 void NFmiGribPacking::Fill(double* arr, size_t len, double fillValue)
 {
@@ -25,7 +26,11 @@ bool NFmiGribPacking::IsHostPointer(const T* ptr)
 	}
 	else if (err == cudaSuccess)
 	{
+#if CUDART_VERSION >= 10010
 		if (attributes.type == cudaMemoryTypeHost)
+#else
+		if (attributes.memoryType == cudaMemoryTypeHost)
+#endif
 		{
 			ret = true;
 		}
