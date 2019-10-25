@@ -23,6 +23,8 @@
 #pragma GCC diagnostic pop
 #endif
 
+#ifndef CUDA_CHECK
+
 void CheckCudaError(cudaError_t errarg, const char* file, const int line);
 void CheckCudaErrorString(const char* errstr, const char* file, const int line);
 
@@ -51,6 +53,8 @@ inline void CheckCudaErrorString(const char* errstr, const char* file, const int
 	}
 }
 
+#endif
+
 #define BitMask1(i) (1u << i)
 #define BitTest(n, i) !!((n)&BitMask1(i))
 
@@ -66,11 +70,41 @@ struct packing_coefficients
 	packing_coefficients() : bitsPerValue(0), binaryScaleFactor(0), decimalScaleFactor(0), referenceValue(0)
 	{
 	}
+	packing_coefficients(int _bitsPerValue, double _binaryScaleFactor, double _decimalScaleFactor,
+	                     double _referenceValue)
+	    : bitsPerValue(_bitsPerValue),
+	      binaryScaleFactor(_binaryScaleFactor),
+	      decimalScaleFactor(_decimalScaleFactor),
+	      referenceValue(_referenceValue)
+	{
+	}
 };
 
 namespace simple_packing
 {
-bool Unpack(double* d_arr, const unsigned char* d_packed, const int* d_bitmap, size_t unpackedLen, size_t packedLen,
+template <typename T>
+__device__ __host__ T MissingValue();
+
+template <>
+__device__ __host__ inline double MissingValue()
+{
+	return nan("0x7fffffff");
+};
+
+template <>
+__device__ __host__ inline float MissingValue()
+{
+	return nanf("0x7fffffff");
+};
+
+template <typename T>
+__device__ __host__ inline bool IsMissing(T value)
+{
+	return value == MissingValue<T>();
+}
+
+template <typename T>
+bool Unpack(T* d_arr, const unsigned char* d_packed, const int* d_bitmap, size_t unpackedLen, size_t packedLen,
             packing_coefficients coeffs, cudaStream_t& stream);
 bool Pack(double* d_arr, unsigned char* d_packed, const int* d_bitmap, size_t unpackedLength,
           packing_coefficients coeffs, cudaStream_t& stream);
@@ -81,8 +115,10 @@ long get_binary_scale_fact(double max, double min, long bpval);
 void UnpackBitmap(const unsigned char* __restrict__ bitmap, int* __restrict__ unpacked, size_t len, size_t unpackedLen);
 
 __host__ __device__ double ToPower(double value, double power);
-bool IsHostPointer(const double* ptr);
-void MinMax(double* d, size_t unpackedLen, double& min, double& max, cudaStream_t& stream);
+template <typename T>
+bool IsHostPointer(const T* ptr);
+template <typename T>
+void MinMax(T* d, size_t unpackedLen, T& min, T& max, cudaStream_t& stream);
 void Fill(double* arr, size_t len, double fillValue);
 };
 
