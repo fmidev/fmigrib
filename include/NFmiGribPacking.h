@@ -119,7 +119,8 @@ template <typename T>
 bool IsHostPointer(const T* ptr);
 template <typename T>
 void MinMax(T* d, size_t unpackedLen, T& min, T& max, cudaStream_t& stream);
-void Fill(double* arr, size_t len, double fillValue);
+template <typename T>
+void Fill(T* arr, size_t len, T fillValue);
 };
 
 inline __host__ __device__ double NFmiGribPacking::ToPower(double value, double power)

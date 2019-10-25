@@ -1746,76 +1746,19 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 		delete[] packed_bitmap;
 	}
 
-	// 3. Check for constant grid (bits per value is zero)
-
-	if (coeffs.bitsPerValue == 0)
-	{
-		if (NFmiGribPacking::IsHostPointer(arr))
-		{
-			// If there's a bitmap, set reference value to only selected
-			// cells. Otherwise copy it to whole grid.
-			if (bitmap)
-			{
-				for (size_t i = 0; i < unpackedLen; i++)
-				{
-					if (bitmap[i])
-						arr[i] = coeffs.referenceValue;
-				}
-			}
-			else
-			{
-				std::fill(arr, arr + unpackedLen, coeffs.referenceValue);
-			}
-		}
-		else
-		{
-			if (bitmap)
-			{
-				// easier to create correct values at host and copy them
-				// to gpu, than try to create the array at gpu code
-				double* vals = new double[unpackedLen];
-
-				for (size_t i = 0; i < unpackedLen; i++)
-				{
-					vals[i] = (bitmap[i]) ? coeffs.referenceValue : kFloatMissing;
-				}
-
-				CUDA_CHECK(cudaMemcpyAsync(arr, vals, unpackedLen * sizeof(double), cudaMemcpyHostToDevice, stream));
-				CUDA_CHECK(cudaStreamSynchronize(stream));
-				delete[] vals;
-			}
-			else
-			{
-				NFmiGribPacking::Fill(arr, unpackedLen, coeffs.referenceValue);
-			}
-		}
-
-		if (bitmap)
-		{
-			delete[] bitmap;
-		}
-
-		if (d_bitmap)
-		{
-			CUDA_CHECK(cudaFree(d_bitmap));
-		}
-
-		return true;
-	}
-
 	if (bitmap)
 	{
 		delete[] bitmap;
 	}
 
-	// 4. Get packed values from grib
+	// 3. Get packed values from grib
 
 	unsigned char* packed = 0;
 	size_t packedLen = PackedValuesLength();
 	CUDA_CHECK(cudaMallocHost(reinterpret_cast<void**>(&packed), packedLen * sizeof(unsigned char)));
 	PackedValues(packed);
 
-	// 5. Unpack
+	// 4. Unpack
 
 	bool ret = false;
 
