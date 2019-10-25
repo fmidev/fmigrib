@@ -146,12 +146,60 @@ __global__ void UnpackSimpleKernel(const unsigned char* d_p, T* d_u, const int* 
 }
 
 template <typename T>
-__host__ bool NFmiGribPacking::simple_packing::Unpack(T* arr, const unsigned char* packed, const int* d_bitmap,
+__host__ bool NFmiGribPacking::simple_packing::Unpack(T* arr, const unsigned char* packed, const int* bitmap,
                                                       size_t unpackedLen, size_t packedLen,
                                                       NFmiGribPacking::packing_coefficients coeffs,
                                                       cudaStream_t& stream)
 {
 	const bool isHostMemory = IsHostPointer(arr);
+
+	// This check is also in NFmiGribMessage::CudaUnpack .. restructuring is needed
+	if (coeffs.bitsPerValue == 0)
+	{
+		if (isHostMemory)
+		{
+			// If there's a bitmap, set reference value to only selected
+			// cells. Otherwise copy it to whole grid.
+			if (bitmap)
+			{
+				for (size_t i = 0; i < unpackedLen; i++)
+				{
+					if (bitmap[i])
+					{
+						arr[i] = coeffs.referenceValue;
+					}
+				}
+			}
+			else
+			{
+				std::fill(arr, arr + unpackedLen, coeffs.referenceValue);
+			}
+		}
+		else
+		{
+			if (bitmap)
+			{
+				// easier to create correct values at host and copy them
+				// to gpu, than try to create the array at gpu code
+				double* vals = new double[unpackedLen];
+
+				for (size_t i = 0; i < unpackedLen; i++)
+				{
+					vals[i] = (bitmap[i]) ? coeffs.referenceValue : MissingValue<T>();
+				}
+
+				CUDA_CHECK(cudaMemcpyAsync(arr, vals, unpackedLen * sizeof(double), cudaMemcpyHostToDevice, stream));
+				CUDA_CHECK(cudaStreamSynchronize(stream));
+				delete[] vals;
+			}
+			else
+			{
+				NFmiGribPacking::Fill<T>(arr, unpackedLen, coeffs.referenceValue);
+			}
+		}
+
+		return true;
+	}
 
 	// Destination data array allocation
 	T* d_arr = 0;
@@ -172,13 +220,15 @@ __host__ bool NFmiGribPacking::simple_packing::Unpack(T* arr, const unsigned cha
 	CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_packed), packedLen * sizeof(unsigned char)));
 	CUDA_CHECK(cudaMemcpyAsync(d_packed, packed, packedLen * sizeof(unsigned char), cudaMemcpyHostToDevice, stream));
 
+	assert(d_packed);
+
 	// Bitmap data array allocation
 
 	int* d_b = 0;
-	if (d_bitmap)
+	if (bitmap)
 	{
 		CUDA_CHECK(cudaMalloc((void**)(&d_b), unpackedLen * sizeof(int)));
-		CUDA_CHECK(cudaMemcpyAsync(d_b, d_bitmap, unpackedLen * sizeof(int), cudaMemcpyHostToDevice, stream));
+		CUDA_CHECK(cudaMemcpyAsync(d_b, bitmap, unpackedLen * sizeof(int), cudaMemcpyHostToDevice, stream));
 	}
 
 	const int blockSize = 512;

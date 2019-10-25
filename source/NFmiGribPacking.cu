@@ -3,11 +3,15 @@
 #include <thrust/fill.h>
 #include <cuda_runtime_api.h>
 
-void NFmiGribPacking::Fill(double* arr, size_t len, double fillValue)
+template <typename T>
+void NFmiGribPacking::Fill(T* arr, size_t len, T fillValue)
 {
-	thrust::device_ptr<double> ptr = thrust::device_pointer_cast(arr);
+	thrust::device_ptr<T> ptr = thrust::device_pointer_cast(arr);
 	thrust::fill(ptr, ptr + len, fillValue);
 }
+
+template void NFmiGribPacking::Fill(double*, size_t, double);
+template void NFmiGribPacking::Fill(float*, size_t, float);
 
 template <typename T>
 bool NFmiGribPacking::IsHostPointer(const T* ptr)
