@@ -159,8 +159,8 @@ long NFmiGribPacking::simple_packing::get_decimal_scale_fact(double max, double 
 	double unscaled_max = max;
 
 	f = NFmiGribPacking::ToPower(bits_per_value, 2) - 1;
-	minrange = NFmiGribPacking::ToPower(-last, 2) * f;
-	maxrange = NFmiGribPacking::ToPower(last, 2) * f;
+	minrange = NFmiGribPacking::ToPower(-last, 2.) * f;
+	maxrange = NFmiGribPacking::ToPower(last, 2.) * f;
 
 	while (range < minrange)
 	{
@@ -182,61 +182,66 @@ long NFmiGribPacking::simple_packing::get_decimal_scale_fact(double max, double 
 	return decimal_scale_factor;
 }
 
-__device__ void PackUnevenBytes(unsigned char* __restrict__ d_p, const double* __restrict__ d_u, size_t values_len,
+template <typename T>
+__device__ void PackUnevenBytes(unsigned char* __restrict__ d_p, const T* __restrict__ d_u,
                                 NFmiGribPacking::packing_coefficients coeff, int idx)
+
 {
 	const double decimal = NFmiGribPacking::ToPower(-coeff.decimalScaleFactor, 10);
 	const double divisor = NFmiGribPacking::ToPower(-coeff.binaryScaleFactor, 2);
 
-	const double x = (((d_u[idx] * decimal) - coeff.referenceValue) * divisor) + 0.5;
-	const unsigned long val = static_cast<unsigned long>(x);
+	const double x = fma(fma(static_cast<double>(d_u[idx]), decimal, -coeff.referenceValue), divisor, 0.5);
+	const unsigned int val = __double2uint_rd(x);
 
-	long bitp = coeff.bitsPerValue * idx;
+	unsigned int bitp = coeff.bitsPerValue * idx;
 
 	d_p += (bitp / 8);
 
-	long i = 0;
+	unsigned char accum = 0;
 
-	for (i = coeff.bitsPerValue - 1; i >= 0; i--)
+	for (int i = coeff.bitsPerValue - 1; i >= 0; i--)
 	{
-		const long onoff = BitTest(val, i);
+		const int onoff = BitTest(val, i);
 		const unsigned char ad = 1 << (7 - (bitp % 8));
 
-		if (onoff)
-		{
-			atomicAdd(d_p, ad);
-		}
-
+		accum += (onoff * ad);
 		bitp++;
 
 		if (bitp % 8 == 0)
 		{
+			atomicAdd(d_p, accum);
+
 			// change of byte (memory location)
 			d_p++;
+			accum = 0;
 		}
 	}
+
+	atomicAdd(d_p, accum);
 }
 
-__device__ void PackFullBytes(unsigned char* __restrict__ d_p, const double* __restrict__ d_u, size_t values_len,
+template <typename T>
+__device__ void PackFullBytes(unsigned char* __restrict__ d_p, const T* __restrict__ d_u,
                               NFmiGribPacking::packing_coefficients coeff, int idx)
 {
-	double decimal = NFmiGribPacking::ToPower(-coeff.decimalScaleFactor, 10);
-	double divisor = NFmiGribPacking::ToPower(-coeff.binaryScaleFactor, 2);
+	const double decimal = NFmiGribPacking::ToPower(-coeff.decimalScaleFactor, 10);
+	const double divisor = NFmiGribPacking::ToPower(-coeff.binaryScaleFactor, 2);
 
-	double x = ((((d_u[idx] * decimal) - coeff.referenceValue) * divisor) + 0.5);
-	unsigned long unsigned_val = static_cast<unsigned long>(x);
+	const double x = fma(fma(static_cast<double>(d_u[idx]), decimal, -coeff.referenceValue), divisor, 0.5);
+	const unsigned int val = __double2uint_rd(x);
 
 	unsigned char* encoded = &d_p[idx * static_cast<int>(coeff.bitsPerValue / 8)];
 
 	while (coeff.bitsPerValue >= 8)
 	{
 		coeff.bitsPerValue -= 8;
-		*encoded = (unsigned_val >> coeff.bitsPerValue);
+		*encoded = (val >> coeff.bitsPerValue);
 		encoded++;
 	}
 }
 
-__global__ void PackSimpleKernel(const double* d_u, unsigned char* d_p, const int* d_b, size_t N,
+template <typename T>
+__global__ void PackSimpleKernel(const T* __restrict__ d_u, unsigned char* __restrict__ d_p, const int* d_b, size_t N,
                                  NFmiGribPacking::packing_coefficients coeff)
 {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -245,23 +250,24 @@ __global__ void PackSimpleKernel(const double* d_u, unsigned char* d_p, const in
 	{
 		if (coeff.bitsPerValue % 8)
 		{
-			PackUnevenBytes(d_p, d_u, N, coeff, idx);
+			PackUnevenBytes(d_p, d_u, coeff, idx);
 		}
 		else
 		{
-			PackFullBytes(d_p, d_u, N, coeff, idx);
+			PackFullBytes(d_p, d_u, coeff, idx);
 		}
 	}
 }
 
-bool NFmiGribPacking::simple_packing::Pack(double* arr, unsigned char* packed, const int* d_bitmap, size_t unpackedLen,
+template <typename T>
+bool NFmiGribPacking::simple_packing::Pack(T* arr, unsigned char* packed, const int* d_bitmap, size_t unpackedLen,
                                            NFmiGribPacking::packing_coefficients coeffs, cudaStream_t& stream)
 {
 	// 1. Check pointer type
 
 	bool isHostMemory = IsHostPointer(arr);
 
-	double* d_arr = 0;
+	T* d_arr = 0;
 
 	if (!isHostMemory)
 	{
@@ -272,10 +278,10 @@ bool NFmiGribPacking::simple_packing::Pack(double* arr, unsigned char* packed, c
 
 	if (isHostMemory)
 	{
-		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_arr), unpackedLen * sizeof(double)));
-		CUDA_CHECK(cudaMemcpyAsync(d_arr, reinterpret_cast<void*>(arr), unpackedLen * sizeof(double),
-		                           cudaMemcpyHostToDevice, stream));
-		CUDA_CHECK(cudaStreamSynchronize(stream));
+		CUDA_CHECK(cudaHostRegister(arr, sizeof(T) * unpackedLen, 0));
+		CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_arr), unpackedLen * sizeof(T)));
+		CUDA_CHECK(cudaMemcpyAsync(d_arr, reinterpret_cast<void*>(arr), unpackedLen * sizeof(T), cudaMemcpyHostToDevice,
+		                           stream));
 	}
 
 	unsigned char* d_packed = 0;
@@ -285,10 +291,10 @@ bool NFmiGribPacking::simple_packing::Pack(double* arr, unsigned char* packed, c
 	InitializeArray<unsigned char>(d_packed, 0u, packedLen, stream);
 	CUDA_CHECK_ERROR_MSG("Kernel invocation");
 
-	const int blockSize = 512;
+	const int blockSize = 256;
 	const int gridSize = unpackedLen / blockSize + (unpackedLen % blockSize == 0 ? 0 : 1);
 
-	PackSimpleKernel<<<gridSize, blockSize, 0, stream>>>(d_arr, d_packed, d_bitmap, unpackedLen, coeffs);
+	PackSimpleKernel<T><<<gridSize, blockSize, 0, stream>>>(d_arr, d_packed, d_bitmap, unpackedLen, coeffs);
 
 	CUDA_CHECK(cudaMemcpyAsync(packed, d_packed, packedLen * sizeof(unsigned char), cudaMemcpyDeviceToHost, stream));
 	CUDA_CHECK(cudaStreamSynchronize(stream));
@@ -296,5 +302,16 @@ bool NFmiGribPacking::simple_packing::Pack(double* arr, unsigned char* packed, c
 
 	CUDA_CHECK(cudaFree(d_packed));
 
+	if (isHostMemory)
+	{
+		CUDA_CHECK(cudaFree(d_arr));
+		CUDA_CHECK(cudaHostUnregister(arr));
+	}
+
 	return true;
 }
+
+template bool NFmiGribPacking::simple_packing::Pack(double*, unsigned char*, const int*, size_t,
+                                                    NFmiGribPacking::packing_coefficients, cudaStream_t&);
+template bool NFmiGribPacking::simple_packing::Pack(float*, unsigned char*, const int*, size_t,
+                                                    NFmiGribPacking::packing_coefficients, cudaStream_t&);

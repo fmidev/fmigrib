@@ -57,11 +57,11 @@ template bool NFmiGribPacking::IsHostPointer(const double*);
 template bool NFmiGribPacking::IsHostPointer(const float*);
 
 template <typename T>
-__host__ __device__ void MinMax_(T* d, size_t unpackedLen, T& min, T& max)
+__host__ __device__ void MinMax_(T* d, size_t unpackedLen, T* min, T* max)
 {
 	using namespace NFmiGribPacking::simple_packing;
-	min = MissingValue<T>();
-	max = MissingValue<T>();
+	*min = MissingValue<T>();
+	*max = MissingValue<T>();
 
 	for (size_t i = 0; i < unpackedLen; i++)
 	{
@@ -69,18 +69,16 @@ __host__ __device__ void MinMax_(T* d, size_t unpackedLen, T& min, T& max)
 		if (IsMissing(val))
 			continue;
 
-		if (val < min)
-			min = val;
-		if (val > max)
-			max = val;
+		*min = fmin(*min, val);
+		*max = fmax(*max, val);
 	}
 }
 
-template __host__ __device__ void MinMax_(double*, size_t, double&, double&);
-template __host__ __device__ void MinMax_(float*, size_t, float&, float&);
+template __host__ __device__ void MinMax_(double*, size_t, double*, double*);
+template __host__ __device__ void MinMax_(float*, size_t, float*, float*);
 
 template <typename T>
-__global__ void MinMaxKernel(T* d, size_t unpackedLen, T& min, T& max)
+__global__ void MinMaxKernel(T* d, size_t unpackedLen, T* min, T* max)
 {
 	MinMax_<T>(d, unpackedLen, min, max);
 }
@@ -90,19 +88,19 @@ void NFmiGribPacking::MinMax(T* d, size_t unpackedLen, T& min, T& max, cudaStrea
 {
 	if (IsHostPointer<T>(d))
 	{
-		MinMax_(d, unpackedLen, min, max);
+		MinMax_(d, unpackedLen, &min, &max);
 	}
 	else
 	{
-		double* d_min = 0;
-		double* d_max = 0;
-		CUDA_CHECK(cudaMalloc(&d_min, sizeof(double)));
-		CUDA_CHECK(cudaMalloc(&d_max, sizeof(double)));
+		T* d_min = 0;
+		T* d_max = 0;
+		CUDA_CHECK(cudaMalloc(&d_min, sizeof(T)));
+		CUDA_CHECK(cudaMalloc(&d_max, sizeof(T)));
 
-		MinMaxKernel<<<1, 1, 0, stream>>>(d, unpackedLen, min, max);
+		MinMaxKernel<<<1, 1, 0, stream>>>(d, unpackedLen, d_min, d_max);
 
-		CUDA_CHECK(cudaMemcpyAsync(&min, d_min, sizeof(double), cudaMemcpyDeviceToHost, stream));
-		CUDA_CHECK(cudaMemcpyAsync(&max, d_max, sizeof(double), cudaMemcpyDeviceToHost, stream));
+		CUDA_CHECK(cudaMemcpyAsync(&min, d_min, sizeof(T), cudaMemcpyDeviceToHost, stream));
+		CUDA_CHECK(cudaMemcpyAsync(&max, d_max, sizeof(T), cudaMemcpyDeviceToHost, stream));
 
 		CUDA_CHECK(cudaStreamSynchronize(stream));
 		CUDA_CHECK(cudaFree(d_min));
