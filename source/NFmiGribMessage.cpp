@@ -1692,17 +1692,21 @@ double NFmiGribMessage::CalculateReferenceValue(double minimumValue)
 #endif
 
 #if defined HAVE_CUDA && defined GRIB_READ_PACKED_DATA
-
-bool NFmiGribMessage::CudaUnpack(double* arr, size_t len)
+template <typename T>
+bool NFmiGribMessage::CudaUnpack(T* arr, size_t len)
 {
 	cudaStream_t stream;
 	CUDA_CHECK(cudaStreamCreate(&stream));
-	CudaUnpack(arr, len, stream);
+	CudaUnpack<T>(arr, len, stream);
 	CUDA_CHECK(cudaStreamDestroy(stream));  // synchronizes obviously
 	return true;
 }
 
-bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& stream)
+template bool NFmiGribMessage::CudaUnpack(double*, size_t);
+template bool NFmiGribMessage::CudaUnpack(float*, size_t);
+
+template <typename T>
+bool NFmiGribMessage::CudaUnpack(T* arr, size_t unpackedLen, cudaStream_t& stream)
 {
 	using namespace NFmiGribPacking;
 
@@ -1764,7 +1768,7 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 
 	if (PackingType() == "grid_simple")
 	{
-		ret = simple_packing::Unpack(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
+		ret = simple_packing::Unpack<T>(arr, packed, d_bitmap, unpackedLen, packedLen, coeffs, stream);
 	}
 	else
 	{
@@ -1782,16 +1786,24 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t unpackedLen, cudaStream_t& 
 	return ret;
 }
 
-bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen)
+template bool NFmiGribMessage::CudaUnpack(double*, size_t, cudaStream_t&);
+template bool NFmiGribMessage::CudaUnpack(float*, size_t, cudaStream_t&);
+
+template <typename T>
+bool NFmiGribMessage::CudaPack(T* arr, size_t unpackedLen)
 {
 	cudaStream_t stream;
 	CUDA_CHECK(cudaStreamCreate(&stream));
-	bool ret = CudaPack(arr, unpackedLen, stream);
+	bool ret = CudaPack<T>(arr, unpackedLen, stream);
 	CUDA_CHECK(cudaStreamDestroy(stream));  // synchronizes obviously
 	return ret;
 }
 
-bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& stream)
+template bool NFmiGribMessage::CudaPack(double*, size_t);
+template bool NFmiGribMessage::CudaPack(float*, size_t);
+
+template <typename T>
+bool NFmiGribMessage::CudaPack(T* arr, size_t unpackedLen, cudaStream_t& stream)
 {
 	using namespace NFmiGribPacking;
 	assert(itsHandle);
@@ -1817,8 +1829,8 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 		return false;
 	}
 
-	double min, max;
-	MinMax(arr, unpackedLen, min, max, stream);
+	T min, max;
+	MinMax<T>(arr, unpackedLen, min, max, stream);
 
 	coeffs.referenceValue = CalculateReferenceValue(min);
 
@@ -1834,7 +1846,7 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 
 	if (PackingType() == "grid_simple")
 	{
-		simple_packing::Pack(arr, packed, 0, unpackedLen, coeffs, stream);
+		simple_packing::Pack<T>(arr, packed, 0, unpackedLen, coeffs, stream);
 	}
 #if 0
 	else if (PackingType() == "grid_jpeg")
@@ -1852,8 +1864,12 @@ bool NFmiGribMessage::CudaPack(double* arr, size_t unpackedLen, cudaStream_t& st
 	return true;
 }
 
+template bool NFmiGribMessage::CudaPack(double*, size_t, cudaStream_t&);
+template bool NFmiGribMessage::CudaPack(float*, size_t, cudaStream_t&);
+
 #else
-bool NFmiGribMessage::CudaUnpack(double* arr, size_t len)
+template <typename T>
+bool NFmiGribMessage::CudaUnpack(T* arr, size_t len)
 {
 #ifndef HAVE_CUDA
 	std::cerr << "CUDA support disabled at compile time" << std::endl;
@@ -1866,7 +1882,8 @@ bool NFmiGribMessage::CudaUnpack(double* arr, size_t len)
 #endif
 }
 
-bool NFmiGribMessage::CudaPack(double* arr, size_t len)
+template <typename T>
+bool NFmiGribMessage::CudaPack(T* arr, size_t len)
 {
 #ifndef HAVE_CUDA
 	std::cerr << "CUDA support disabled at compile time" << std::endl;

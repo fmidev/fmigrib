@@ -100,30 +100,28 @@ __device__ __host__ inline float MissingValue()
 template <typename T>
 __device__ __host__ inline bool IsMissing(T value)
 {
-	return value == MissingValue<T>();
+	return isnan(value);
 }
 
 template <typename T>
 bool Unpack(T* d_arr, const unsigned char* d_packed, const int* d_bitmap, size_t unpackedLen, size_t packedLen,
             packing_coefficients coeffs, cudaStream_t& stream);
-bool Pack(double* d_arr, unsigned char* d_packed, const int* d_bitmap, size_t unpackedLength,
-          packing_coefficients coeffs, cudaStream_t& stream);
+template <typename T>
+bool Pack(T* d_arr, unsigned char* d_packed, const int* d_bitmap, size_t unpackedLength, packing_coefficients coeffs,
+          cudaStream_t& stream);
 long get_decimal_scale_fact(double max, double min, long bpval, long binary_scale);
 long get_binary_scale_fact(double max, double min, long bpval);
 }
 
 void UnpackBitmap(const unsigned char* __restrict__ bitmap, int* __restrict__ unpacked, size_t len, size_t unpackedLen);
 
-__host__ __device__ double ToPower(double value, double power);
 template <typename T>
 bool IsHostPointer(const T* ptr);
 template <typename T>
 void MinMax(T* d, size_t unpackedLen, T& min, T& max, cudaStream_t& stream);
 template <typename T>
 void Fill(T* arr, size_t len, T fillValue);
-};
-
-inline __host__ __device__ double NFmiGribPacking::ToPower(double value, double power)
+__host__ __device__ inline double ToPower(double value, double power)
 {
 	double divisor = 1.0;
 
@@ -141,6 +139,7 @@ inline __host__ __device__ double NFmiGribPacking::ToPower(double value, double 
 
 	return divisor;
 }
+};
 
 #endif /* HAVE_CUDA */
 #endif /* NFMIGRIBPACKING_H */

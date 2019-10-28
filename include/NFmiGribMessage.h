@@ -287,19 +287,23 @@ class NFmiGribMessage
 	 * @param endStep If true, return value of end step. Otherwise return value of start step.
 	 * @param flatten If true, time value is flattened as described above
 	 * @return Flattened time step value
-	*/
+	 */
 
 	long NormalizedStep(bool endStep, bool flatten) const;
 
 	long Type() const;
 	void Type(long theType);
 
-	bool CudaUnpack(double* arr, size_t len);
-	bool CudaPack(double* arr, size_t len);
+	template <typename T>
+	bool CudaUnpack(T* arr, size_t len);
+	template <typename T>
+	bool CudaPack(T* arr, size_t len);
 
 #ifdef HAVE_CUDA
-	bool CudaUnpack(double* arr, size_t len, cudaStream_t& stream);
-	bool CudaPack(double* arr, size_t len, cudaStream_t& stream);
+	template <typename T>
+	bool CudaUnpack(T* arr, size_t len, cudaStream_t& stream);
+	template <typename T>
+	bool CudaPack(T* arr, size_t len, cudaStream_t& stream);
 #endif
 
 	double CalculateReferenceValue(double minimumValue);
