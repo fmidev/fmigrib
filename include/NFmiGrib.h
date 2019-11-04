@@ -42,6 +42,7 @@ class NFmiGrib
 	bool Message(const std::map<std::string, long>& indexKeys, const std::map<std::string, long>& gribKeys);
 
 	bool ReadMessage(unsigned long offset, unsigned long length);
+	bool ReadMessage(const unsigned char* buffer, unsigned long length);
 	bool NextMessage();
 	int MessageCount();
 	int CurrentMessageIndex();

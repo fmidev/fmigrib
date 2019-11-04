@@ -326,9 +326,19 @@ bool NFmiGrib::ReadMessage(unsigned long offset, unsigned long length)
 		return false;
 	}
 
-	grib_handle* h = grib_handle_new_from_message_copy(0, buff, length);
+	if (!ReadMessage(buff, length))
+	{
+		return false;
+	}
 
-	delete[] buff;
+	itsMessageOffsets.push_back(offset);
+
+	return false;
+}
+
+bool NFmiGrib::ReadMessage(const unsigned char* buff, unsigned long length)
+{
+	grib_handle* h = grib_handle_new_from_message_copy(0, buff, length);
 
 	if (h != NULL)
 	{
@@ -337,7 +347,6 @@ bool NFmiGrib::ReadMessage(unsigned long offset, unsigned long length)
 		{
 			return ret;
 		}
-		itsMessageOffsets.push_back(offset);
 
 		itsCurrentMessage++;
 		assert(h);
