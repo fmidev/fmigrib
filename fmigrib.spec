@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 19.10.28
+Version: 19.11.4
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Mon Nov  4 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.11.4-1.fmi
+- Read message directly from memory
 * Mon Oct 28 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.10.28-1.fmi
 - Packing/unpacking as template functions
 * Fri Oct 25 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.10.25-1.fmi

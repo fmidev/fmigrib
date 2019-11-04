@@ -317,7 +317,7 @@ bool NFmiGrib::ReadMessage(unsigned long offset, unsigned long length)
 		return false;
 	}
 
-	char* buff = new char[length];
+	unsigned char* buff = new unsigned char[length];
 
 	size_t read_bytes = fread(buff, 1, length, f);
 	if (read_bytes != length)
