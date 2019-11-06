@@ -333,7 +333,7 @@ bool NFmiGrib::ReadMessage(unsigned long offset, unsigned long length)
 
 	itsMessageOffsets.push_back(offset);
 
-	return false;
+	return true;
 }
 
 bool NFmiGrib::ReadMessage(const unsigned char* buff, unsigned long length)
@@ -342,16 +342,15 @@ bool NFmiGrib::ReadMessage(const unsigned char* buff, unsigned long length)
 
 	if (h != NULL)
 	{
-		bool ret = itsMessage.Read(&h);
-		if (!ret)
+		if (!itsMessage.Read(&h))
 		{
-			return ret;
+			return false;
 		}
 
 		itsCurrentMessage++;
 		assert(h);
 
-		return ret;
+		return true;
 	}
 
 	return false;
