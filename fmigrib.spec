@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 19.11.6
+Version: 19.11.20
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Wed Nov 20 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.11.20-1.fmi
+- Compile for compute capability 7.0
 * Wed Nov  6 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.11.6-1.fmi
 - Bugfix
 * Mon Nov  4 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.11.4-1.fmi
