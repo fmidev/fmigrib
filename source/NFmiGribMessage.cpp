@@ -1681,6 +1681,12 @@ void NFmiGribMessage::ForecastTypeValue(long theForecastTypeValue)
 	PerturbationNumber(theForecastTypeValue);
 }
 
+void NFmiGribMessage::GetMessage(unsigned char* content, size_t length)
+{
+	assert(itsHandle);
+	grib_get_message_copy(itsHandle, content, &length);
+}
+
 #ifdef GRIB_WRITE_PACKED_DATA
 double NFmiGribMessage::CalculateReferenceValue(double minimumValue)
 {

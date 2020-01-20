@@ -322,6 +322,8 @@ class NFmiGribMessage
 
 	std::string GetStringKey(const std::string& keyName) const;
 
+	void GetMessage(unsigned char * content, size_t length);
+
    private:
 	void Clear();
 
