@@ -317,16 +317,15 @@ bool NFmiGrib::ReadMessage(unsigned long offset, unsigned long length)
 		return false;
 	}
 
-	unsigned char* buff = new unsigned char[length];
+	std::unique_ptr<unsigned char[]> buff(new unsigned char[length]);
 
-	size_t read_bytes = fread(buff, 1, length, f);
+	size_t read_bytes = fread(buff.get(), 1, length, f);
 	if (read_bytes != length)
 	{
-		delete[] buff;
 		return false;
 	}
 
-	if (!ReadMessage(buff, length))
+	if (!ReadMessage(buff.get(), length))
 	{
 		return false;
 	}
