@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 20.1.20
+Version: 20.1.31
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -56,6 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Fri Jan 31 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.1.31-1.fmi
+- Fix memory leak
 * Mon Jan 20 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.1.20-1.fmi
 - Add function to get grib message from memory
 * Wed Nov 20 2019 Mikko Partio <mikko.partio@fmi.fi> - 19.11.20-1.fmi
