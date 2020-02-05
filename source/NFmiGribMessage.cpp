@@ -1585,7 +1585,9 @@ long NFmiGribMessage::ForecastType() const
 					}
 					break;
 				}
-
+			case 13:
+				forecastType = 5;
+				break;
 			default:
 				break;
 		}
@@ -1638,7 +1640,7 @@ void NFmiGribMessage::ForecastType(long theForecastType)
 				TypeOfGeneratingProcess(0);  // analysis
 			}
 		}
-		else
+		else if (theForecastType == 3 || theForecastType == 4)
 		{
 			// http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table4-3.shtml
 			TypeOfGeneratingProcess(4);  // EPS
@@ -1653,6 +1655,11 @@ void NFmiGribMessage::ForecastType(long theForecastType)
 			{
 				SetLongKey("typeOfProcessedData", 4);  // perturbation
 			}
+		}
+		else if (theForecastType == 5)
+		{
+			TypeOfGeneratingProcess(13);
+			SetLongKey("typeOfProcessedData", 192);
 		}
 	}
 }
