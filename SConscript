@@ -23,15 +23,15 @@ if have_cuda:
 objects = []
 
 for file in Glob('source/*.cpp'):
-        s=os.path.basename(str(file))
-        obj='obj/'+ s.replace(".cpp","")
-	objects += env.SharedObject(obj, file)
+    s=os.path.basename(str(file))
+    obj='obj/'+ s.replace(".cpp","")
+    objects += env.SharedObject(obj, file)
 
 if have_cuda:
-	for file in Glob('source/*.cu'):
-        	s=os.path.basename(str(file))
-	        obj='obj/cu_'+ s.replace(".cu","")
-		objects += env.SharedObject(obj, file)
+    for file in Glob('source/*.cu'):
+        s=os.path.basename(str(file))
+        obj='obj/cu_'+ s.replace(".cu","")
+        objects += env.SharedObject(obj, file)
 
 lib = env.StaticLibrary(directory = 'lib', target = 'fmigrib', source = objects)
 
