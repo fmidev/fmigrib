@@ -177,25 +177,7 @@ __host__ bool NFmiGribPacking::simple_packing::Unpack(T* arr, const unsigned cha
 		}
 		else
 		{
-			if (bitmap)
-			{
-				// easier to create correct values at host and copy them
-				// to gpu, than try to create the array at gpu code
-				double* vals = new double[unpackedLen];
-
-				for (size_t i = 0; i < unpackedLen; i++)
-				{
-					vals[i] = (bitmap[i]) ? coeffs.referenceValue : MissingValue<T>();
-				}
-
-				CUDA_CHECK(cudaMemcpyAsync(arr, vals, unpackedLen * sizeof(double), cudaMemcpyHostToDevice, stream));
-				CUDA_CHECK(cudaStreamSynchronize(stream));
-				delete[] vals;
-			}
-			else
-			{
-				NFmiGribPacking::Fill<T>(arr, unpackedLen, coeffs.referenceValue);
-			}
+			NFmiGribPacking::Fill<T>(arr, unpackedLen, coeffs.referenceValue);
 		}
 
 		return true;
