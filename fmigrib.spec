@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 20.3.16
+Version: 20.3.18
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -57,6 +57,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Wed Mar 18 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.3.18-1.fmi
+- Add function to read gribs from file pointer
 * Mon Mar 16 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.3.16-1.fmi
 - Tuning grib unpacking
 * Wed Feb  5 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.2.5-1.fmi
