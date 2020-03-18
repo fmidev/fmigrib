@@ -64,7 +64,7 @@ __device__ void UnpackFullBytes(const unsigned char* __restrict__ d_p, T* __rest
 			lvalue |= d_p[o++];
 		}
 
-		d_u[idx] = fma(lvalue, coeff.binaryScaleFactor, coeff.referenceValue) * coeff.decimalScaleFactor;
+		d_u[idx] = __fma_rn(lvalue, coeff.binaryScaleFactor, coeff.referenceValue) * coeff.decimalScaleFactor;
 	}
 }
 
@@ -122,7 +122,7 @@ __device__ void UnpackUnevenBytes(const unsigned char* __restrict__ d_p, T* __re
 			bitp += 1;
 		}
 
-		d_u[idx] = fma(lvalue, coeff.binaryScaleFactor, coeff.referenceValue) * coeff.decimalScaleFactor;
+		d_u[idx] = __fma_rn(lvalue, coeff.binaryScaleFactor, coeff.referenceValue) * coeff.decimalScaleFactor;
 	}
 }
 
