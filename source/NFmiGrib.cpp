@@ -44,6 +44,24 @@ NFmiGrib::~NFmiGrib()
 	}
 }
 
+bool NFmiGrib::Open(std::unique_ptr<FILE> fp)
+{
+	if (f)
+	{
+		fclose(f);
+		f = 0;
+	}
+
+	f = fp.release();
+
+	if (f == NULL)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool NFmiGrib::Open(const std::string& theFileName)
 {
 	if (f)

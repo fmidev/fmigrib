@@ -23,6 +23,8 @@ class NFmiGrib
 	~NFmiGrib();
 
 	bool Open(const std::string& theFileName);
+	bool Open(std::unique_ptr<FILE> fp);
+
 	bool BuildIndex(const std::string& theFileName, const std::vector<std::string>& theKeys);
 	bool BuildIndex(const std::string& theFileName, const std::string& theKeys);
 
