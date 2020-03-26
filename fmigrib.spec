@@ -11,7 +11,13 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}.so
 BuildRequires: eccodes-devel
 BuildRequires: boost-devel >= 1.66
-BuildRequires: python3-scons
+
+%if %{defined el7}
+BuildRequires:  scons
+%else if %{defined el8}
+BuildRequires:  python3-scons
+%endif
+
 Provides: lib%{LIBNAME}.so
 
 %description
