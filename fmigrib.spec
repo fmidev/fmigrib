@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 20.3.18
+Version: 20.4.20
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -10,7 +10,7 @@ Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: %{LIBNAME}.so
 BuildRequires: eccodes-devel
-BuildRequires: boost-devel >= 1.66
+BuildRequires: boost169-devel
 
 %if %{defined el7}
 BuildRequires:  scons
@@ -63,6 +63,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Mon Apr 20 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.4.20-1.fmi
+- boost 1.69
 * Wed Mar 18 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.3.18-1.fmi
 - Add function to read gribs from file pointer
 * Mon Mar 16 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.3.16-1.fmi

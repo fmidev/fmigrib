@@ -80,6 +80,7 @@ env.Append(CPPPATH = includes)
 librarypaths = []
 
 librarypaths.append('/usr/lib64')
+librarypaths.append('/usr/lib64/boost169')
 
 env.Append(LIBPATH = librarypaths)
 
@@ -148,6 +149,7 @@ cflags.append('-fPIC')
 
 env.Append(CCFLAGS = cflags)
 env.Append(CCFLAGS = cflags_normal)
+env.AppendUnique(CCFLAGS=('-isystem', '/usr/include/boost169'))
 
 # Linker flags
 
