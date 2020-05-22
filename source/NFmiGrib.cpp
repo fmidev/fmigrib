@@ -10,8 +10,6 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
 
-const float kFloatMissing = 32700;
-
 NFmiGrib::NFmiGrib()
     : ifs_compression(file_compression::none),
       ofs_compression(file_compression::none),

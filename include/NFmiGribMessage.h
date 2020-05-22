@@ -82,6 +82,10 @@ class NFmiGribMessage
 	void GetValues(double* values, size_t* cntValues) const;
 	void Values(const double* theValues, long theValuesLength);
 
+	double* Values(double missingValue) const;
+	void GetValues(double* values, size_t* cntValues, double missingValue) const;
+	void Values(const double* theValues, long theValuesLength, double missingValue);
+
 	size_t ValuesLength() const;
 
 	long DataDate() const;
@@ -322,7 +326,7 @@ class NFmiGribMessage
 
 	std::string GetStringKey(const std::string& keyName) const;
 
-	void GetMessage(unsigned char * content, size_t length);
+	void GetMessage(unsigned char* content, size_t length);
 
    private:
 	void Clear();

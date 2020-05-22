@@ -134,14 +134,18 @@ void NFmiGribMessage::TypeOfStatisticalProcessing(long theType)
  */
 double* NFmiGribMessage::Values() const
 {
-	// Set missing value to kFloatMissing
+	return Values(kFloatMissing);
+}
+
+double* NFmiGribMessage::Values(double missingValue) const
+{
 	assert(itsHandle);
 	if (Bitmap())
 	{
-		double missingValue = GetDoubleKey("missingValue");
+		const double _missingValue = GetDoubleKey("missingValue");
 
-		if (missingValue == 9999)
-			MissingValue(kFloatMissing);
+		if (_missingValue == 9999)
+			MissingValue(missingValue);
 	}
 	size_t values_len = ValuesLength();
 	double* vals = static_cast<double*>(malloc(values_len * sizeof(double)));
@@ -153,16 +157,22 @@ double* NFmiGribMessage::Values() const
 
 void NFmiGribMessage::GetValues(double* values, size_t* cntValues) const
 {
+	return GetValues(values, cntValues, kFloatMissing);
+}
+
+void NFmiGribMessage::GetValues(double* values, size_t* cntValues, double missingValue) const
+{
 	assert(itsHandle);
 	assert(values);
 	assert(cntValues);
 
 	if (Bitmap())
 	{
-		double missingValue = GetDoubleKey("missingValue");
-		if (missingValue == 9999)
+		const double _missingValue = GetDoubleKey("missingValue");
+
+		if (_missingValue == 9999)
 		{
-			MissingValue(kFloatMissing);
+			MissingValue(missingValue);
 		}
 	}
 
@@ -171,13 +181,19 @@ void NFmiGribMessage::GetValues(double* values, size_t* cntValues) const
 
 void NFmiGribMessage::Values(const double* theValues, long theValuesLength)
 {
+	return Values(theValues, theValuesLength, kFloatMissing);
+}
+
+void NFmiGribMessage::Values(const double* theValues, long theValuesLength, double missingValue)
+{
 	assert(itsHandle);
 	if (Bitmap())
 	{
-		double missingValue = GetDoubleKey("missingValue");
-
-		if (missingValue == 9999)
-			SetDoubleKey("missingValue", kFloatMissing);
+		const double _missingValue = GetDoubleKey("missingValue");
+		if (_missingValue == 9999)
+		{
+			SetDoubleKey("missingValue", missingValue);
+		}
 	}
 
 	if (Edition() == 2)
