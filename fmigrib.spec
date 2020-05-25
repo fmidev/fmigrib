@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 20.4.20
+Version: 20.5.25
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -63,6 +63,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Mon May 25 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.5.25-1.fmi
+- Function additions
 * Mon Apr 20 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.4.20-1.fmi
 - boost 1.69
 * Wed Mar 18 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.3.18-1.fmi
