@@ -156,6 +156,8 @@ __host__ bool NFmiGribPacking::simple_packing::Unpack(T* arr, const unsigned cha
 	// This check is also in NFmiGribMessage::CudaUnpack .. restructuring is needed
 	if (coeffs.bitsPerValue == 0)
 	{
+		const T fillValue = coeffs.referenceValue >= 1e38 ? std::numeric_limits<T>::quiet_NaN() : coeffs.referenceValue;
+
 		if (isHostMemory)
 		{
 			// If there's a bitmap, set reference value to only selected
@@ -166,18 +168,18 @@ __host__ bool NFmiGribPacking::simple_packing::Unpack(T* arr, const unsigned cha
 				{
 					if (bitmap[i])
 					{
-						arr[i] = coeffs.referenceValue;
+						arr[i] = fillValue;
 					}
 				}
 			}
 			else
 			{
-				std::fill(arr, arr + unpackedLen, coeffs.referenceValue);
+				std::fill(arr, arr + unpackedLen, fillValue);
 			}
 		}
 		else
 		{
-			NFmiGribPacking::Fill<T>(arr, unpackedLen, coeffs.referenceValue);
+			NFmiGribPacking::Fill<T>(arr, unpackedLen, fillValue);
 		}
 
 		return true;
