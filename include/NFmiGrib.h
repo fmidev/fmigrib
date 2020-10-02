@@ -84,7 +84,7 @@ class NFmiGrib
 
 	NFmiGribMessage itsMessage;
 
-	std::vector<unsigned long> itsMessageOffsets;
+	std::vector<unsigned long> itsMessageSizes;
 };
 
 #endif

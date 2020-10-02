@@ -56,7 +56,7 @@ bool NFmiGrib::Open(std::unique_ptr<FILE> fp)
 		return false;
 	}
 
-	itsMessageOffsets.clear();
+	itsMessageSizes.clear();
 
 	return true;
 }
@@ -161,7 +161,7 @@ bool NFmiGrib::Open(const std::string& theFileName)
 		return false;
 	}
 
-	itsMessageOffsets.clear();
+	itsMessageSizes.clear();
 
 	return true;
 }
@@ -319,7 +319,7 @@ bool NFmiGrib::NextMessage()
 			return ret;
 		}
 
-		itsMessageOffsets.push_back(ftell(f) - itsMessage.GetLongKey("totalLength"));
+		itsMessageSizes.push_back(itsMessage.GetLongKey("totalLength"));
 
 		assert(h);
 		return ret;
@@ -347,8 +347,6 @@ bool NFmiGrib::ReadMessage(unsigned long offset, unsigned long length)
 	{
 		return false;
 	}
-
-	itsMessageOffsets.push_back(offset);
 
 	return true;
 }
@@ -398,7 +396,7 @@ int NFmiGrib::MessageCount()
 
 int NFmiGrib::CurrentMessageIndex()
 {
-	return itsMessageOffsets.size() - 1;
+	return itsMessageSizes.size() - 1;
 }
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
 {
@@ -422,5 +420,5 @@ bool NFmiGrib::WriteMessage(const std::string& theFileName)
 
 unsigned long NFmiGrib::Offset(int messageNo) const
 {
-	return itsMessageOffsets.at(messageNo);
+	return accumulate(itsMessageSizes.begin(), itsMessageSizes.begin() + messageNo, 0);
 }
