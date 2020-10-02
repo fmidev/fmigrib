@@ -81,7 +81,6 @@ class NFmiGrib
 	FILE* f;
 
 	int itsMessageCount;
-	int itsCurrentMessage;
 
 	NFmiGribMessage itsMessage;
 

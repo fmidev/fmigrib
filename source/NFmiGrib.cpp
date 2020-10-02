@@ -17,8 +17,7 @@ NFmiGrib::NFmiGrib()
       message_end(0),
       index(0),
       f(0),
-      itsMessageCount(INVALID_INT_VALUE),
-      itsCurrentMessage(-1)
+      itsMessageCount(INVALID_INT_VALUE)
 {
 }
 
@@ -57,7 +56,6 @@ bool NFmiGrib::Open(std::unique_ptr<FILE> fp)
 		return false;
 	}
 
-	itsCurrentMessage = -1;
 	itsMessageOffsets.clear();
 
 	return true;
@@ -163,7 +161,6 @@ bool NFmiGrib::Open(const std::string& theFileName)
 		return false;
 	}
 
-	itsCurrentMessage = -1;
 	itsMessageOffsets.clear();
 
 	return true;
@@ -324,7 +321,6 @@ bool NFmiGrib::NextMessage()
 
 		itsMessageOffsets.push_back(ftell(f) - itsMessage.GetLongKey("totalLength"));
 
-		itsCurrentMessage++;
 		assert(h);
 		return ret;
 	}
@@ -368,7 +364,6 @@ bool NFmiGrib::ReadMessage(const unsigned char* buff, unsigned long length)
 			return false;
 		}
 
-		itsCurrentMessage++;
 		assert(h);
 
 		return true;
@@ -403,7 +398,7 @@ int NFmiGrib::MessageCount()
 
 int NFmiGrib::CurrentMessageIndex()
 {
-	return itsCurrentMessage;
+	return itsMessageOffsets.size() - 1;
 }
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
 {
