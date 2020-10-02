@@ -162,7 +162,7 @@ env.Append(CPPDEFINES=['UNIX'])
 if have_cuda:
         env.Append(CPPDEFINES=['HAVE_CUDA'])
 
-env.Append(NVCCDEFINES=['HAVE_CUDA'])
+env.Append(NVCCDEFINES=['HAVE_CUDA','CUB_IGNORE_DEPRECATED_CPP_DIALECT','THRUST_IGNORE_DEPRECATED_CPP_DIALECT'])
 
 env.Append(NVCCFLAGS = ['-m64'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-fPIC'])
