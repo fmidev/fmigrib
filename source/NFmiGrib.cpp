@@ -57,6 +57,9 @@ bool NFmiGrib::Open(std::unique_ptr<FILE> fp)
 		return false;
 	}
 
+	itsCurrentMessage = -1;
+	itsMessageOffsets.clear();
+
 	return true;
 }
 
@@ -159,6 +162,9 @@ bool NFmiGrib::Open(const std::string& theFileName)
 	{
 		return false;
 	}
+
+	itsCurrentMessage = -1;
+	itsMessageOffsets.clear();
 
 	return true;
 }
