@@ -81,11 +81,10 @@ class NFmiGrib
 	FILE* f;
 
 	int itsMessageCount;
-	int itsCurrentMessage;
 
 	NFmiGribMessage itsMessage;
 
-	std::vector<unsigned long> itsMessageOffsets;
+	std::vector<unsigned long> itsMessageSizes;
 };
 
 #endif
