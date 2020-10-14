@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-
+#include <numeric>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/bzip2.hpp>
@@ -396,7 +396,7 @@ int NFmiGrib::MessageCount()
 
 int NFmiGrib::CurrentMessageIndex()
 {
-	return itsMessageSizes.size() - 1;
+	return static_cast<int> (itsMessageSizes.size() - 1);
 }
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
 {
@@ -420,5 +420,5 @@ bool NFmiGrib::WriteMessage(const std::string& theFileName)
 
 unsigned long NFmiGrib::Offset(int messageNo) const
 {
-	return accumulate(itsMessageSizes.begin(), itsMessageSizes.begin() + messageNo, 0UL);
+	return std::accumulate(itsMessageSizes.begin(), itsMessageSizes.begin() + messageNo, 0UL);
 }
