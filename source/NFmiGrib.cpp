@@ -420,5 +420,5 @@ bool NFmiGrib::WriteMessage(const std::string& theFileName)
 
 unsigned long NFmiGrib::Offset(int messageNo) const
 {
-	return accumulate(itsMessageSizes.begin(), itsMessageSizes.begin() + messageNo, 0);
+	return accumulate(itsMessageSizes.begin(), itsMessageSizes.begin() + messageNo, 0UL);
 }
