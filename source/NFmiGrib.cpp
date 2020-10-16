@@ -9,6 +9,9 @@
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
+static boost::shared_mutex msgSizeMutex;
 
 NFmiGrib::NFmiGrib()
     : ifs_compression(file_compression::none),
@@ -161,6 +164,7 @@ bool NFmiGrib::Open(const std::string& theFileName)
 		return false;
 	}
 
+	boost::unique_lock<boost::shared_mutex> lock(msgSizeMutex);
 	itsMessageSizes.clear();
 
 	return true;
@@ -319,7 +323,10 @@ bool NFmiGrib::NextMessage()
 			return ret;
 		}
 
-		itsMessageSizes.push_back(itsMessage.GetLongKey("totalLength"));
+		{
+			boost::unique_lock<boost::shared_mutex> lock(msgSizeMutex);
+			itsMessageSizes.push_back(itsMessage.GetLongKey("totalLength"));
+		}
 
 		assert(h);
 		return ret;
@@ -396,6 +403,7 @@ int NFmiGrib::MessageCount()
 
 int NFmiGrib::CurrentMessageIndex()
 {
+	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
 	return itsMessageSizes.size() - 1;
 }
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
@@ -420,5 +428,6 @@ bool NFmiGrib::WriteMessage(const std::string& theFileName)
 
 unsigned long NFmiGrib::Offset(int messageNo) const
 {
+	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
 	return accumulate(itsMessageSizes.begin(), itsMessageSizes.begin() + messageNo, 0UL);
 }
