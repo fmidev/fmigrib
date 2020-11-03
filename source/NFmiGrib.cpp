@@ -395,7 +395,12 @@ int NFmiGrib::MessageCount()
 
 	if (itsMessageCount == INVALID_INT_VALUE)
 	{
-		GRIB_CHECK(grib_count_in_file(0, f, &itsMessageCount), 0);
+		int err = grib_count_in_file(0, f, &itsMessageCount);
+
+		if (err != GRIB_SUCCESS)
+		{
+			return INVALID_INT_VALUE;
+		}
 	}
 
 	return itsMessageCount;
