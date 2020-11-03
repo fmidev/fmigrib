@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 20.10.16
+Version: 20.11.3
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -63,6 +63,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Tue Nov  3 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.11.3-1.fmi
+- Better to way to deal with errors when counting messages
 * Fri Oct 16 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.10.16-1.fmi
 - Fix race condition bug
 * Wed Oct 14 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.10.14-1.fmi
