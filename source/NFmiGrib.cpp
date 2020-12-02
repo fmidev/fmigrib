@@ -60,6 +60,7 @@ bool NFmiGrib::Open(std::unique_ptr<FILE> fp)
 	}
 
 	itsMessageSizes.clear();
+	itsOffsets.clear();
 
 	return true;
 }
@@ -166,6 +167,7 @@ bool NFmiGrib::Open(const std::string& theFileName)
 
 	boost::unique_lock<boost::shared_mutex> lock(msgSizeMutex);
 	itsMessageSizes.clear();
+	itsOffsets.clear();
 
 	return true;
 }
@@ -325,7 +327,11 @@ bool NFmiGrib::NextMessage()
 
 		{
 			boost::unique_lock<boost::shared_mutex> lock(msgSizeMutex);
-			itsMessageSizes.push_back(itsMessage.GetLongKey("totalLength"));
+			const long newpos = ftell(f);
+			const long msgsize = itsMessage.GetLongKey("totalLength");
+
+			itsMessageSizes.push_back(msgsize);
+			itsOffsets.push_back(newpos - msgsize);
 		}
 
 		assert(h);
@@ -431,8 +437,13 @@ bool NFmiGrib::WriteMessage(const std::string& theFileName)
 	return itsMessage.Write(theFileName, false);
 }
 
+unsigned long NFmiGrib::MessageSize(int messageNo) const
+{
+	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
+	return itsMessageSizes.at(messageNo);
+}
 unsigned long NFmiGrib::Offset(int messageNo) const
 {
 	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
-	return accumulate(itsMessageSizes.begin(), itsMessageSizes.begin() + messageNo, 0UL);
+	return itsOffsets.at(messageNo);
 }

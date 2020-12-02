@@ -59,6 +59,7 @@ class NFmiGrib
 	}
 
 	unsigned long Offset(int messageNo) const;
+	unsigned long MessageSize(int messageNo) const;
 
    private:
 	enum class file_compression
@@ -85,6 +86,11 @@ class NFmiGrib
 	NFmiGribMessage itsMessage;
 
 	std::vector<unsigned long> itsMessageSizes;
+	// In normal cases offsets can be calculated directly from
+	// message sizes. Sometimes grib files are padded though, for
+	// example inserting null bytes between messages in same file.
+	std::vector<unsigned long> itsOffsets;
+
 };
 
 #endif
