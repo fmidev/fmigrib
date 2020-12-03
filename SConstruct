@@ -162,6 +162,9 @@ env.Append(CPPDEFINES=['UNIX'])
 if have_cuda:
         env.Append(CPPDEFINES=['HAVE_CUDA'])
 
+if os.environ.get('INCLUDE') != None:
+	includes.append(os.environ.get('INCLUDE').split(":"))
+
 env.Append(NVCCDEFINES=['HAVE_CUDA','CUB_IGNORE_DEPRECATED_CPP_DIALECT','THRUST_IGNORE_DEPRECATED_CPP_DIALECT'])
 
 env.Append(NVCCFLAGS = ['-m64'])
