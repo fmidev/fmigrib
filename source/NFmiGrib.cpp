@@ -9,6 +9,9 @@
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
+static boost::shared_mutex msgSizeMutex;
 
 NFmiGrib::NFmiGrib()
     : ifs_compression(file_compression::none),
@@ -57,6 +60,7 @@ bool NFmiGrib::Open(std::unique_ptr<FILE> fp)
 	}
 
 	itsMessageSizes.clear();
+	itsOffsets.clear();
 
 	return true;
 }
@@ -161,7 +165,9 @@ bool NFmiGrib::Open(const std::string& theFileName)
 		return false;
 	}
 
+	boost::unique_lock<boost::shared_mutex> lock(msgSizeMutex);
 	itsMessageSizes.clear();
+	itsOffsets.clear();
 
 	return true;
 }
@@ -319,7 +325,14 @@ bool NFmiGrib::NextMessage()
 			return ret;
 		}
 
-		itsMessageSizes.push_back(itsMessage.GetLongKey("totalLength"));
+		{
+			boost::unique_lock<boost::shared_mutex> lock(msgSizeMutex);
+			const long newpos = ftell(f);
+			const long msgsize = itsMessage.GetLongKey("totalLength");
+
+			itsMessageSizes.push_back(msgsize);
+			itsOffsets.push_back(newpos - msgsize);
+		}
 
 		assert(h);
 		return ret;
@@ -388,7 +401,12 @@ int NFmiGrib::MessageCount()
 
 	if (itsMessageCount == INVALID_INT_VALUE)
 	{
-		GRIB_CHECK(grib_count_in_file(0, f, &itsMessageCount), 0);
+		int err = grib_count_in_file(0, f, &itsMessageCount);
+
+		if (err != GRIB_SUCCESS)
+		{
+			return INVALID_INT_VALUE;
+		}
 	}
 
 	return itsMessageCount;
@@ -396,7 +414,8 @@ int NFmiGrib::MessageCount()
 
 int NFmiGrib::CurrentMessageIndex()
 {
-	return static_cast<int> (itsMessageSizes.size() - 1);
+	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
+	return itsMessageSizes.size() - 1;
 }
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
 {
@@ -418,7 +437,13 @@ bool NFmiGrib::WriteMessage(const std::string& theFileName)
 	return itsMessage.Write(theFileName, false);
 }
 
+unsigned long NFmiGrib::MessageSize(int messageNo) const
+{
+	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
+	return itsMessageSizes.at(messageNo);
+}
 unsigned long NFmiGrib::Offset(int messageNo) const
 {
-	return std::accumulate(itsMessageSizes.begin(), itsMessageSizes.begin() + messageNo, 0UL);
+	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
+	return itsOffsets.at(messageNo);
 }
