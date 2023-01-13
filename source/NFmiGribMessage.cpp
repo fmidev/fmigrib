@@ -26,6 +26,9 @@ NFmiGribMessage::NFmiGribMessage() : itsHandle(0)
 
 	itsHandle = grib_handle_new_from_samples(NULL, "GRIB2");
 	assert(itsHandle);
+	// Set GRIB2 tablesVersion manually, the default from GRIB2.impl
+	// is v4 from 7 November 2007
+	SetLongKey("tablesVersion", 28);
 }
 
 NFmiGribMessage::NFmiGribMessage(void* buf, long size)
