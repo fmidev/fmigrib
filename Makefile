@@ -15,13 +15,13 @@ INSTALL_TARGET = /usr/lib64
 # The rules
 
 all release: 
-	scons $(SCONS_FLAGS)
+	scons-3 $(SCONS_FLAGS)
 debug: 
-	scons $(SCONS_FLAGS) --debug-build
+	scons-3 $(SCONS_FLAGS) --debug-build
 test:
 	cd tests && make
 clean:
-	scons -c ; scons --debug-build -c ; rm -f *~ source/*~ include/*~
+	scons-3 -c ; scons-3 --debug-build -c ; rm -f *~ source/*~ include/*~
 
 rpm:    clean $(LIB).spec
 	mkdir -p $(rpmsourcedir)
