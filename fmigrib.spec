@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 20.4.20
+Version: 20.12.2
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -63,6 +63,20 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Wed Dec  2 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.12.2-1.fmi
+- Correct counting of grib messages on padded files
+* Tue Nov  3 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.11.3-1.fmi
+- Better to way to deal with errors when counting messages
+* Fri Oct 16 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.10.16-1.fmi
+- Fix race condition bug
+* Wed Oct 14 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.10.14-1.fmi
+- Prevent integer overflow with large grib messages
+* Mon Oct  5 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.10.5-1.fmi
+- Alternative way to calculate message position
+* Tue Jun 16 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.6.16-1.fmi
+- Minor bugfix for empty grib handling
+* Mon May 25 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.5.25-1.fmi
+- Function additions
 * Mon Apr 20 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.4.20-1.fmi
 - boost 1.69
 * Wed Mar 18 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.3.18-1.fmi
