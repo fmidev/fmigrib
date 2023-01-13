@@ -1467,7 +1467,12 @@ void NFmiGribMessage::SetDoubleKey(const std::string& keyName, double value)
 {
 	assert(itsHandle);
 
-	GRIB_CHECK(grib_set_double(itsHandle, keyName.c_str(), value), 0);
+	int err = grib_set_double(itsHandle, keyName.c_str(), value);
+
+	if (err != 0)
+	{
+		throw err;
+	}
 }
 
 size_t NFmiGribMessage::GetSizeTKey(const std::string& keyName) const
