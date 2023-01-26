@@ -18,6 +18,7 @@ BuildRequires:  scons
 BuildRequires:  python3-scons
 %endif
 
+Requires: boost169-filesystem
 Provides: lib%{LIBNAME}.so
 
 %description

@@ -86,7 +86,7 @@ env.Append(LIBPATH = librarypaths)
 
 # Libraries
 
-libraries = []
+libraries = ['boost_filesystem']
 
 env.Append(LIBS = libraries)
 
@@ -144,7 +144,13 @@ cflags_difficult.append('-Wctor-dtor-privacy')
 
 cflags = []
 
-cflags.append('-std=c++11')
+cpp_standard = '-std=c++11'
+
+if OS_VERSION >= 8:
+    cpp_standard = '-std=c++17'
+
+cflags.append(cpp_standard)
+
 cflags.append('-fPIC')
 
 env.Append(CCFLAGS = cflags)
@@ -161,6 +167,9 @@ env.Append(CPPDEFINES=['UNIX'])
 
 if have_cuda:
         env.Append(CPPDEFINES=['HAVE_CUDA'])
+
+if os.environ.get('INCLUDE') != None:
+	includes.append(os.environ.get('INCLUDE').split(":"))
 
 env.Append(NVCCDEFINES=['HAVE_CUDA','CUB_IGNORE_DEPRECATED_CPP_DIALECT','THRUST_IGNORE_DEPRECATED_CPP_DIALECT'])
 

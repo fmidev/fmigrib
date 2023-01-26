@@ -1,6 +1,5 @@
 #include "NFmiGribMessage.h"
 #include "NFmiGribPacking.h"
-#include <boost/lexical_cast.hpp>
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -26,6 +25,9 @@ NFmiGribMessage::NFmiGribMessage() : itsHandle(0)
 
 	itsHandle = grib_handle_new_from_samples(NULL, "GRIB2");
 	assert(itsHandle);
+	// Set GRIB2 tablesVersion manually, the default from GRIB2.impl
+	// is v4 from 7 November 2007
+	SetLongKey("tablesVersion", 28);
 }
 
 NFmiGribMessage::NFmiGribMessage(void* buf, long size)
@@ -852,7 +854,7 @@ long NFmiGribMessage::Year() const
 }
 void NFmiGribMessage::Year(const std::string& theYear)
 {
-	SetLongKey("year", boost::lexical_cast<long>(theYear));
+	SetLongKey("year", std::stol(theYear));
 }
 long NFmiGribMessage::Month() const
 {
@@ -860,7 +862,7 @@ long NFmiGribMessage::Month() const
 }
 void NFmiGribMessage::Month(const std::string& theMonth)
 {
-	SetLongKey("month", boost::lexical_cast<long>(theMonth));
+	SetLongKey("month", std::stol(theMonth));
 }
 long NFmiGribMessage::Day() const
 {
@@ -868,7 +870,7 @@ long NFmiGribMessage::Day() const
 }
 void NFmiGribMessage::Day(const std::string& theDay)
 {
-	SetLongKey("day", boost::lexical_cast<long>(theDay));
+	SetLongKey("day", std::stol(theDay));
 }
 long NFmiGribMessage::Hour() const
 {
@@ -876,7 +878,7 @@ long NFmiGribMessage::Hour() const
 }
 void NFmiGribMessage::Hour(const std::string& theHour)
 {
-	SetLongKey("hour", boost::lexical_cast<long>(theHour));
+	SetLongKey("hour", std::stol(theHour));
 }
 long NFmiGribMessage::Minute() const
 {
@@ -884,7 +886,7 @@ long NFmiGribMessage::Minute() const
 }
 void NFmiGribMessage::Minute(const std::string& theMinute)
 {
-	SetLongKey("minute", boost::lexical_cast<long>(theMinute));
+	SetLongKey("minute", std::stol(theMinute));
 }
 
 long NFmiGribMessage::Second() const
@@ -893,7 +895,7 @@ long NFmiGribMessage::Second() const
 }
 void NFmiGribMessage::Second(const std::string& theSecond)
 {
-	SetLongKey("second", boost::lexical_cast<long>(theSecond));
+	SetLongKey("second", std::stol(theSecond));
 }
 
 bool NFmiGribMessage::Bitmap() const
@@ -945,7 +947,7 @@ bool NFmiGribMessage::UVRelativeToGrid() const
 
 	if (l < 0 || l > 1)
 	{
-		throw std::runtime_error("Unknown value in uvRelativeToGrid(): " + boost::lexical_cast<std::string>(l));
+		throw std::runtime_error("Unknown value in uvRelativeToGrid(): " + std::to_string(l));
 	}
 
 	return static_cast<bool>(l);
@@ -1306,7 +1308,7 @@ bool NFmiGribMessage::PackedValues(unsigned char* data) const
 	}
 
 #else
-#warning GRIB_READ_PACKED_DATA not defined -- reading packed data with fmigrib is not supported
+#pragma message("GRIB_READ_PACKED_DATA not defined -- reading packed data with fmigrib is not supported")
 	throw std::runtime_error("This version on NFmiGrib is not compiled with support for reading of packed data");
 #endif
 
@@ -1464,7 +1466,12 @@ void NFmiGribMessage::SetDoubleKey(const std::string& keyName, double value)
 {
 	assert(itsHandle);
 
-	GRIB_CHECK(grib_set_double(itsHandle, keyName.c_str(), value), 0);
+	int err = grib_set_double(itsHandle, keyName.c_str(), value);
+
+	if (err != 0)
+	{
+		throw err;
+	}
 }
 
 size_t NFmiGribMessage::GetSizeTKey(const std::string& keyName) const
