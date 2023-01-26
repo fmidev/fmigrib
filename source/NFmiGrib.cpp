@@ -415,7 +415,7 @@ int NFmiGrib::MessageCount()
 int NFmiGrib::CurrentMessageIndex()
 {
 	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
-	return itsMessageSizes.size() - 1;
+	return static_cast<int>(itsMessageSizes.size() - 1);
 }
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
 {
