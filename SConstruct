@@ -176,7 +176,6 @@ env.Append(NVCCDEFINES=['HAVE_CUDA','CUB_IGNORE_DEPRECATED_CPP_DIALECT','THRUST_
 env.Append(NVCCFLAGS = ['-m64'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-fPIC'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-Wall'])
-env.Append(NVCCFLAGS = ['-gencode=arch=compute_35,code=sm_35'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_52,code=sm_52'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_60,code=sm_60'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_70,code=sm_70'])
