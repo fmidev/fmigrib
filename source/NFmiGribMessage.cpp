@@ -19,7 +19,7 @@ const float kFloatMissing = 32700;
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
-NFmiGribMessage::NFmiGribMessage() : itsHandle(0)
+NFmiGribMessage::NFmiGribMessage() : itsHandle(nullptr)
 {
 	Clear();
 
@@ -38,8 +38,9 @@ NFmiGribMessage::NFmiGribMessage(void* buf, long size)
 
 NFmiGribMessage::~NFmiGribMessage()
 {
-	grib_handle_delete(itsHandle);
+	DeleteHandle();
 }
+
 NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(nullptr)
 {
 	Clear();
@@ -50,12 +51,31 @@ NFmiGribMessage::NFmiGribMessage(const NFmiGribMessage& other) : itsHandle(nullp
 	}
 }
 
-bool NFmiGribMessage::Read(grib_handle** h)
+NFmiGribMessage& NFmiGribMessage::operator=(const NFmiGribMessage& other)
+{
+	DeleteHandle();
+
+	Clear();
+
+	if (other.itsHandle)
+	{
+		itsHandle = grib_handle_clone(other.itsHandle);
+	}
+	return *this;
+}
+
+void NFmiGribMessage::DeleteHandle()
 {
 	if (itsHandle)
 	{
 		grib_handle_delete(itsHandle);
+		itsHandle = nullptr;
 	}
+}
+
+bool NFmiGribMessage::Read(grib_handle** h)
+{
+	DeleteHandle();
 
 	itsHandle = *h;
 	Clear();
