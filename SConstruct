@@ -86,7 +86,7 @@ env.Append(LIBPATH = librarypaths)
 
 # Libraries
 
-libraries = []
+libraries = ['boost_filesystem']
 
 env.Append(LIBS = libraries)
 
