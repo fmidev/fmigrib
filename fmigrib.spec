@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 23.1.26
+Version: 23.1.27
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -64,6 +64,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Fri Jan 27 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.27-1.fmi
+- Add function to delete a handle
 * Thu Jan 26 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.26-1.fmi
 - Link explicitly with boost filesystem
 * Wed Dec  2 2020 Mikko Partio <mikko.partio@fmi.fi> - 20.12.2-1.fmi
