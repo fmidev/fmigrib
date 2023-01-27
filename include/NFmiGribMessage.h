@@ -39,19 +39,9 @@ class NFmiGribMessage
 	~NFmiGribMessage();
 
 	NFmiGribMessage(const NFmiGribMessage& other);
-	NFmiGribMessage& operator=(const NFmiGribMessage& other)
-	{
-		itsHandle = 0;
+	NFmiGribMessage& operator=(const NFmiGribMessage& other);
 
-		Clear();
-
-		if (other.itsHandle)
-		{
-			itsHandle = grib_handle_clone(other.itsHandle);
-		}
-		return *this;
-	}
-
+	void DeleteHandle();
 	bool Read(grib_handle** h);
 
 	long SizeX() const;
