@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 23.1.27
+Version: 23.2.6
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -18,6 +18,7 @@ BuildRequires:  scons
 BuildRequires:  python3-scons
 %endif
 
+Requires: boost169-thread
 Requires: boost169-filesystem
 Provides: lib%{LIBNAME}.so
 
@@ -64,6 +65,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Mon Feb  6 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.2.6-1.fmi
+- Link against boost thread
 * Fri Jan 27 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.27-1.fmi
 - Add function to delete a handle
 * Thu Jan 26 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.26-1.fmi
