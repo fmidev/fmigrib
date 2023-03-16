@@ -68,11 +68,11 @@ class NFmiGribMessage
 	double SouthPoleY() const;
 	void SouthPoleY(double theLatitude);
 
-	double* Values() const;
+	[[deprecated("Use GetValues()")]] double* Values() const;
 	void GetValues(double* values, size_t* cntValues) const;
 	void Values(const double* theValues, long theValuesLength);
 
-	double* Values(double missingValue) const;
+	[[deprecated("Use GetValues()")]] double* Values(double missingValue) const;
 	void GetValues(double* values, size_t* cntValues, double missingValue) const;
 	void Values(const double* theValues, long theValuesLength, double missingValue);
 

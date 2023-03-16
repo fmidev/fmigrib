@@ -156,7 +156,21 @@ void NFmiGribMessage::TypeOfStatisticalProcessing(long theType)
  */
 double* NFmiGribMessage::Values() const
 {
-	return Values(kFloatMissing);
+	double missingValue = kFloatMissing;
+	assert(itsHandle);
+	if (Bitmap())
+	{
+		const double _missingValue = GetDoubleKey("missingValue");
+
+		if (_missingValue == 9999)
+			MissingValue(missingValue);
+	}
+	size_t values_len = ValuesLength();
+	double* vals = static_cast<double*>(malloc(values_len * sizeof(double)));
+
+	GRIB_CHECK(grib_get_double_array(itsHandle, "values", vals, &values_len), 0);
+
+	return vals;
 }
 
 double* NFmiGribMessage::Values(double missingValue) const
@@ -1605,7 +1619,8 @@ long NFmiGribMessage::ForecastType() const
 				forecastType = 1;
 				break;
 
-			case 4:
+			case 4:   // Ensemble forecast
+			case 11:  // Bias-corrected ensemble forecast
 				// eps
 				{
 					// http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table1-4.shtml
