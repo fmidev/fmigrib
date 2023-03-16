@@ -1752,6 +1752,15 @@ void NFmiGribMessage::GetMessage(unsigned char* content, size_t length)
 	grib_get_message_copy(itsHandle, content, &length);
 }
 
+void NFmiGribMessage::Repack()
+{
+	size_t len = ValuesLength();
+	double* arr = new double[len];
+	GetValues(arr, &len);
+	Values(arr, len);
+	delete[] arr;
+}
+
 #ifdef GRIB_WRITE_PACKED_DATA
 double NFmiGribMessage::CalculateReferenceValue(double minimumValue)
 {
