@@ -1619,7 +1619,8 @@ long NFmiGribMessage::ForecastType() const
 				forecastType = 1;
 				break;
 
-			case 4:
+			case 4:   // Ensemble forecast
+			case 11:  // Bias-corrected ensemble forecast
 				// eps
 				{
 					// http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table1-4.shtml
