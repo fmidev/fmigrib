@@ -156,7 +156,21 @@ void NFmiGribMessage::TypeOfStatisticalProcessing(long theType)
  */
 double* NFmiGribMessage::Values() const
 {
-	return Values(kFloatMissing);
+	double missingValue = kFloatMissing;
+	assert(itsHandle);
+	if (Bitmap())
+	{
+		const double _missingValue = GetDoubleKey("missingValue");
+
+		if (_missingValue == 9999)
+			MissingValue(missingValue);
+	}
+	size_t values_len = ValuesLength();
+	double* vals = static_cast<double*>(malloc(values_len * sizeof(double)));
+
+	GRIB_CHECK(grib_get_double_array(itsHandle, "values", vals, &values_len), 0);
+
+	return vals;
 }
 
 double* NFmiGribMessage::Values(double missingValue) const
