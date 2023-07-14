@@ -1476,7 +1476,9 @@ void NFmiGribMessage::SetLongKey(const std::string& keyName, long value)
 
 	if (err != 0)
 	{
-		throw err;
+		char msg[200];
+		snprintf(msg, 200, "fmigrib: Failed to set %s=%ld: %s", keyName.c_str(), value, grib_get_error_message(err));
+		throw std::invalid_argument(msg);
 	}
 }
 
@@ -1504,7 +1506,9 @@ void NFmiGribMessage::SetDoubleKey(const std::string& keyName, double value)
 
 	if (err != 0)
 	{
-		throw err;
+		char msg[200];
+		snprintf(msg, 200, "fmigrib: Failed to set %s=%f: %s", keyName.c_str(), value, grib_get_error_message(err));
+		throw std::invalid_argument(msg);
 	}
 }
 
@@ -1750,6 +1754,15 @@ void NFmiGribMessage::GetMessage(unsigned char* content, size_t length)
 {
 	assert(itsHandle);
 	grib_get_message_copy(itsHandle, content, &length);
+}
+
+void NFmiGribMessage::Repack()
+{
+	size_t len = ValuesLength();
+	double* arr = new double[len];
+	GetValues(arr, &len);
+	Values(arr, len);
+	delete[] arr;
 }
 
 #ifdef GRIB_WRITE_PACKED_DATA

@@ -318,6 +318,8 @@ class NFmiGribMessage
 
 	void GetMessage(unsigned char* content, size_t length);
 
+	void Repack();
+
    private:
 	void Clear();
 
