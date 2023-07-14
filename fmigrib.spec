@@ -1,7 +1,7 @@
 %define LIBNAME fmigrib
 Summary: fmigrib library
 Name: lib%{LIBNAME}
-Version: 23.2.6
+Version: 23.3.16
 Release: 1%{dist}.fmi
 License: MIT
 Group: Development/Tools
@@ -65,6 +65,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.h
 
 %changelog
+* Thu Mar 16 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.3.16-1.fmi
+- Support typeOfGeneratingProcess=11
 * Mon Feb  6 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.2.6-1.fmi
 - Link against boost thread
 * Fri Jan 27 2023 Mikko Partio <mikko.partio@fmi.fi> - 23.1.27-1.fmi
