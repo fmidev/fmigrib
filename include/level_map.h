@@ -28,5 +28,6 @@ bimapLong levelTypeMap = boost::assign::list_of<bimapLong::relation>
 (109,105) // hybrid
 (111,106) // depth below land surface
 (200,10) // entire atmosphere considered as a single layer
+(166,166) // mixing layer
 (246,246) // max thetae
 ;
