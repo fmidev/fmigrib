@@ -144,10 +144,7 @@ cflags_difficult.append('-Wctor-dtor-privacy')
 
 cflags = []
 
-cpp_standard = '-std=c++11'
-
-if OS_VERSION >= 8:
-    cpp_standard = '-std=c++17'
+cpp_standard = '-std=c++17'
 
 cflags.append(cpp_standard)
 
@@ -171,19 +168,16 @@ if have_cuda:
 if os.environ.get('INCLUDE') != None:
 	includes.append(os.environ.get('INCLUDE').split(":"))
 
-env.Append(NVCCDEFINES=['HAVE_CUDA','CUB_IGNORE_DEPRECATED_CPP_DIALECT','THRUST_IGNORE_DEPRECATED_CPP_DIALECT'])
+env.Append(NVCCDEFINES=['HAVE_CUDA'])
 
 env.Append(NVCCFLAGS = ['-m64'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-fPIC'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-Wall'])
-env.Append(NVCCFLAGS = ['-gencode=arch=compute_35,code=sm_35'])
-env.Append(NVCCFLAGS = ['-gencode=arch=compute_52,code=sm_52'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_60,code=sm_60'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_70,code=sm_70'])
+env.Append(NVCCFLAGS = ['-gencode=arch=compute_80,code=sm_80'])
 
-if IS_RHEL and OS_VERSION >= 7.0:
-	env.Append(NVCCFLAGS = ['-std=c++11'])
-
+env.Append(NVCCFLAGS = [cpp_standard])
 env.Append(NVCCPATH = ['./include'])
 
 # Other
