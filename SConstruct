@@ -2,15 +2,15 @@
 # SConscript for himan-lib
 
 import os
-import platform
+import distro
 import sys
 
-OS_NAME = platform.linux_distribution()[0]
-OS_VERSION = float('.'.join(platform.linux_distribution()[1].split('.')[:2]))
+OS_NAME = distro.name()
+OS_VERSION = float(distro.version())
 
 IS_RHEL = False
 
-if OS_NAME == "Red Hat Enterprise Linux Server" or OS_NAME == "CentOS":
+if OS_NAME == "Red Hat Enterprise Linux Server" or OS_NAME == "Rocky Linux":
 	IS_RHEL=True
 
 AddOption(
