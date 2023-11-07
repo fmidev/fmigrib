@@ -1,27 +1,38 @@
-%define LIBNAME fmigrib
+%if !0%{?version:1}
+%define version 23.7.14
+%endif
+
+%if !0%{?release:1}
+%define release 1
+%endif
+
+%define distnum %(/usr/lib/rpm/redhat/dist.sh --distnum)
+
 Summary: fmigrib library
-Name: lib%{LIBNAME}
-Version: 23.7.14
-Release: 1%{dist}.fmi
+Name: libfmigrib
+Version: %{version}
+Release: %{release}%{dist}.fmi
 License: MIT
 Group: Development/Tools
 URL: http://www.fmi.fi
 Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
-Provides: %{LIBNAME}.so
+Provides: fmigrib.so
 BuildRequires: eccodes-devel
 BuildRequires: boost169-devel
 BuildRequires: python3-distro
-
-%if %{defined el7}
-BuildRequires:  scons
-%else if %{defined el8}
-BuildRequires:  python3-scons
-%endif
-
-Requires: boost169-thread
-Requires: boost169-filesystem
-Provides: lib%{LIBNAME}.so
+BuildRequires: cuda-nvcc-12-2
+BuildRequires: python3-scons
+BuildRequires: cuda-cudart-devel-12-2
+BuildRequires: boost169-devel
+Buildrequires: zlib-devel
+BuildRequires: bzip2-devel
+BuildRequires: xz-devel
+Requires: boost169-iostreams
+Requires: zlib
+Requires: bzip2
+Requires: xz-libs
+Provides: libfmigrib.so
 
 %description
 FMI grib library
@@ -36,7 +47,7 @@ Headers and static libraries for fmigrib
 %prep
 rm -rf $RPM_BUILD_ROOT
 
-%setup -q -n "%{LIBNAME}" 
+%setup -q -n "libfmigrib" 
 
 %build
 make %{_smp_mflags} 
@@ -58,11 +69,11 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,0644)
-%{_libdir}/lib%{LIBNAME}.so*
+%{_libdir}/libfmigrib.so*
 
 %files devel
 %defattr(-,root,root,0644)
-%{_libdir}/lib%{LIBNAME}.a
+%{_libdir}/libfmigrib.a
 %{_includedir}/*.h
 
 %changelog

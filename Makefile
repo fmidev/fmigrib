@@ -25,8 +25,7 @@ clean:
 
 rpm:    clean $(LIB).spec
 	mkdir -p $(rpmsourcedir)
-	tar -C ../ --exclude .svn \
-                   -czf $(rpmsourcedir)/lib$(LIB).tar.gz $(LIB)
+	tar --transform "s,^./,libfmigrib/,"  --exclude-vcs -czf $(rpmsourcedir)/lib$(LIB).tar.gz .
 	rpmbuild -ta $(rpmsourcedir)/lib$(LIB).tar.gz
 
 install:
