@@ -3,15 +3,15 @@
 #include <sstream>
 #include <stdexcept>
 #include <numeric>
-#include <boost/filesystem/path.hpp>
+#include <filesystem>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
-#include <boost/thread/shared_mutex.hpp>
+#include <shared_mutex>
 
-static boost::shared_mutex msgSizeMutex;
+static std::shared_mutex msgSizeMutex;
 
 NFmiGrib::NFmiGrib()
     : ifs_compression(file_compression::none),
@@ -84,7 +84,7 @@ bool NFmiGrib::Open(const std::string& theFileName)
 		return true;
 	}
 
-	boost::filesystem::path p(theFileName);
+	std::filesystem::path p(theFileName);
 
 	std::string ext = p.extension().string();
 
@@ -165,7 +165,7 @@ bool NFmiGrib::Open(const std::string& theFileName)
 		return false;
 	}
 
-	boost::unique_lock<boost::shared_mutex> lock(msgSizeMutex);
+	std::unique_lock<std::shared_mutex> lock(msgSizeMutex);
 	itsMessageSizes.clear();
 	itsOffsets.clear();
 
@@ -326,7 +326,7 @@ bool NFmiGrib::NextMessage()
 		}
 
 		{
-			boost::unique_lock<boost::shared_mutex> lock(msgSizeMutex);
+			std::unique_lock<std::shared_mutex> lock(msgSizeMutex);
 			const long newpos = ftell(f);
 			const long msgsize = itsMessage.GetLongKey("totalLength");
 
@@ -414,7 +414,7 @@ int NFmiGrib::MessageCount()
 
 int NFmiGrib::CurrentMessageIndex()
 {
-	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
+	std::shared_lock<std::shared_mutex> lock(msgSizeMutex);
 	return static_cast<int>(itsMessageSizes.size() - 1);
 }
 void NFmiGrib::MultiGribSupport(bool theMultiGribSupport)
@@ -439,11 +439,11 @@ bool NFmiGrib::WriteMessage(const std::string& theFileName)
 
 unsigned long NFmiGrib::MessageSize(int messageNo) const
 {
-	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
+	std::shared_lock<std::shared_mutex> lock(msgSizeMutex);
 	return itsMessageSizes.at(messageNo);
 }
 unsigned long NFmiGrib::Offset(int messageNo) const
 {
-	boost::shared_lock<boost::shared_mutex> lock(msgSizeMutex);
+	std::shared_lock<std::shared_mutex> lock(msgSizeMutex);
 	return itsOffsets.at(messageNo);
 }

@@ -86,20 +86,9 @@ env.Append(LIBPATH = librarypaths)
 
 # Libraries
 
-libraries = ['boost_filesystem', 'boost_thread']
+libraries = ['stdc++fs','boost_iostreams','z','bz2']
 
 env.Append(LIBS = libraries)
-
-#if IS_RHEL and OS_VERSION < 7.0:
-#	boost_libraries = [ 'boost_program_options', 'boost_filesystem', 'boost_system', 'boost_regex', 'boost_iostreams', 'boost_thread' ]
-#
-#	for lib in boost_libraries:
-#		libfile = '/usr/lib64/lib' + lib + '.a'
-#
-#		if not os.path.isfile(libfile):
-#			libfile = '/usr/lib64/lib' + lib + '-mt.a'
-#
-#		env.Append(LIBS=env.File(libfile))
 
 if have_cuda:
 	env.Append(LIBS=env.File(cuda_toolkit_path + '/lib64/libcudart_static.a'))
@@ -144,10 +133,10 @@ cflags_difficult.append('-Wctor-dtor-privacy')
 
 cflags = []
 
-cpp_standard = '-std=c++11'
+cpp_standard = '-std=c++17'
 
-if OS_VERSION >= 8:
-    cpp_standard = '-std=c++17'
+#if OS_VERSION >= 8:
+#    cpp_standard = '-std=c++17'
 
 cflags.append(cpp_standard)
 
@@ -171,7 +160,7 @@ if have_cuda:
 if os.environ.get('INCLUDE') != None:
 	includes.append(os.environ.get('INCLUDE').split(":"))
 
-env.Append(NVCCDEFINES=['HAVE_CUDA','CUB_IGNORE_DEPRECATED_CPP_DIALECT','THRUST_IGNORE_DEPRECATED_CPP_DIALECT'])
+env.Append(NVCCDEFINES=['HAVE_CUDA'])
 
 env.Append(NVCCFLAGS = ['-m64'])
 env.Append(NVCCFLAGS = ['-Xcompiler','-fPIC'])
@@ -179,9 +168,7 @@ env.Append(NVCCFLAGS = ['-Xcompiler','-Wall'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_52,code=sm_52'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_60,code=sm_60'])
 env.Append(NVCCFLAGS = ['-gencode=arch=compute_70,code=sm_70'])
-
-if IS_RHEL and OS_VERSION >= 7.0:
-	env.Append(NVCCFLAGS = ['-std=c++11'])
+env.Append(NVCCFLAGS = ['-std=c++17'])
 
 env.Append(NVCCPATH = ['./include'])
 

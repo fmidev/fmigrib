@@ -4,8 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-
-#include <boost/filesystem/path.hpp>
+#include <filesystem>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
@@ -1227,7 +1226,7 @@ bool NFmiGribMessage::Write(const std::string& theFileName, bool appendToFile)
 		mode = "a";
 
 	// write compressed output if file extension is .gz or .bz2
-	boost::filesystem::path p(theFileName);
+	std::filesystem::path p(theFileName);
 	std::string ext = p.extension().string();
 
 	enum class file_compression
