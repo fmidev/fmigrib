@@ -28,6 +28,8 @@ BuildRequires: boost169-devel
 Buildrequires: zlib-devel
 BuildRequires: bzip2-devel
 BuildRequires: xz-devel
+BuildRequires: make
+BuildRequires: gcc-c++
 Requires: boost169-iostreams
 Requires: zlib
 Requires: bzip2
