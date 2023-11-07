@@ -12,7 +12,7 @@ jobs:
       rpm_spec_file: fmigrib.spec
       rpm_additional_repositories: "epel-release,https://download.fmi.fi/smartmet-open/rhel/8/x86_64/smartmet-open-release-latest-8.noarch.rpm"
       rpm_enable_repositories: powertools
-      rpm_dnf_commands: "dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo"
+      rpm_dnf_commands: "dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo && dnf config-manager --setopt='epel.exclude=eccodes*' --save"
       build_image: false
     secrets:
       RPM_API_HOST: ${{ secrets.RPM_API_HOST }}
