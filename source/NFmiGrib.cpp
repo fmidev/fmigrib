@@ -10,6 +10,7 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <shared_mutex>
+#include <mutex>
 
 static std::shared_mutex msgSizeMutex;
 

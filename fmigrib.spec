@@ -8,6 +8,12 @@
 
 %define distnum %(/usr/lib/rpm/redhat/dist.sh --distnum)
 
+%if %{distnum} == 8
+%define boost boost169
+%else
+%define boost boost
+%endif
+
 Summary: fmigrib library
 Name: libfmigrib
 Version: %{version}
@@ -19,18 +25,17 @@ Source0: %{name}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: fmigrib.so
 BuildRequires: eccodes-devel
-BuildRequires: boost169-devel
 BuildRequires: python3-distro
 BuildRequires: cuda-nvcc-12-2
 BuildRequires: python3-scons
 BuildRequires: cuda-cudart-devel-12-2
-BuildRequires: boost169-devel
+BuildRequires: %{boost}-devel
 Buildrequires: zlib-devel
 BuildRequires: bzip2-devel
 BuildRequires: xz-devel
 BuildRequires: make
 BuildRequires: gcc-c++
-Requires: boost169-iostreams
+Requires: %{boost}-iostreams
 Requires: zlib
 Requires: bzip2
 Requires: xz-libs
