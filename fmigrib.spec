@@ -26,9 +26,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 Provides: fmigrib.so
 BuildRequires: eccodes-devel
 BuildRequires: python3-distro
-BuildRequires: cuda-nvcc-12-2
+BuildRequires: cuda-nvcc-12-4
 BuildRequires: python3-scons
-BuildRequires: cuda-cudart-devel-12-2
+BuildRequires: cuda-cudart-devel-12-4
 BuildRequires: %{boost}-devel
 Buildrequires: zlib-devel
 BuildRequires: bzip2-devel
