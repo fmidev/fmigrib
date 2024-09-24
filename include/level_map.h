@@ -28,4 +28,5 @@ bimapLong levelTypeMap = boost::assign::list_of<bimapLong::relation>(1, 1)  // g
     (200, 10)   // entire atmosphere considered as a single layer
     (246, 246)  // max thetae
     (7, 7)      // tropopause
+    (211, 17)   // mudl
     ;
