@@ -12,6 +12,7 @@ bimapLong gridTypeMap = boost::assign::list_of<bimapLong::relation>(0, 0)  // ll
     (5, 20)                                                                // polar stereographic
     (3, 30)                                                                // lambert conformal
     (4, 40)                                                                // gaussian ll
+    (6, 12)                                                                // utm
     ;
 
 bimapLong levelTypeMap = boost::assign::list_of<bimapLong::relation>(1, 1)  // ground
