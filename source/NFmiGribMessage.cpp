@@ -1,15 +1,15 @@
 #include "NFmiGribMessage.h"
 #include "NFmiGribPacking.h"
-#include <cassert>
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <filesystem>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <cassert>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 
 #include "level_map.h"
 
@@ -18,15 +18,19 @@ const float kFloatMissing = 32700;
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
-NFmiGribMessage::NFmiGribMessage() : itsHandle(nullptr)
+NFmiGribMessage::NFmiGribMessage(const std::string& theSampleName, int theVersion) : itsHandle(nullptr)
 {
 	Clear();
 
-	itsHandle = grib_handle_new_from_samples(NULL, "GRIB2");
+	itsHandle = grib_handle_new_from_samples(NULL, theSampleName.c_str());
 	assert(itsHandle);
 	// Set GRIB2 tablesVersion manually, the default from GRIB2.impl
 	// is v4 from 7 November 2007
-	SetLongKey("tablesVersion", 28);
+	SetLongKey("tablesVersion", theVersion);
+}
+
+NFmiGribMessage::NFmiGribMessage() : NFmiGribMessage("GRIB2", 28)
+{
 }
 
 NFmiGribMessage::NFmiGribMessage(void* buf, long size)

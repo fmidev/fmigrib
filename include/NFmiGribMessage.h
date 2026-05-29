@@ -34,6 +34,7 @@ class NFmiGribMessage
 {
    public:
 	NFmiGribMessage();
+	NFmiGribMessage(const std::string& theSampleName, int theVersion);
 	NFmiGribMessage(void* buf, long size);
 
 	~NFmiGribMessage();
